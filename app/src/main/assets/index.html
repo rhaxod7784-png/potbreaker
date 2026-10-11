@@ -1,0 +1,2746 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>POT BREAKER v0.16.0</title>
+<style>
+  :root{
+    --ink:#3d79a8;
+    --ink2:#244e70;
+    --cloud:#eaf6ff;
+    --pink:#ffdbe8;
+    --yellow:#fff2ad;
+    --green:#dff5e3;
+  }
+  *{box-sizing:border-box}
+  html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#edf7ff;
+    font-family:ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;
+    color:var(--ink2);
+    overscroll-behavior:none;
+  }
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .wrap{
+    width:100vw;
+    height:100dvh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .stage{
+    position:relative;
+    width:min(100vw,calc(100dvh * 16 / 9));
+    height:min(100dvh,calc(100vw * 9 / 16));
+    aspect-ratio:16/9;
+    overflow:hidden;
+    background:white;
+    border:0;
+    box-shadow:none;
+  }
+  canvas{
+    display:block;
+    width:100%;
+    height:100%;
+    background:white;
+    touch-action:none;
+    cursor:grab;
+  }
+  canvas.dragging{cursor:grabbing}
+
+  .hud{
+    position:absolute;
+    z-index:8;
+    inset:10px 12px auto;
+    display:flex;
+    justify-content:space-between;
+    pointer-events:none;
+    font-weight:1000;
+    font-size:clamp(14px,1.85vw,19px);
+    text-shadow:
+      0 2px #fff,0 -2px #fff,2px 0 #fff,-2px 0 #fff,
+      1px 1px #fff,-1px -1px #fff;
+  }
+  .hud .right{text-align:right}
+  #playerHud,#botHud{
+    min-width:220px;
+    padding:10px 14px;
+    border:4px solid var(--ink);
+    border-radius:20px;
+    background:rgba(255,255,255,.91);
+    box-shadow:0 5px 0 rgba(36,78,112,.10);
+    line-height:1.32;
+  }
+  #botHud{border-color:#b95d7f}
+
+  .timer-hud{
+    position:absolute;
+    z-index:12;
+    left:50%;
+    top:10px;
+    transform:translateX(-50%);
+    min-width:92px;
+    padding:7px 12px;
+    text-align:center;
+    border:4px solid var(--ink);
+    border-radius:999px;
+    background:rgba(255,255,255,.96);
+    color:var(--ink2);
+    font-weight:1000;
+    font-size:18px;
+    pointer-events:none;
+    text-shadow:none;
+    transition:transform .12s ease,color .12s ease,background .12s ease;
+  }
+  .timer-hud.danger{
+    color:#e11d2e;
+    background:rgba(255,247,247,.99);
+    border-color:#e11d2e;
+    transform:translateX(-50%) scale(1.62);
+    font-size:28px;
+    box-shadow:0 0 0 8px rgba(225,29,46,.11);
+  }
+
+  #centerMsg{
+    position:absolute;
+    z-index:6;
+    left:50%;
+    top:46px;
+    transform:translateX(-50%);
+    max-width:56%;
+    padding:6px 12px;
+    border:3px solid var(--ink);
+    border-radius:999px;
+    background:rgba(255,255,255,.88);
+    color:var(--ink);
+    font-weight:1000;
+    font-size:clamp(10px,1.3vw,13px);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    pointer-events:none;
+    backdrop-filter:blur(4px);
+  }
+
+  .game-ui{
+    position:absolute;
+    z-index:10;
+    inset:0;
+    pointer-events:none;
+  }
+  .ui-group{
+    position:absolute;
+    display:flex;
+    gap:6px;
+    pointer-events:auto;
+  }
+
+  .pot-select{
+    left:10px;
+    bottom:10px;
+    flex-direction:row;
+  }
+  .actions{
+    right:10px;
+    top:78px;
+    flex-direction:column;
+  }
+  .fire-control{
+    right:14px;
+    bottom:12px;
+    pointer-events:auto;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+
+  #boostBtn{
+    width:68px;
+    height:68px;
+    min-width:68px;
+    padding:0;
+    border-radius:50%;
+    background:rgba(223,245,227,.98);
+    font-size:11px;
+    line-height:1.05;
+    touch-action:manipulation;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+
+  #fireBtn{
+    width:138px;
+    height:138px;
+    min-width:138px;
+    padding:0;
+    border-width:5px;
+    border-radius:50%;
+    background:rgba(255,219,232,.97);
+    color:#244e70;
+    font-size:25px;
+    line-height:1;
+    box-shadow:0 8px 0 rgba(185,93,127,.20);
+    touch-action:manipulation;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+
+  #fireBtn.cooling{
+    background:rgba(255,255,255,.86);
+    font-size:17px;
+  }
+
+  #fireBtn .cd{
+    display:block;
+    margin-top:6px;
+    font-size:10px;
+    opacity:.72;
+  }
+
+  button{
+    font:inherit;
+    border:3px solid var(--ink);
+    background:rgba(255,255,255,.90);
+    color:var(--ink2);
+    border-radius:13px;
+    padding:7px 9px;
+    font-weight:1000;
+    cursor:pointer;
+    box-shadow:0 3px 0 rgba(36,78,112,.12);
+    backdrop-filter:blur(4px);
+    min-width:42px;
+  }
+  button:active{transform:translateY(1px)}
+  button:disabled{opacity:.38;cursor:not-allowed}
+  .potBtn{
+    width:72px;
+    height:72px;
+    min-width:72px;
+    padding:0;
+    border-radius:50%;
+    font-size:12px;
+    line-height:1.08;
+    position:relative;
+    overflow:visible;
+  }
+  .potBtn.active{background:var(--yellow)}
+  .pot-tip{
+    position:absolute;
+    left:50%;
+    bottom:calc(100% + 9px);
+    transform:translateX(-50%) translateY(7px);
+    min-width:156px;
+    padding:7px 10px;
+    border:3px solid var(--ink);
+    border-radius:13px;
+    background:rgba(255,255,255,.98);
+    color:var(--ink2);
+    font-size:11px;
+    font-weight:1000;
+    line-height:1.25;
+    box-shadow:0 4px 0 rgba(36,78,112,.10);
+    pointer-events:none;
+    opacity:0;
+    animation:pot-tip-in .18s ease forwards;
+    white-space:nowrap;
+  }
+  @keyframes pot-tip-in{to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  #newBtn{background:rgba(223,245,227,.94)}
+  .tiny-label{
+    position:absolute;
+    z-index:8;
+    left:12px;
+    bottom:54px;
+    font-size:10px;
+    font-weight:900;
+    padding:4px 7px;
+    border-radius:999px;
+    background:rgba(255,255,255,.72);
+    border:2px solid rgba(61,121,168,.45);
+    pointer-events:none;
+  }
+
+  .winner-overlay{
+    position:absolute;
+    z-index:40;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+    background:rgba(255,255,255,.18);
+    backdrop-filter:blur(2px);
+  }
+  .winner-overlay.show{display:flex;pointer-events:auto;cursor:pointer}
+  .winner-card{
+    min-width:340px;
+    max-width:78%;
+    padding:28px 38px;
+    border:6px solid var(--ink);
+    border-radius:34px;
+    background:rgba(255,255,255,.97);
+    text-align:center;
+    box-shadow:0 14px 0 rgba(36,78,112,.14);
+    transform:scale(.88);
+    animation:winner-pop .34s cubic-bezier(.2,1.5,.4,1) forwards;
+  }
+  .winner-title{font-size:50px;line-height:1;font-weight:1000;color:var(--ink2)}
+  .winner-sub{margin-top:12px;font-size:20px;line-height:1.2;font-weight:1000;color:#b95d7f}
+  @keyframes winner-pop{to{transform:scale(1)}}
+
+  .rotate-overlay{
+    display:none;
+    position:fixed;
+    z-index:100;
+    inset:0;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:24px;
+    background:rgba(238,248,255,.985);
+    color:var(--ink2);
+    font-weight:1000;
+    font-size:20px;
+    pointer-events:auto;
+    touch-action:manipulation;
+  }
+
+  .rotate-gate-card{
+    width:min(86vw,420px);
+    padding:28px 24px;
+    border:5px solid var(--ink);
+    border-radius:30px;
+    background:rgba(255,255,255,.96);
+    box-shadow:0 12px 0 rgba(36,78,112,.12);
+  }
+
+  .rotate-gate-icon{
+    font-size:46px;
+    line-height:1;
+    margin-bottom:12px;
+  }
+
+  .rotate-overlay span{
+    display:block;
+    margin-top:10px;
+    font-size:13px;
+    line-height:1.45;
+    opacity:.78;
+  }
+
+  .rotate-overlay .gate-tap{
+    display:inline-block;
+    margin-top:18px;
+    padding:10px 16px;
+    border:3px solid var(--ink);
+    border-radius:999px;
+    background:var(--yellow);
+    font-size:14px;
+  }
+
+  .rotate-overlay.failed .rotate-gate-card{
+    border-color:#b95d7f;
+  }
+
+
+  @media (orientation:portrait) and (pointer:coarse){
+    .rotate-overlay{display:flex}
+    body.mobile-landscape-ready .rotate-overlay{display:none}
+  }
+
+  @media (orientation:landscape){
+    .rotate-overlay{display:none !important}
+  }
+
+  @media (max-height:520px){
+    .hud{top:5px}
+    #centerMsg{top:38px}
+    button{
+      padding:5px 7px;
+      border-width:2px;
+      border-radius:11px;
+      font-size:11px;
+    }
+    .pot-select{left:6px;bottom:6px}
+    .actions{right:6px;top:62px}
+    .fire-control{right:6px;bottom:6px;gap:5px}
+    #boostBtn{
+      width:52px;
+      height:52px;
+      min-width:52px;
+      padding:0;
+      font-size:9px;
+    }
+    #fireBtn{
+      width:110px;
+      height:110px;
+      min-width:110px;
+      font-size:19px;
+      border-radius:50%;
+    }
+    #fireBtn .cd{font-size:9px;margin-top:4px}
+    .potBtn{width:62px;height:62px;min-width:62px;font-size:10px}
+    #playerHud,#botHud{min-width:174px;padding:7px 9px;border-width:3px;font-size:12px}
+    .tiny-label{left:8px;bottom:70px;font-size:9px}
+  }
+</style>
+
+<div class="wrap">
+  <div class="stage" id="stage">
+    <canvas id="game" width="960" height="540"></canvas>
+
+    <div id="winnerOverlay" class="winner-overlay">
+      <div class="winner-card">
+        <div id="winnerTitle" class="winner-title"></div>
+        <div id="winnerSub" class="winner-sub"></div>
+        <div class="winner-dismiss-hint">화면을 터치하면 닫기</div>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div id="playerHud">YOU</div>
+      <div class="right" id="botHud">BOT</div>
+    </div>
+
+    <div id="timerHud" class="timer-hud">20.0s</div>
+    <div id="centerMsg">화분을 고르고 START!</div>
+
+    <div class="game-ui">
+      <div class="tiny-label">POT · 속도 / 쿨타임 / 상쇄 차이</div>
+
+      <div class="ui-group pot-select">
+        <button class="potBtn active" data-pot="small">소 · 0.3s</button>
+        <button class="potBtn" data-pot="medium">중 · 0.7s</button>
+        <button class="potBtn" data-pot="large">대 · 1.0s</button>
+        <button class="potBtn" data-pot="xl">특 · 1.5s</button>
+      </div>
+
+      <div class="ui-group actions">
+        <button id="newBtn">START</button>
+      </div>
+
+      <div class="ui-group fire-control">
+        <button id="boostBtn">BOOST ×3</button>
+        <button id="fireBtn">FIRE!<span class="cd">AUTO LOCK</span></button>
+      </div>
+    </div>
+
+    <div class="rotate-overlay" id="mobileGate">
+      <div class="rotate-gate-card">
+        <div class="rotate-gate-icon">📱 ↻ 🎵</div>
+        <div id="mobileGateTitle">화면을 한 번 터치!</div>
+        <span id="mobileGateText">
+          전체화면 + 가로모드를 자동으로 시도하고<br>
+          대기화면 BGM도 바로 시작합니다.
+        </span>
+        <div class="gate-tap">TAP TO ENTER</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const stage = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+
+  const W = canvas.width;
+  const H = canvas.height;
+  const groundY = 472;
+  const gravity = 560;
+  const MATCH_DURATION = 20;
+  const WILD_POT_FREQUENCY = 1.5;
+  const PROJECTILE_SPEED = {
+    small:720,
+    medium:600,
+    large:500,
+    xl:410
+  };
+  const minActorGap = 115;
+
+  const centerMsg = document.getElementById('centerMsg');
+  const timerHud = document.getElementById('timerHud');
+  const playerHud = document.getElementById('playerHud');
+  const botHud = document.getElementById('botHud');
+  const newBtn = document.getElementById('newBtn');
+  const boostBtn = document.getElementById('boostBtn');
+  const fireBtn = document.getElementById('fireBtn');
+  const winnerOverlay = document.getElementById('winnerOverlay');
+  const winnerTitle = document.getElementById('winnerTitle');
+  const winnerSub = document.getElementById('winnerSub');
+  const mobileGate = document.getElementById('mobileGate');
+  const mobileGateTitle = document.getElementById('mobileGateTitle');
+  const mobileGateText = document.getElementById('mobileGateText');
+
+  const POT = {
+    // 화분마다 발사 속도, 쿨타임, 공중 충돌 내구도/공격력이 다르다.
+    //
+    // 상쇄 규칙:
+    // 특대 = 소4 / 중2 / 대1
+    // 대   = 소2 / 중1
+    // 중   = 소1
+    //
+    // damage와 durability를 동시에 교환해 누적 상쇄를 구현한다.
+    small:  {name:'소형',   cooldown:.30, radius:10, strength:1, damage:1, durability:1, scale:.72},
+    medium: {name:'중형',   cooldown:.70, radius:14, strength:2, damage:2, durability:1, scale:.90},
+    large:  {name:'대형',   cooldown:1.00, radius:19, strength:3, damage:4, durability:2, scale:1.10},
+    xl:     {name:'특대형', cooldown:1.50, radius:25, strength:4, damage:8, durability:4, scale:1.38},
+  };
+
+  let selectedPot = 'small';
+  let running = false;
+  let spawning = false;
+  let gameOver = false;
+
+  let obstacles = [];
+  let player = null;
+  let bot = null;
+  let projectiles = [];
+  let particles = [];
+  let emotes = [];
+  let impactTexts = [];
+  let shockwaves = [];
+  let screenShake = 0;
+  let hitShakeTimer = 0;
+  let hitFlash = 0;
+  let hitOwnerFlash = null;
+  let hitOwnerFlashTimer = 0;
+  let playerScorePulse = 0;
+  let botScorePulse = 0;
+  let audioCtx = null;
+  let bgmStarted = false;
+  let bgmTimer = null;
+  let bgmStep = 0;
+  let countdownBeepSecond = null;
+  let lastBoingAt = 0;
+  let boostTrailTimer = 0;
+  let botBoostTrailTimer = 0;
+  let playerBoostAttackTimer = 0;
+  let botBoostAttackTimer = 0;
+  let playerBoostScored = false;
+  let botBoostScored = false;
+
+  let neutralPots = [];
+  let neutralSpawnTimer = 2.6;
+
+  let score = {player:0, bot:0};
+
+  // 누적 승리 기록은 localStorage에 저장해서 새로고침 후에도 유지한다.
+  let winRecord = {
+    player:Number(localStorage.getItem('potBreakerPlayerWins') || 0),
+    bot:Number(localStorage.getItem('potBreakerBotWins') || 0)
+  };
+
+  let matchTime = MATCH_DURATION;
+  let boostsLeft = 3;
+  let botBoostsLeft = 3;
+  let botBoostDecisionTimer = 3.0;
+  let playerCooldown = 0;
+  let botCooldown = 1.2;
+
+  let lastTime = performance.now();
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+  function randomPot(){
+    const keys = Object.keys(POT);
+    return keys[Math.floor(Math.random()*keys.length)];
+  }
+
+  function makeActor(side){
+    return {
+      side,
+      x: side==='player' ? 170 : 790,
+      y: 60,
+      vx:0,
+      vy:0,
+      radius:22,
+      bounces:0,
+      settled:false,
+      active:false,
+      pot:side==='player'?selectedPot:randomPot(),
+      squashX:1,
+      squashY:1,
+      squashTimer:0,
+    };
+  }
+
+  function generateObstacles(){
+    const arr=[];
+    const count=Math.floor(rand(3,7));
+    let tries=0;
+
+    while(arr.length<count && tries<220){
+      tries++;
+
+      const rx=rand(55,105);      // 언덕 가로 반지름
+      const ry=rand(28,72);       // 언덕 세로 반지름
+      const x=rand(80+rx,W-80-rx);
+      const baseY=groundY-rand(0,105);
+      const y=baseY;
+
+      const overlap=arr.some(o=>{
+        const dx=Math.abs(x-o.x);
+        const dy=Math.abs(y-o.y);
+        return dx < rx+o.rx+28 && dy < Math.max(ry,o.ry)+52;
+      });
+
+      if(!overlap){
+        arr.push({x,y,rx,ry});
+      }
+    }
+
+    return arr;
+  }
+
+
+  function isCoarseMobile(){
+    return !!(
+      window.matchMedia &&
+      window.matchMedia('(pointer:coarse)').matches
+    );
+  }
+
+  function isLandscapeNow(){
+    return !!(
+      window.matchMedia &&
+      window.matchMedia('(orientation:landscape)').matches
+    );
+  }
+
+  async function tryMobileLandscape(forceFullscreen=false){
+    if(!isCoarseMobile()) return true;
+
+    let fullscreenOk=false;
+    let orientationOk=false;
+
+    try{
+      if(forceFullscreen && document.fullscreenElement==null){
+        const target=stage.requestFullscreen
+          ? stage
+          : document.documentElement;
+
+        if(target.requestFullscreen){
+          await target.requestFullscreen();
+          fullscreenOk=true;
+        }
+      }else{
+        fullscreenOk=!!document.fullscreenElement;
+      }
+    }catch(_){}
+
+    try{
+      if(screen.orientation && screen.orientation.lock){
+        try{
+          await screen.orientation.lock('landscape-primary');
+        }catch(_){
+          await screen.orientation.lock('landscape');
+        }
+        orientationOk=true;
+      }
+    }catch(_){}
+
+    // orientation event가 적용될 약간의 시간을 준다.
+    await new Promise(resolve=>setTimeout(resolve,180));
+
+    const landscape=isLandscapeNow();
+
+    if(landscape){
+      document.body.classList.add('mobile-landscape-ready');
+      mobileGate?.classList.remove('failed');
+      return true;
+    }
+
+    // 실패해도 CSS로 게임을 억지로 90도 돌리지 않는다.
+    // 따라서 기존처럼 화면이 옆으로 누운 상태는 발생하지 않는다.
+    document.body.classList.remove('mobile-landscape-ready');
+    return orientationOk || fullscreenOk;
+  }
+
+  async function unlockMobileExperience(){
+    ensureAudio();
+
+    try{
+      if(audioCtx && audioCtx.state==='suspended'){
+        await audioCtx.resume();
+      }
+    }catch(_){}
+
+    // START 전 대기화면부터 BGM 시작.
+    startMischiefBgm();
+
+    if(!isCoarseMobile()){
+      return;
+    }
+
+    mobileGateTitle.textContent='가로모드 전환 중…';
+    mobileGateText.innerHTML='전체화면과 가로 방향을 적용하고 있습니다.';
+
+    const attempted=await tryMobileLandscape(true);
+
+    if(isLandscapeNow()){
+      document.body.classList.add('mobile-landscape-ready');
+      return;
+    }
+
+    mobileGate?.classList.add('failed');
+    mobileGateTitle.textContent='자동 가로 전환이 제한됐어요';
+    mobileGateText.innerHTML=
+      '이 브라우저에서는 화면 방향 잠금을 허용하지 않았습니다.<br>'+
+      '게임 화면 자체는 더 이상 옆으로 돌리지 않습니다.<br>'+
+      '기기 자동회전을 켜고 가로로 돌리면 정상 크기로 플레이할 수 있습니다.';
+  }
+
+  // 페이지 로드 시 BGM 스케줄은 준비하되,
+  // 실제 소리는 브라우저 정책상 첫 사용자 입력에서 활성화된다.
+  window.addEventListener('load',()=>{
+    ensureAudio();
+    startMischiefBgm();
+
+    if(!isCoarseMobile() || isLandscapeNow()){
+      document.body.classList.add('mobile-landscape-ready');
+    }
+  });
+
+  // 모바일 gate 자체가 첫 입력: 가로모드 + BGM을 동시에 활성화.
+  mobileGate?.addEventListener('pointerdown',async e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    await unlockMobileExperience();
+  });
+
+  // 데스크톱/이미 가로인 모바일에서도 첫 입력 시 BGM unlock.
+  stage.addEventListener('pointerdown',()=>{
+    ensureAudio();
+    if(audioCtx?.state==='suspended') audioCtx.resume().catch(()=>{});
+    startMischiefBgm();
+  },{once:true});
+
+  window.addEventListener('orientationchange',()=>{
+    setTimeout(()=>{
+      if(isLandscapeNow()){
+        document.body.classList.add('mobile-landscape-ready');
+      }else if(isCoarseMobile()){
+        document.body.classList.remove('mobile-landscape-ready');
+      }
+    },120);
+  });
+
+
+  function startGame(){
+    tryMobileLandscape(true);
+    selectedPot=document.querySelector('.potBtn.active').dataset.pot;
+    obstacles=generateObstacles();
+    projectiles=[];
+    particles=[];
+    emotes=[];
+    impactTexts=[];
+    shockwaves=[];
+    screenShake=0;
+    hitShakeTimer=0;
+    hitFlash=0;
+    hitOwnerFlash=null;
+    hitOwnerFlashTimer=0;
+    playerScorePulse=0;
+    botScorePulse=0;
+    ensureAudio();
+    startMischiefBgm();
+    countdownBeepSecond=null;
+    boostTrailTimer=0;
+    winnerOverlay.classList.remove('show');
+    winnerTitle.textContent='';
+    winnerSub.textContent='';
+    document.querySelectorAll('.pot-tip').forEach(t=>t.remove());
+    score={player:0,bot:0};
+    matchTime=MATCH_DURATION;
+    boostsLeft=3;
+    botBoostsLeft=3;
+    botBoostDecisionTimer=rand(2.0,4.0);
+    playerCooldown=0;
+    botCooldown=.825;
+    gameOver=false;
+    running=true;
+    spawning=false;
+
+    player=makeActor('player');
+    bot=makeActor('bot');
+    player.pot=selectedPot;
+    botCooldown=Math.min(.45,POT[bot.pot].cooldown*.55);
+
+    // 둘 다 시작 즉시 고속 투입. 정착을 기다리지 않는다.
+    startSpawn(player);
+    startSpawn(bot);
+
+    // 첫 프레임부터 서로 너무 겹치지 않도록 투입점을 한 번 분리
+    if(Math.abs(player.x-bot.x)<minActorGap){
+      bot.x=clamp(
+        player.x + (player.x<W/2 ? minActorGap : -minActorGap),
+        70,
+        W-70
+      );
+    }
+
+    lockPotButtons(true);
+    centerMsg.textContent='20초 승부! 많이 맞혀라 → 동점이면 큰 화분 승리!';
+    updateHUD();
+    updateTimerHud();
+    updateBoostButton();
+  }
+
+  function lockPotButtons(lock){
+    document.querySelectorAll('.potBtn').forEach(b=>b.disabled=lock);
+  }
+
+  function startSpawn(actor){
+    // 화면 안쪽 아무 곳에서 고속으로 투입
+    actor.x=rand(90,W-90);
+    actor.y=rand(45,170);
+
+    const speed=rand(720,1020);
+    const angle=rand(0,Math.PI*2);
+
+    actor.vx=Math.cos(angle)*speed;
+    actor.vy=Math.sin(angle)*speed;
+
+    // 아래로만 쏠리지 않도록 최소 수직 속도 확보
+    if(Math.abs(actor.vy)<220){
+      actor.vy=(Math.random()<.5?-1:1)*rand(360,580);
+    }
+
+    actor.bounces=0;
+    actor.settled=false;
+    actor.active=true;
+    actor.squashX=1;
+    actor.squashY=1;
+    actor.squashTimer=0;
+  }
+
+  function squashActor(actor,axis,intensity=1){
+    actor.squashTimer=.13;
+
+    if(axis==='x'){
+      actor.squashX=.68;
+      actor.squashY=1.28;
+    }else{
+      actor.squashX=1.30;
+      actor.squashY=.66;
+    }
+
+    const bonus=Math.min(.12,intensity*.035);
+    actor.squashX-=bonus*.25;
+  }
+
+  function hillSurfaceY(o,x){
+    const dx=(x-o.x)/o.rx;
+    if(Math.abs(dx)>1) return groundY;
+
+    return o.y-o.ry*Math.sqrt(Math.max(0,1-dx*dx));
+  }
+
+  function actorFloorAt(x,y,r){
+    let floor=groundY;
+
+    for(const o of obstacles){
+      if(x+r>o.x-o.rx && x-r<o.x+o.rx){
+        const surfaceY=hillSurfaceY(o,clamp(x,o.x-o.rx,o.x+o.rx));
+
+        // 언덕 아래는 전부 바닥까지 채워진 지형
+        if(y < surfaceY+20){
+          floor=Math.min(floor,surfaceY);
+        }
+      }
+    }
+
+    return floor;
+  }
+
+  function updateSpawnActor(a,dt){
+    if(!a || !a.active) return;
+
+    // 찌부 상태 복원
+    if(a.squashTimer>0){
+      a.squashTimer-=dt;
+    }else{
+      a.squashX+=(1-a.squashX)*Math.min(1,14*dt);
+      a.squashY+=(1-a.squashY)*Math.min(1,14*dt);
+    }
+
+    a.vy+=gravity*.72*dt;
+    a.x+=a.vx*dt;
+    a.y+=a.vy*dt;
+
+    // 좌우 벽: 계속 튕김
+    if(a.x-a.radius<8){
+      a.x=8+a.radius;
+      a.vx=Math.max(310,Math.abs(a.vx)*.985);
+      a.vy*=.99;
+      a.bounces++;
+      squashActor(a,'x',Math.abs(a.vx)/500);
+      playBoing(Math.abs(a.vx)/700);
+    }
+
+    if(a.x+a.radius>W-8){
+      a.x=W-8-a.radius;
+      a.vx=-Math.max(310,Math.abs(a.vx)*.985);
+      a.vy*=.99;
+      a.bounces++;
+      squashActor(a,'x',Math.abs(a.vx)/500);
+      playBoing(Math.abs(a.vx)/700);
+    }
+
+    // 천장: 계속 튕김
+    if(a.y-a.radius<8){
+      a.y=8+a.radius;
+      a.vy=Math.max(320,Math.abs(a.vy)*.98);
+      a.vx*=.995;
+      a.bounces++;
+      squashActor(a,'y',Math.abs(a.vy)/500);
+      playBoing(Math.abs(a.vy)/700);
+    }
+
+    // 둥근 언덕의 옆/윗면에도 튕기게 한다.
+    for(const o of obstacles){
+      if(circleHillCollision(a.x,a.y,a.radius,o)){
+        const n=hillNormal(a.x,a.y,o);
+        const dot=a.vx*n.x+a.vy*n.y;
+
+        // 지형 바깥으로 밀어내며 끼임 방지
+        for(let k=0;k<6 && circleHillCollision(a.x,a.y,a.radius,o);k++){
+          a.x+=n.x*5;
+          a.y+=n.y*5;
+        }
+
+        if(dot<0){
+          a.vx=(a.vx-1.92*dot*n.x)*.985;
+          a.vy=(a.vy-1.92*dot*n.y)*.985;
+        }
+
+        // 너무 느려져 한 곳에 고착되는 것을 방지
+        const speed=Math.hypot(a.vx,a.vy);
+        if(speed<410){
+          const boost=410/Math.max(1,speed);
+          a.vx*=boost;
+          a.vy*=boost;
+        }
+
+        a.bounces++;
+        squashActor(a,Math.abs(n.x)>.65?'x':'y',Math.hypot(a.vx,a.vy)/500);
+        playBoing(Math.hypot(a.vx,a.vy)/800);
+        break;
+      }
+    }
+
+    // 바닥: 정착하지 않고 영구적으로 다시 튕김
+    if(a.y+a.radius>=groundY && a.vy>0){
+      const impact=Math.abs(a.vy);
+      a.y=groundY-a.radius;
+      a.bounces++;
+      squashActor(a,'y',impact/500);
+
+      a.vy=-Math.max(320,impact*.84);
+
+      // 좌우 운동량이 너무 작아지면 기존 진행 방향 쪽으로 다시 밀어준다.
+      if(Math.abs(a.vx)<280){
+        const dir=
+          Math.sign(a.vx) ||
+          (a.side==='player' ? 1 : -1);
+        a.vx=dir*rand(300,420);
+      }else{
+        a.vx*=.99;
+      }
+    }
+
+    // 어떠한 충돌 횟수에서도 settled 상태로 가지 않는다.
+    a.settled=false;
+    a.active=true;
+  }
+
+  function resolveActorCollision(){
+    if(!player || !bot || !player.active || !bot.active) return;
+
+    let dx=bot.x-player.x;
+    let dy=bot.y-player.y;
+    let dist=Math.hypot(dx,dy);
+    const minDist=player.radius+bot.radius+10;
+
+    if(dist>=minDist) return;
+
+    if(dist<.001){
+      dx=1;
+      dy=0;
+      dist=1;
+    }
+
+    const nx=dx/dist;
+    const ny=dy/dist;
+    const overlap=minDist-dist;
+
+    // 반씩 밀어내서 드래그 히트박스가 겹쳐지는 현상 방지
+    player.x-=nx*overlap*.5;
+    player.y-=ny*overlap*.5;
+    bot.x+=nx*overlap*.5;
+    bot.y+=ny*overlap*.5;
+
+    const rvx=bot.vx-player.vx;
+    const rvy=bot.vy-player.vy;
+    const rel=rvx*nx+rvy*ny;
+
+    if(rel<0){
+      // 같은 질량끼리 부딪힌 것처럼 법선 방향 속도를 교환
+      const impulse=-rel*.94;
+      player.vx-=impulse*nx;
+      player.vy-=impulse*ny;      bot.vx+=impulse*nx;
+      bot.vy+=impulse*ny;
+    }
+
+    // BOOST 중 상대 몸통에 직접 충돌하면 1 HIT.
+    if(playerBoostAttackTimer>0 && !playerBoostScored){
+      playerBoostScored=true;
+      awardHit('player','BOOST HIT!');
+    }
+
+    if(botBoostAttackTimer>0 && !botBoostScored){
+      botBoostScored=true;
+      awardHit('bot','BOOST HIT!');
+      botTbag();
+    }
+
+    squashActor(player,Math.abs(nx)>.65?'x':'y',1);
+    squashActor(bot,Math.abs(nx)>.65?'x':'y',1);
+    playBoing(1.1);
+  }
+
+
+  function autoAimVelocity(shooter,target,accurate=true){
+    const sx=shooter.x;
+    const sy=shooter.y-10;
+    const shotSpeed=PROJECTILE_SPEED[shooter.pot];
+
+    let best=null;
+
+    // 이동 중인 상대를 약간 선행 조준한다.
+    // 벽/언덕에 튕길 미래까지는 예측하지 않으므로 완전 확정 명중은 아니다.
+    for(let t=.28;t<=2.30;t+=.025){
+      const lead=.48;
+
+      let tx=target.x + target.vx*t*lead;
+      let ty=target.y + target.vy*t*lead*.52;
+
+      tx=clamp(tx,30,W-30);
+      ty=clamp(ty,30,groundY-24);
+
+      const vx=(tx-sx)/t;
+      const vy=(ty-sy-.5*gravity*t*t)/t;
+      const speed=Math.hypot(vx,vy);
+
+      if(speed>shotSpeed || speed<shotSpeed*.34) continue;
+
+      // 빠른 탄도를 조금 선호해서 전투 템포 유지
+      const cost=(shotSpeed-speed)*.08 + t*11;
+
+      if(!best || cost<best.cost){
+        best={vx,vy,cost};
+      }
+    }
+
+    if(!best){
+      // 해가 없으면 현재 상대 방향으로 최대 출력
+      const dx=target.x-sx;
+      const dy=target.y-sy;
+      const dir=Math.sign(dx || 1);
+      const angle=(Math.abs(dx)>W*.55 ? 42 : 34)*Math.PI/180;
+      best={
+        vx:dir*Math.cos(angle)*shotSpeed,
+        vy:-Math.sin(angle)*shotSpeed
+      };
+    }
+
+    if(!accurate){
+      best.vx*=rand(.84,1.16);
+      best.vy+=rand(-125,125);
+    }
+
+    return best;
+  }
+
+  function spawnProjectile(side,vx,vy){
+    const shooter=side==='player'?player:bot;
+    if(!shooter || !shooter.active) return;
+
+    const potType=shooter.pot;
+
+    projectiles.push({
+      owner:side,
+      pot:potType,
+      x:shooter.x,
+      y:shooter.y-10,
+      vx,
+      vy,
+      radius:POT[potType].radius,
+      age:0,
+      maxLife:POT[potType].cooldown,
+      bounces:0,
+      alive:true,
+      tbagDone:false,
+      hp:POT[potType].durability,
+      maxHp:POT[potType].durability,
+    });
+  }
+
+
+  function activateBoost(actor,side){
+    if(!actor?.active) return false;
+
+    const angle=rand(0,Math.PI*2);
+    const speed=rand(1450,1850);
+
+    let vx=Math.cos(angle)*speed;
+    let vy=Math.sin(angle)*speed;
+
+    if(Math.abs(vx)<450) vx=(vx<0?-1:1)*rand(500,760);
+    if(Math.abs(vy)<400) vy=(vy<0?-1:1)*rand(460,720);
+
+    actor.vx=vx;
+    actor.vy=vy;
+
+    if(side==='player'){
+      boostTrailTimer=.62;
+      playerBoostAttackTimer=.68;
+      playerBoostScored=false;
+    }else{
+      botBoostTrailTimer=.62;
+      botBoostAttackTimer=.68;
+      botBoostScored=false;
+    }
+
+    squashActor(actor,Math.abs(vx)>=Math.abs(vy)?'x':'y',2);
+
+    impactTexts.push({
+      x:actor.x,
+      y:actor.y-42,
+      text:side==='player' ? 'BOOST!!!' : 'BOT BOOST!',
+      life:.72,
+      maxLife:.72,
+      scale:1.08
+    });
+
+    screenShake=Math.max(screenShake,10);
+    playTone(1040,.08,'square',.035,0);
+    playTone(1560,.06,'square',.020,.05);
+
+    return true;
+  }
+
+  function useBoost(){
+    if(!running || gameOver || boostsLeft<=0) return;
+
+    if(activateBoost(player,'player')){
+      boostsLeft--;
+      updateBoostButton();
+      updateHUD();
+    }
+  }
+
+  function botUseBoost(){
+    if(!running || gameOver || botBoostsLeft<=0) return;
+
+    if(activateBoost(bot,'bot')){
+      botBoostsLeft--;
+      botBoostDecisionTimer=rand(2.0,5.2);
+      updateHUD();
+    }
+  }
+
+
+  function updateBoostButton(){
+    if(!boostBtn) return;
+    boostBtn.textContent=`BOOST ×${boostsLeft}`;
+    boostBtn.disabled=!running || gameOver || boostsLeft<=0;
+  }
+
+  function playerFire(){
+    if(!running || gameOver || !player?.active || !bot?.active) return;
+
+    if(playerCooldown>0){
+      return;
+    }
+
+    const shot=autoAimVelocity(player,bot,true);
+    spawnProjectile('player',shot.vx,shot.vy);
+
+    playerCooldown=POT[player.pot].cooldown;
+    centerMsg.textContent='AUTO LOCK → FIRE!';
+    updateHUD();
+  }
+
+  function botFire(){
+    if(!running || gameOver || !bot?.active || !player?.active) return;
+
+    const randomShot=Math.random()<0.10;
+    let vx,vy;
+
+    if(randomShot){
+      // 기존 요청대로 10%는 자동 조준을 풀고 완전 랜덤 투척.
+      const dir=Math.random()<.78
+        ? Math.sign(player.x-bot.x || -1)
+        : (Math.random()<.5?-1:1);
+      const angle=rand(18,78)*Math.PI/180;
+      const power=rand(.48,1.0);
+
+      const shotSpeed=PROJECTILE_SPEED[bot.pot];
+      vx=dir*Math.cos(angle)*shotSpeed*power;
+      vy=-Math.sin(angle)*shotSpeed*power;
+      centerMsg.textContent='BOT: ??? 랜덤 투척!';
+    }else{
+      // 나머지는 자동 조준. 기존 85% 명중 보정을 유지.
+      const accurate=Math.random()<0.85;
+      const shot=autoAimVelocity(bot,player,accurate);
+      vx=shot.vx;
+      vy=shot.vy;
+    }
+
+    spawnProjectile('bot',vx,vy);
+    botCooldown=POT[bot.pot].cooldown;
+    updateHUD();
+  }
+
+  function circleHillCollision(px,py,r,o){
+    // 언덕 가로 범위 밖이면 충돌 없음
+    if(px+r < o.x-o.rx || px-r > o.x+o.rx) return false;
+
+    const sampleX=clamp(px,o.x-o.rx,o.x+o.rx);
+    const surfaceY=hillSurfaceY(o,sampleX);
+
+    // 둥근 언덕 표면부터 바닥까지 모두 고체 지형
+    return py+r >= surfaceY && py-r <= groundY;
+  }
+
+  function hillNormal(px,py,o){
+    const left=o.x-o.rx;
+    const right=o.x+o.rx;
+
+    // 언덕 좌우 몸통에 옆으로 박힌 경우는 수평 반사
+    if(px < left+8 && py > o.y-o.ry*.25) return {x:-1,y:0};
+    if(px > right-8 && py > o.y-o.ry*.25) return {x:1,y:0};
+
+    // 위쪽 둥근 표면의 법선
+    const sx=clamp(px,left,right);
+    const dx=(sx-o.x)/o.rx;
+    const surfaceY=hillSurfaceY(o,sx);
+
+    let nx=(sx-o.x)/(o.rx*o.rx);
+    let ny=(surfaceY-o.y)/(o.ry*o.ry);
+
+    const len=Math.max(.0001,Math.hypot(nx,ny));
+    nx/=len;
+    ny/=len;
+
+    // 항상 지형 바깥쪽(위쪽)을 향하도록
+    if(ny>0) ny*=-1;
+
+    return {x:nx,y:ny};
+  }
+
+
+  function applyHitKnockback(p,target){
+    const speed=Math.max(1,Math.hypot(p.vx,p.vy));
+    const nx=p.vx/speed;
+    const ny=p.vy/speed;
+
+    // 화분 크기에 따라 피격 가속량 차이
+    const boostByPot={
+      small:260,
+      medium:340,
+      large:430,
+      xl:540
+    };
+
+    const boost=boostByPot[p.pot] || 320;
+
+    // 기존 운동량에 화분 진행 방향의 충격을 더한다.
+    target.vx += nx*boost;
+    target.vy += ny*boost;
+
+    // 맞고 난 뒤 너무 느리게 남는 상황 방지
+    const newSpeed=Math.hypot(target.vx,target.vy);
+    const minAfterHit=520;
+
+    if(newSpeed<minAfterHit){
+      const mul=minAfterHit/Math.max(1,newSpeed);
+      target.vx*=mul;
+      target.vy*=mul;
+    }
+
+    // 피격 순간 찌부 + 약간 띄우기
+    if(Math.abs(nx)>Math.abs(ny)){
+      squashActor(target,'x',1.4);
+    }else{
+      squashActor(target,'y',1.4);
+    }
+
+    target.active=true;
+    target.settled=false;
+  }
+
+  function hitActor(p,a){
+    const dx=p.x-a.x;
+    const dy=p.y-a.y;
+    return dx*dx+dy*dy<(p.radius+a.radius*.78)**2;
+  }
+
+
+  function playTone(freq,duration=.08,type='square',gainValue=.025,delay=0){
+    ensureAudio();
+    if(!audioCtx) return;
+    try{
+      const t=audioCtx.currentTime+delay;
+      const o=audioCtx.createOscillator();
+      const g=audioCtx.createGain();
+      o.type=type;
+      o.frequency.setValueAtTime(freq,t);
+      g.gain.setValueAtTime(.0001,t);
+      g.gain.exponentialRampToValueAtTime(Math.max(.0002,gainValue),t+.008);
+      g.gain.exponentialRampToValueAtTime(.0001,t+duration);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(t);
+      o.stop(t+duration+.02);
+    }catch(_){}
+  }
+
+  function startMischiefBgm(){
+    ensureAudio();
+    if(!audioCtx || bgmStarted) return;
+
+    bgmStarted=true;
+    bgmStep=0;
+
+    // 더 높은 음역 + 더 빠른 toy-arcade loop.
+    // "띠로리 띠로리 또로리리리리리"처럼 후반이 빠르게 굴러가도록 구성.
+    const melody=[
+      1047,1319,1568,1319,
+      1175,1568,1760,1568,
+      1319,1568,1760,2093,
+      1760,1568,1397,1319
+    ];
+
+    const harmony=[
+      659,784,880,784,
+      698,880,988,880,
+      784,988,1047,1175,
+      1047,988,880,784
+    ];
+
+    bgmTimer=setInterval(()=>{
+      if(!audioCtx) return;
+
+      const i=bgmStep%melody.length;
+
+      // 메인음은 아주 짧게 끊어 빠르게 들리도록.
+      playTone(melody[i],.044,'square',.013,0);
+
+      // 화음도 짧고 가볍게.
+      if(i%2===0){
+        playTone(harmony[i],.037,'triangle',.007,.003);
+      }
+
+      // 8박 이후는 "리리리리리" 느낌을 주는 초단타 장식.
+      if(i>=8){
+        playTone(melody[i]*1.12,.022,'square',.005,.026);
+      }
+
+      // 마디 끝에서 한 번 더 위로 튀는 삑.
+      if(i===3 || i===7 || i===15){
+        playTone(melody[i]*1.32,.025,'square',.006,.038);
+      }
+
+      // 작고 빠른 클릭 퍼커션.
+      if(i%4===0){
+        playTone(1850,.012,'square',.003,0);
+      }
+
+      bgmStep++;
+    },82);
+  }
+
+  function stopMischiefBgm(){
+    bgmStarted=false;
+    if(bgmTimer){ clearInterval(bgmTimer); bgmTimer=null; }
+  }
+
+  function playBoing(intensity=1){
+    ensureAudio();
+    if(!audioCtx) return;
+    const now=performance.now();
+    if(now-lastBoingAt<34) return;
+    lastBoingAt=now;
+    try{
+      const t=audioCtx.currentTime;
+      const o=audioCtx.createOscillator();
+      const g=audioCtx.createGain();
+      o.type='sine';
+      o.frequency.setValueAtTime(270+Math.random()*80,t);
+      o.frequency.exponentialRampToValueAtTime(105+Math.random()*35,t+.12);
+      g.gain.setValueAtTime(.0001,t);
+      g.gain.exponentialRampToValueAtTime(.023*Math.min(1.5,intensity),t+.008);
+      g.gain.exponentialRampToValueAtTime(.0001,t+.13);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(t); o.stop(t+.14);
+    }catch(_){}
+  }
+
+  function playCountdownBeep(n){
+    playTone(n===1?1020:760,.11,'square',.04,0);
+  }
+
+  function ensureAudio(){
+    try{
+      if(!audioCtx){
+        audioCtx=new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if(audioCtx.state==='suspended') audioCtx.resume();
+    }catch(_){}
+  }
+
+  function playShatterSound(strength=2){
+    if(!audioCtx) return;
+
+    try{
+      const now=audioCtx.currentTime;
+
+      // 짧은 노이즈: 도자기 파편 느낌
+      const duration=.16;
+      const buffer=audioCtx.createBuffer(1,Math.floor(audioCtx.sampleRate*duration),audioCtx.sampleRate);
+      const data=buffer.getChannelData(0);
+
+      for(let i=0;i<data.length;i++){
+        const decay=1-i/data.length;
+        data[i]=(Math.random()*2-1)*decay*decay;
+      }
+
+      const noise=audioCtx.createBufferSource();
+      noise.buffer=buffer;
+
+      const filter=audioCtx.createBiquadFilter();
+      filter.type='highpass';
+      filter.frequency.value=900 + strength*220;
+
+      const gain=audioCtx.createGain();
+      gain.gain.setValueAtTime(.15 + strength*.025,now);
+      gain.gain.exponentialRampToValueAtTime(.001,now+duration);
+
+      noise.connect(filter).connect(gain).connect(audioCtx.destination);
+      noise.start(now);
+
+      // '챙' 하는 짧은 고음
+      const osc=audioCtx.createOscillator();
+      const og=audioCtx.createGain();
+      osc.type='triangle';
+      osc.frequency.setValueAtTime(620+strength*90,now);
+      osc.frequency.exponentialRampToValueAtTime(260,now+.11);
+      og.gain.setValueAtTime(.09,now);
+      og.gain.exponentialRampToValueAtTime(.001,now+.13);
+      osc.connect(og).connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now+.14);
+    }catch(_){}
+  }
+
+
+
+
+  function awardHit(owner,label='HIT!'){
+    score[owner]++;
+    showHitOwner(owner);
+    fullMapHitFx();
+
+    impactTexts.push({
+      x:owner==='player' ? W*.30 : W*.70,
+      y:126,
+      text:label,
+      life:.70,
+      maxLife:.70,
+      scale:.90
+    });
+
+    centerMsg.textContent=
+      owner==='player'
+        ? `🎯 YOU +1 · ${label}`
+        : `💥 BOT +1 · ${label}`;
+
+    updateHUD();
+  }
+
+  function showHitOwner(owner){
+    hitOwnerFlash=owner;
+    hitOwnerFlashTimer=.55;
+
+    if(owner==='player'){
+      playerScorePulse=.55;
+      impactTexts.push({
+        x:W*.27,
+        y:92,
+        text:'YOU HIT!',
+        life:.62,
+        maxLife:.62,
+        scale:.95
+      });
+    }else{
+      botScorePulse=.55;
+      impactTexts.push({
+        x:W*.73,
+        y:92,
+        text:'BOT HIT!',
+        life:.62,
+        maxLife:.62,
+        scale:.95
+      });
+    }
+  }
+
+  function fullMapHitFx(){
+    // 캐릭터 명중은 화분끼리 깨지는 것보다 훨씬 강하게 화면 전체를 흔든다.
+    screenShake=Math.max(screenShake,18);
+    hitShakeTimer=.34;
+    hitFlash=.22;
+  }
+
+  function breakFx(x,y,type,text='와장창!!'){
+    const strength=POT[type].strength;
+
+    impactTexts.push({
+      x,y:y-10,
+      text,
+      life:.72,
+      maxLife:.72,
+      scale:.72 + strength*.08,
+    });
+
+    shockwaves.push({
+      x,y,
+      r:10,
+      life:.42,
+      maxLife:.42,
+    });
+
+    screenShake=Math.max(screenShake,4.5 + strength*1.3);
+    playShatterSound(strength);
+
+  }
+
+  function shatter(x,y,type,owner){
+    const n=18+POT[type].strength*6;
+    for(let i=0;i<n;i++){
+      particles.push({
+        x,y,
+        vx:rand(-180,180),
+        vy:rand(-245,-55),
+        rot:rand(0,Math.PI*2),
+        vr:rand(-7,7),
+        life:rand(.45,.95),
+        owner,
+      });
+    }
+  }
+
+  function addEmote(actor,text){
+    if(!actor) return;
+    emotes.push({
+      actor,
+      text,
+      life:1.55,
+      maxLife:1.55,
+      rise:0,
+    });
+  }
+
+  function botTbag(){
+    const list=['ㅋㅋ','ㅋㅋㅋ','^^','👏','ㅡㅡ','💢'];
+    addEmote(bot,list[Math.floor(Math.random()*list.length)]);
+  }
+
+
+  function botTbagPlayerMiss(p){
+    if(!p || p.owner!=='player' || p.tbagDone) return;
+    p.tbagDone=true;
+
+    // 내가 던진 화분이 상대에게 명중하지 못하고 끝나면 BOT이 약 올린다.
+    const list=['ㅋㅋ','ㅋㅋㅋ','^^','👏','???','ㅡㅡ'];
+    addEmote(bot,list[Math.floor(Math.random()*list.length)]);
+  }
+
+  function destroyProjectile(p,reason=''){
+    if(!p.alive) return;
+    botTbagPlayerMiss(p);
+    p.alive=false;
+  }
+
+  function resolveProjectileVsProjectile(){
+    for(let i=0;i<projectiles.length;i++){
+      const a=projectiles[i];
+      if(!a.alive) continue;
+
+      for(let j=i+1;j<projectiles.length;j++){
+        const b=projectiles[j];
+        if(!b.alive || a.owner===b.owner) continue;
+
+        const dx=a.x-b.x;
+        const dy=a.y-b.y;
+        const rr=a.radius+b.radius;
+
+        if(dx*dx+dy*dy>=rr*rr) continue;
+
+        // 같은 크기는 기존 규칙대로 즉시 서로 상쇄.
+        const sameSize=a.pot===b.pot;
+
+        if(sameSize){
+          a.hp=-1;
+          b.hp=-1;
+        }else{
+          // 큰 화분은 정해진 개수만큼 "버틴 뒤" 그 다음 타격에 파괴된다.
+          // hp == 0은 생존, hp < 0에서만 파괴.
+          a.hp-=POT[b.pot].damage;
+          b.hp-=POT[a.pot].damage;
+        }
+
+        const aDead=a.hp<0;
+        const bDead=b.hp<0;
+
+        // 겹친 상태에서 매 프레임 재충돌하지 않게 생존 화분을 살짝 밀어냄
+        const dist=Math.max(1,Math.hypot(dx,dy));
+        const nx=dx/dist;
+        const ny=dy/dist;
+        const overlap=rr-dist;
+
+        if(!aDead){
+          a.x+=nx*overlap*.55;
+          a.vx*=.91;
+          a.vy*=.91;
+        }
+        if(!bDead){
+          b.x-=nx*overlap*.55;
+          b.vx*=.91;
+          b.vy*=.91;
+        }
+
+        if(aDead){
+          shatter(a.x,a.y,a.pot,a.owner);
+          breakFx(a.x,a.y,a.pot,'와장창!');
+          botTbagPlayerMiss(a);
+          a.alive=false;
+        }
+
+        if(bDead){
+          shatter(b.x,b.y,b.pot,b.owner);
+          breakFx(b.x,b.y,b.pot,'와장창!');
+          botTbagPlayerMiss(b);
+          b.alive=false;
+        }
+
+        if(aDead && bDead){
+          centerMsg.textContent='쨍그랑! 상쇄!';
+        }else if(aDead || bDead){
+          const survivor=aDead?b:a;
+          centerMsg.textContent=
+            `${POT[survivor.pot].name} 생존 · 내구 ${Math.max(0,survivor.hp)}/${survivor.maxHp}`;
+        }else{
+          centerMsg.textContent='공중 충돌! 둘 다 버텼다!';
+        }
+      }
+    }
+  }
+
+
+
+
+  function nextWildPotDelay(){
+    // 기존 약 2.2~4.0초 간격보다 1.5배 자주 등장.
+    return rand(2.2,4.0)/WILD_POT_FREQUENCY;
+  }
+
+  function appVibrate(pattern){
+    try{
+      if(window.AndroidBridge && typeof window.AndroidBridge.vibrate==='function'){
+        window.AndroidBridge.vibrate(JSON.stringify(pattern));
+        return true;
+      }
+    }catch(_){}
+
+    try{
+      if(navigator.vibrate){
+        navigator.vibrate(pattern);
+        return true;
+      }
+    }catch(_){}
+
+    return false;
+  }
+
+  function spawnNeutralPot(){
+    const fromLeft=Math.random()<.5;
+    const potType=randomPot();
+
+    neutralPots.push({
+      pot:potType,
+      x:fromLeft ? -55 : W+55,
+      y:rand(80,groundY-70),
+      vx:(fromLeft?1:-1)*rand(520,760),
+      vy:0,
+      radius:POT[potType].radius,
+      rotation:rand(0,Math.PI*2),
+      alive:true
+    });
+  }
+
+  function updateNeutralPots(dt){
+    neutralSpawnTimer-=dt;
+
+    if(neutralSpawnTimer<=0){
+      spawnNeutralPot();
+      neutralSpawnTimer=nextWildPotDelay();
+    }
+
+    for(const p of neutralPots){
+      if(!p.alive) continue;
+
+      p.x+=p.vx*dt;
+      p.rotation+=dt*7*(p.vx>0?1:-1);
+
+      let hitSide=null;
+
+      if(player?.active && hitActor(p,player)){
+        hitSide='player';
+      }else if(bot?.active && hitActor(p,bot)){
+        hitSide='bot';
+      }
+
+      if(hitSide){
+        const target=hitSide==='player' ? player : bot;
+        const scoringOwner=hitSide==='player' ? 'bot' : 'player';
+
+        applyHitKnockback(
+          {
+            vx:p.vx,
+            vy:0,
+            pot:p.pot
+          },
+          target
+        );
+
+        appVibrate([45,20,70]);
+
+        shatter(p.x,p.y,p.pot,'neutral');
+        breakFx(p.x,p.y,p.pot,'WILD HIT!');
+        awardHit(scoringOwner,'WILD POT!');
+
+        if(scoringOwner==='bot') botTbag();
+
+        p.alive=false;
+        continue;
+      }
+
+      if(p.x<-100 || p.x>W+100){
+        p.alive=false;
+      }
+    }
+
+    neutralPots=neutralPots.filter(p=>p.alive);
+  }
+
+  function drawNeutralPots(){
+    for(const p of neutralPots){
+      drawPot(
+        p.x,p.y,p.pot,
+        p.rotation,
+        1,1,'neutral'
+      );
+    }
+  }
+
+  function updateProjectiles(dt){
+    for(const p of projectiles){
+      if(!p.alive) continue;
+
+      p.age+=dt;
+
+      // 화분은 자신의 발사 쿨타임과 동일한 시간만 맵에 존재한다.
+      // 소 0.3s / 중 0.7s / 대 1.0s / 특대 1.5s
+      if(p.age>=p.maxLife){
+        destroyProjectile(p,'timeout');
+        continue;
+      }
+
+      p.vy+=gravity*dt;
+      p.x+=p.vx*dt;
+      p.y+=p.vy*dt;
+
+      const target=p.owner==='player'?bot:player;
+
+      if(target?.active && hitActor(p,target)){
+        p.tbagDone=true;
+
+        // 맞은 캐릭터는 화분 진행 방향으로 크게 튕겨나간다.
+        applyHitKnockback(p,target);
+
+        // 진동은 화분과 캐릭터가 실제로 충돌했을 때만 발생한다.
+        appVibrate([45,20,70]);
+
+        shatter(p.x,p.y,p.pot,p.owner);
+        breakFx(p.x,p.y,p.pot,'와장창!!!');
+        awardHit(p.owner,'POT HIT!');
+        p.alive=false;
+
+        if(p.owner==='bot'){
+          botTbag();
+        }else{
+          addEmote(player,'!');
+        }
+
+        updateHUD();
+        continue;
+      }
+
+      // 둥근 구름 언덕: 절대 깨지지 않고 튕김
+      for(const o of obstacles){
+        if(circleHillCollision(p.x,p.y,p.radius,o)){
+          const n=hillNormal(p.x,p.y,o);
+          const dot=p.vx*n.x+p.vy*n.y;
+
+          // 표면 바깥쪽으로 밀어내기
+          p.x+=n.x*(p.radius+4);
+          p.y+=n.y*(p.radius+4);
+
+          // 법선 반사
+          if(dot<0){
+            p.vx=(p.vx-1.65*dot*n.x)*.72;
+            p.vy=(p.vy-1.65*dot*n.y)*.72;
+          }else{
+            p.vx*=.72;
+            p.vy*=.72;
+          }
+
+          p.bounces++;
+
+          if(p.bounces>=2 && Math.hypot(p.vx,p.vy)<150){
+            destroyProjectile(p,'gone');
+          }
+          break;
+        }
+      }
+
+      if(p.y+p.radius>=groundY){
+        p.y=groundY-p.radius;
+        p.bounces++;
+        if(p.bounces>=2 || Math.abs(p.vy)<105){
+          destroyProjectile(p,'gone');
+          continue;
+        }
+        p.vy=-Math.abs(p.vy)*.42;
+        p.vx*=.74;
+      }
+
+      if(p.x<-90 || p.x>W+90 || p.y>H+90){
+        destroyProjectile(p,'gone');
+      }
+    }
+
+    resolveProjectileVsProjectile();
+    projectiles=projectiles.filter(p=>p.alive);
+  }
+
+  function updateParticles(dt){
+    for(const p of particles){
+      p.life-=dt;
+      p.vy+=gravity*.76*dt;
+      p.x+=p.vx*dt;
+      p.y+=p.vy*dt;
+      p.rot+=p.vr*dt;
+    }
+    particles=particles.filter(p=>p.life>0);
+  }
+
+  function updateEmotes(dt){
+    for(const e of emotes){
+      e.life-=dt;
+      e.rise+=18*dt;
+    }
+    emotes=emotes.filter(e=>e.life>0);
+  }
+
+
+  function updateImpactFx(dt){
+    for(const t of impactTexts){
+      t.life-=dt;
+      t.y-=28*dt;
+      t.scale+=.65*dt;
+    }
+    impactTexts=impactTexts.filter(t=>t.life>0);
+
+    for(const s of shockwaves){
+      s.life-=dt;
+      s.r+=210*dt;
+    }
+    shockwaves=shockwaves.filter(s=>s.life>0);
+
+    if(hitShakeTimer>0){
+      hitShakeTimer-=dt;
+      screenShake=Math.max(screenShake,10 + hitShakeTimer*28);
+    }else{
+      screenShake=Math.max(0,screenShake-34*dt);
+    }
+
+    hitFlash=Math.max(0,hitFlash-dt);
+    hitOwnerFlashTimer=Math.max(0,hitOwnerFlashTimer-dt);
+    playerScorePulse=Math.max(0,playerScorePulse-dt);
+    botScorePulse=Math.max(0,botScorePulse-dt);
+
+    if(hitOwnerFlashTimer<=0){
+      hitOwnerFlash=null;
+    }
+  }
+
+
+
+
+
+
+  function saveWinRecord(){
+    try{
+      localStorage.setItem('potBreakerPlayerWins',String(winRecord.player));
+      localStorage.setItem('potBreakerBotWins',String(winRecord.bot));
+    }catch(_){}
+  }
+
+  function recordWin(owner){
+    if(owner!=='player' && owner!=='bot') return;
+    winRecord[owner]++;
+    saveWinRecord();
+  }
+
+  function dismissWinnerOverlay(){
+    if(!winnerOverlay?.classList.contains('show')) return;
+    winnerOverlay.classList.remove('show');
+  }
+
+  function finishTimedMatch(){
+    if(gameOver) return;
+
+    gameOver=true;
+    running=false;
+    matchTime=0;
+    lockPotButtons(false);
+    let result='draw';
+    if(score.player>score.bot){
+      result='player';
+    }else if(score.bot>score.player){
+      result='bot';
+    }else{
+      const ps=POT[player.pot].strength;
+      const bs=POT[bot.pot].strength;
+      if(ps>bs) result='player';
+      else if(bs>ps) result='bot';
+    }
+
+    winnerOverlay.classList.add('show');
+
+    if(result==='player'){
+      recordWin('player');
+      winnerTitle.textContent='YOU WIN!';
+      winnerSub.textContent=score.player===score.bot
+        ? `${score.player}:${score.bot} · 동점 → 큰 화분 승리`
+        : `${score.player}:${score.bot} · 명중수 승리`;
+      centerMsg.textContent='YOU WIN!';
+    }else if(result==='bot'){
+      recordWin('bot');
+      winnerTitle.textContent='BOT WIN!';
+      winnerSub.textContent='졌쥬?ㅋ';
+      centerMsg.textContent='BOT WIN!';
+    }else{
+      winnerTitle.textContent='DRAW';
+      winnerSub.textContent=`${score.player}:${score.bot} · 같은 화분 크기`;
+      centerMsg.textContent='DRAW';
+    }
+
+    updateHUD();
+    updateTimerHud();
+    updateBoostButton();
+  }
+
+  function updateTimerHud(){
+    if(!timerHud) return;
+    const shown=Math.max(0,matchTime);
+    if(!gameOver && shown<=3){
+      const whole=Math.max(1,Math.ceil(shown));
+      timerHud.textContent=String(whole);
+      timerHud.classList.add('danger');
+      if(countdownBeepSecond!==whole){
+        countdownBeepSecond=whole;
+        playCountdownBeep(whole);
+      }
+    }else{
+      timerHud.textContent=`${shown.toFixed(1)}s`;
+      timerHud.classList.remove('danger');
+    }
+  }
+
+  function updateFireButton(){
+    if(!fireBtn || !player) return;
+
+    if(!running){
+      fireBtn.classList.remove('cooling');
+      fireBtn.innerHTML='FIRE!<span class="cd">AUTO LOCK</span>';
+      return;    }
+
+    if(gameOver){
+      fireBtn.classList.add('cooling');
+      fireBtn.innerHTML='END<span class="cd">NEW MAP</span>';
+      return;
+    }
+
+    if(playerCooldown<=0){
+      fireBtn.classList.remove('cooling');
+      fireBtn.innerHTML=`FIRE!<span class="cd">${POT[player.pot].name} · READY</span>`;
+    }else{
+      fireBtn.classList.add('cooling');
+      fireBtn.innerHTML=`${playerCooldown.toFixed(1)}s<span class="cd">${POT[player.pot].name} RELOAD</span>`;
+    }
+  }
+
+  function update(dt){
+    if(running && !gameOver){
+      matchTime-=dt;
+      if(matchTime<=0){
+        finishTimedMatch();
+      }
+
+      if(gameOver){
+        updateTimerHud();
+      }else{
+      // 캐릭터 둘은 경기 시작부터 종료까지 계속 이동/튕김
+      updateSpawnActor(player,dt);
+      updateSpawnActor(bot,dt);
+      resolveActorCollision();
+
+      // 투척 쿨타임과 BOT 발사는 캐릭터 이동과 동시에 진행
+      playerCooldown=Math.max(0,playerCooldown-dt);
+      botCooldown-=dt;
+      botBoostDecisionTimer-=dt;
+
+      playerBoostAttackTimer=Math.max(0,playerBoostAttackTimer-dt);
+      botBoostAttackTimer=Math.max(0,botBoostAttackTimer-dt);
+
+      if(botCooldown<=0){
+        botFire();
+      }
+
+      // BOT도 남은 BOOST가 있으면 랜덤한 타이밍에 사용한다.
+      if(botBoostsLeft>0 && botBoostDecisionTimer<=0){
+        botUseBoost();
+      }
+
+      // 중립 랜덤 화분은 가로로 맵을 횡단하며 캐릭터만 공격한다.
+      updateNeutralPots(dt);
+
+      // 일반 화분 역시 캐릭터가 튕기는 동안 멈추지 않는다.
+      updateProjectiles(dt);
+      updateTimerHud();
+      }
+    }
+
+    boostTrailTimer=Math.max(0,boostTrailTimer-dt);
+    botBoostTrailTimer=Math.max(0,botBoostTrailTimer-dt);
+    updateParticles(dt);
+    updateEmotes(dt);
+    updateImpactFx(dt);
+    updateFireButton();
+    updateBoostButton();
+
+    if(playerScorePulse>0 || botScorePulse>0){
+      updateHUD();
+    }
+  }
+
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  function drawStar(x,y,r){
+    ctx.beginPath();
+    for(let i=0;i<8;i++){
+      const rr=i%2===0?r:r*.42;
+      const a=-Math.PI/2+i*Math.PI/4;
+      const px=x+Math.cos(a)*rr;
+      const py=y+Math.sin(a)*rr;
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawCloud(x,y,s=1,fill='#edf8ff'){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.scale(s,s);
+    ctx.beginPath();
+    ctx.moveTo(-35,8);
+    ctx.bezierCurveTo(-47,2,-45,-18,-28,-20);
+    ctx.bezierCurveTo(-24,-40,4,-46,15,-28);
+    ctx.bezierCurveTo(29,-35,45,-23,43,-8);
+    ctx.bezierCurveTo(58,-5,58,17,40,20);
+    ctx.lineTo(-30,20);
+    ctx.bezierCurveTo(-46,19,-49,11,-35,8);
+    ctx.closePath();
+    ctx.fillStyle=fill;
+    ctx.fill();
+    ctx.strokeStyle='#3d79a8';
+    ctx.lineWidth=4;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawObstacle(o){
+    ctx.save();
+
+    ctx.fillStyle='#f8fcff';
+    ctx.strokeStyle='#3d79a8';
+    ctx.lineWidth=4;
+    ctx.lineJoin='round';
+
+    // 둥근 언덕 상단 + 아래를 바닥까지 채운 연속 지형
+    ctx.beginPath();
+    ctx.moveTo(o.x-o.rx,groundY);
+    ctx.lineTo(o.x-o.rx,o.y);
+
+    // 왼쪽 → 오른쪽으로 위쪽 반타원
+    for(let i=0;i<=24;i++){
+      const t=i/24;
+      const x=o.x-o.rx+t*(o.rx*2);
+      const y=hillSurfaceY(o,x);
+      ctx.lineTo(x,y);
+    }
+
+    ctx.lineTo(o.x+o.rx,groundY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 상단을 몽글몽글하게 보이게 작은 구름 혹 추가
+    const lumps=Math.max(3,Math.floor(o.rx/28));
+    for(let i=1;i<lumps;i++){
+      const t=i/lumps;
+      const lx=o.x-o.rx+t*(o.rx*2);
+      const sy=hillSurfaceY(o,lx);
+      const rr=Math.min(17,o.rx/lumps*.70);
+
+      ctx.beginPath();
+      ctx.arc(lx,sy+4,rr,Math.PI,0);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  function drawBackground(){
+    ctx.fillStyle='#fff';
+    ctx.fillRect(0,0,W,H);
+
+    ctx.fillStyle='#fff0a8';
+    for(let i=0;i<14;i++){
+      drawStar((i*137+70)%W,45+(i*67)%270,5+(i%3)*2);
+    }
+
+    drawCloud(115,100,.75,'#eef8ff');
+    drawCloud(830,120,.92,'#fff2f7');
+    drawCloud(495,76,.64,'#f4fae6');
+
+    ctx.fillStyle='#eaf6ff';
+    ctx.fillRect(0,groundY,W,H-groundY);
+
+    ctx.strokeStyle='#3d79a8';
+    ctx.lineWidth=4;
+    ctx.beginPath();
+    ctx.moveTo(0,groundY);
+    for(let x=0;x<=W;x+=40){
+      ctx.quadraticCurveTo(x+20,groundY-15,x+40,groundY);
+    }
+    ctx.stroke();
+
+    for(const o of obstacles) drawObstacle(o);
+  }
+
+  function drawCat(a,botTint=false){
+    if(!a) return;
+    ctx.save();
+    ctx.translate(a.x,a.y);
+
+    const flip=a.side==='bot'?-1:1;
+    ctx.scale(flip*(a.squashX||1),(a.squashY||1));
+
+    ctx.fillStyle=botTint?'#fff8fb':'#fff';
+    ctx.strokeStyle='#345c7a';
+    ctx.lineWidth=4;
+    ctx.lineJoin='round';
+
+    // 몸
+    ctx.beginPath();
+    ctx.ellipse(0,4,21,25,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+
+    // 귀
+    ctx.beginPath();
+    ctx.moveTo(-16,-14);
+    ctx.lineTo(-12,-31);
+    ctx.lineTo(-2,-18);
+    ctx.moveTo(16,-14);
+    ctx.lineTo(12,-31);
+    ctx.lineTo(2,-18);
+    ctx.stroke();
+
+    // 눈 없음. 입만.
+    ctx.beginPath();
+    ctx.moveTo(-5,0);
+    ctx.quadraticCurveTo(0,6,5,0);
+    ctx.stroke();
+
+    // 볼
+    ctx.fillStyle='rgba(255,175,199,.55)';
+    ctx.beginPath();
+    ctx.ellipse(-12,5,6,3.5,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(12,5,6,3.5,0,0,Math.PI*2);
+    ctx.fill();
+
+    // 팔
+    ctx.strokeStyle='#345c7a';
+    ctx.beginPath();
+    ctx.moveTo(-17,5);
+    ctx.lineTo(-29,12);
+    ctx.moveTo(17,5);
+    ctx.lineTo(29,12);
+    ctx.stroke();
+
+    // 꼬리
+    ctx.beginPath();
+    ctx.moveTo(18,15);
+    ctx.quadraticCurveTo(36,13,31,1);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+
+  function drawActorMarker(a,label,isPlayer){
+    if(!a) return;
+
+    ctx.save();
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+
+    const y=a.y-48;
+    const fill=isPlayer?'#dff3ff':'#ffe4ee';
+    const stroke=isPlayer?'#2f78ac':'#b95d7f';
+
+    // 아래쪽 삼각형 포인터
+    ctx.fillStyle=fill;
+    ctx.strokeStyle=stroke;
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(a.x-7,y+17);
+    ctx.lineTo(a.x+7,y+17);
+    ctx.lineTo(a.x,y+25);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 라벨
+    ctx.fillStyle=fill;
+    ctx.strokeStyle=stroke;
+    ctx.lineWidth=3;
+    roundRect(a.x-28,y-13,56,30,14);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle='#244e70';
+    ctx.font='900 13px ui-rounded,system-ui,sans-serif';
+    ctx.fillText(label,a.x,y+1);
+
+    // 캐릭터 발밑 링
+    ctx.globalAlpha=.38;
+    ctx.strokeStyle=stroke;
+    ctx.lineWidth=5;
+    ctx.beginPath();
+    ctx.ellipse(a.x,a.y+29,30,8,0,0,Math.PI*2);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+
+
+  function drawPot(x,y,type,rotation=0,alpha=1,hpRatio=1,owner='neutral'){
+    const s=POT[type].scale;
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(rotation);
+    ctx.scale(s,s);
+    ctx.globalAlpha=alpha;
+
+    const palette =
+      owner==='player'
+        ? {body:'#78bff2', rim:'#a9dcff', stroke:'#2f78ac'}
+        : owner==='bot'
+          ? {body:'#f28fb2', rim:'#ffc0d5', stroke:'#a84c72'}
+          : {body:'#f1c85b', rim:'#ffe99a', stroke:'#8a6a25'};
+
+    ctx.strokeStyle=palette.stroke;
+    ctx.lineWidth=3;
+    ctx.lineJoin='round';
+    ctx.fillStyle=palette.body;
+
+    ctx.beginPath();
+    ctx.moveTo(-13,-8);
+    ctx.lineTo(13,-8);
+    ctx.lineTo(9,14);
+    ctx.quadraticCurveTo(0,19,-9,14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle=palette.rim;
+    roundRect(-16,-13,32,8,4);
+    ctx.fill();
+    ctx.stroke();
+
+    // 눈 없음. 입만.
+    ctx.beginPath();
+    ctx.moveTo(-4,3);
+    ctx.quadraticCurveTo(0,7,4,3);
+    ctx.stroke();
+
+    // 여러 작은 화분을 버틴 큰 화분은 금이 간 상태를 보여준다.
+    if(hpRatio<.99){
+      ctx.strokeStyle=palette.stroke;
+      ctx.lineWidth=2.2;
+      ctx.beginPath();
+      ctx.moveTo(-7,-5);
+      ctx.lineTo(-2,0);
+      ctx.lineTo(-6,5);
+      if(hpRatio<.55){
+        ctx.moveTo(6,-4);
+        ctx.lineTo(2,1);
+        ctx.lineTo(7,7);
+      }
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+
+  function drawProjectiles(){
+    for(const p of projectiles){
+      const hpRatio=p.maxHp ? clamp((p.hp+.12)/p.maxHp,0,1) : 1;
+      drawPot(
+        p.x,p.y,p.pot,
+        p.age*7*(p.vx>=0?1:-1),
+        1,hpRatio,p.owner
+      );
+    }
+  }
+
+  function drawParticles(){
+    ctx.save();
+    for(const p of particles){
+      ctx.globalAlpha=clamp(p.life/.8,0,1);
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot);
+      const palette =
+        p.owner==='player'
+          ? {fill:'#78bff2',stroke:'#2f78ac'}
+          : p.owner==='bot'
+            ? {fill:'#f28fb2',stroke:'#a84c72'}
+            : {fill:'#f1c85b',stroke:'#8a6a25'};
+      ctx.fillStyle=palette.fill;
+      ctx.strokeStyle=palette.stroke;
+      ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.moveTo(-5,-3);
+      ctx.lineTo(6,-1);
+      ctx.lineTo(2,6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+
+  function drawShockwaves(){
+    ctx.save();
+
+    for(const s of shockwaves){
+      const alpha=clamp(s.life/s.maxLife,0,1);
+      ctx.globalAlpha=alpha*.7;
+      ctx.strokeStyle='#ff9fbd';
+      ctx.lineWidth=6*alpha+2;
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.stroke();
+
+      ctx.globalAlpha=alpha*.42;
+      ctx.strokeStyle='#3d79a8';
+      ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r*.72,0,Math.PI*2);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  function drawImpactTexts(){
+    ctx.save();
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+
+    for(const t of impactTexts){
+      const alpha=clamp(t.life/t.maxLife,0,1);
+      ctx.globalAlpha=alpha;
+
+      const pulse=1 + Math.sin((1-alpha)*Math.PI)*.25;
+      ctx.save();
+      ctx.translate(t.x,t.y);
+      ctx.scale(t.scale*pulse,t.scale*pulse);
+
+      ctx.font='1000 34px ui-rounded,system-ui,sans-serif';
+      ctx.lineJoin='round';
+      ctx.lineWidth=9;
+      ctx.strokeStyle='#ffffff';
+      ctx.strokeText(t.text,0,0);
+
+      ctx.lineWidth=4;
+      ctx.strokeStyle='#3d79a8';
+      ctx.strokeText(t.text,0,0);
+
+      ctx.fillStyle='#ff7ca8';
+      ctx.fillText(t.text,0,0);
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+
+  function drawEmotes(){
+    ctx.save();
+    ctx.textAlign='center';
+    ctx.font='900 28px ui-rounded,system-ui,sans-serif';
+    ctx.lineWidth=5;
+    ctx.strokeStyle='#fff';
+    ctx.fillStyle='#244e70';
+
+    for(const e of emotes){
+      const a=e.actor;
+      const alpha=clamp(e.life/e.maxLife,0,1);
+      ctx.globalAlpha=alpha;
+      const y=a.y-52-e.rise;
+      ctx.strokeText(e.text,a.x,y);
+      ctx.fillText(e.text,a.x,y);
+    }
+    ctx.restore();
+  }
+
+  function drawAutoLock(){
+    if(!running || gameOver || !player?.active || !bot?.active) return;
+
+    const ready=playerCooldown<=0;
+    const pulse=1+Math.sin(performance.now()/120)*.08;
+
+    ctx.save();
+    ctx.globalAlpha=ready?.62:.26;
+    ctx.strokeStyle=ready?'#ff7ca8':'#3d79a8';
+    ctx.lineWidth=3;
+    ctx.setLineDash([7,8]);
+
+    // 자동 조준 중임을 알리는 가벼운 연결선
+    ctx.beginPath();
+    ctx.moveTo(player.x,player.y);
+    ctx.lineTo(bot.x,bot.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 상대 주위 락온 링
+    ctx.beginPath();
+    ctx.arc(bot.x,bot.y,34*pulse,0,Math.PI*2);
+    ctx.stroke();
+
+    ctx.fillStyle='#244e70';
+    ctx.textAlign='center';
+    ctx.font='900 10px ui-rounded,system-ui,sans-serif';
+    ctx.fillText(ready?'LOCKED':'RELOAD',bot.x,bot.y-43);
+
+    ctx.restore();
+  }
+
+
+  function drawCooldown(){
+    if(!player || gameOver) return;
+    if(playerCooldown<=0) return;
+
+    const maxCd=POT[player.pot].cooldown;
+    const pct=1-playerCooldown/maxCd;
+    ctx.save();
+    ctx.fillStyle='rgba(255,255,255,.9)';
+    ctx.strokeStyle='#3d79a8';
+    ctx.lineWidth=3;
+    roundRect(player.x-31,player.y-52,62,8,4);
+    ctx.fill();
+    ctx.stroke();
+    ctx.save();
+    roundRect(player.x-31,player.y-52,62*pct,8,4);
+    ctx.clip();
+    ctx.fillStyle='#dff5e3';
+    ctx.fillRect(player.x-31,player.y-52,62*pct,8);
+    ctx.restore();
+    ctx.restore();
+  }
+
+
+  function drawHitOwnerFlash(){
+    if(!hitOwnerFlash || hitOwnerFlashTimer<=0) return;
+
+    const alpha=clamp(hitOwnerFlashTimer/.55,0,1);
+    ctx.save();
+    const gradWidth=170;
+
+    if(hitOwnerFlash==='player'){
+      const g=ctx.createLinearGradient(0,0,gradWidth,0);
+      g.addColorStop(0,`rgba(99,190,255,${alpha*.42})`);
+      g.addColorStop(1,'rgba(99,190,255,0)');
+      ctx.fillStyle=g;
+      ctx.fillRect(0,0,gradWidth,H);
+
+      ctx.globalAlpha=alpha;
+      ctx.fillStyle='#2f78ac';
+      ctx.font='1000 23px ui-rounded,system-ui,sans-serif';
+      ctx.textAlign='left';
+      ctx.fillText('YOU +1',24,H*.53);
+    }else{
+      const g=ctx.createLinearGradient(W,0,W-gradWidth,0);
+      g.addColorStop(0,`rgba(255,124,168,${alpha*.42})`);
+      g.addColorStop(1,'rgba(255,124,168,0)');
+      ctx.fillStyle=g;
+      ctx.fillRect(W-gradWidth,0,gradWidth,H);
+
+      ctx.globalAlpha=alpha;
+      ctx.fillStyle='#b95d7f';
+      ctx.font='1000 23px ui-rounded,system-ui,sans-serif';
+      ctx.textAlign='right';
+      ctx.fillText('BOT +1',W-24,H*.53);
+    }
+
+    ctx.restore();
+  }
+
+  function draw(){
+    // 매 프레임 먼저 화면 전체를 지운다.
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0,0,W,H);
+
+    ctx.save();
+
+    if(screenShake>0){
+      ctx.translate(
+        rand(-screenShake,screenShake),
+        rand(-screenShake,screenShake)
+      );
+    }
+
+    drawBackground();
+
+    if(boostTrailTimer>0 && player?.active){
+      const sp=Math.max(1,Math.hypot(player.vx,player.vy));
+      const nx=player.vx/sp, ny=player.vy/sp;
+      ctx.save();
+      ctx.globalAlpha=Math.min(.68,boostTrailTimer/.48);
+      ctx.strokeStyle='#8fd6ff';
+      ctx.lineWidth=18;
+      ctx.lineCap='round';
+      ctx.beginPath();
+      ctx.moveTo(player.x-nx*24,player.y-ny*24);
+      ctx.lineTo(player.x-nx*155,player.y-ny*155);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    if(botBoostTrailTimer>0 && bot?.active){
+      const sp=Math.max(1,Math.hypot(bot.vx,bot.vy));
+      const nx=bot.vx/sp, ny=bot.vy/sp;
+      ctx.save();
+      ctx.globalAlpha=Math.min(.68,botBoostTrailTimer/.62);
+      ctx.strokeStyle='#ff9fc1';
+      ctx.lineWidth=18;
+      ctx.lineCap='round';
+      ctx.beginPath();
+      ctx.moveTo(bot.x-nx*24,bot.y-ny*24);
+      ctx.lineTo(bot.x-nx*155,bot.y-ny*155);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    drawCat(player,false);
+    drawCat(bot,true);
+    drawActorMarker(player,'YOU',true);
+    drawActorMarker(bot,'BOT',false);
+    drawAutoLock();
+    drawCooldown();
+    drawNeutralPots();
+    drawProjectiles();
+    drawShockwaves();
+    drawParticles();
+    drawImpactTexts();
+    drawEmotes();
+    drawHitOwnerFlash();
+
+    if(hitFlash>0){
+      ctx.save();
+      ctx.globalAlpha=Math.min(.22,hitFlash);
+      ctx.fillStyle='#ffffff';
+      ctx.fillRect(-40,-40,W+80,H+80);
+      ctx.restore();
+    }
+
+    ctx.save();
+    ctx.textAlign='center';
+    ctx.font='700 12px system-ui';
+    ctx.fillStyle='rgba(36,78,112,.60)';
+    ctx.fillText('20 SEC · AUTO LOCK · BOOST ATTACK · WILD POT · v0.16.0',W/2,24);
+    ctx.restore();
+
+    ctx.restore();
+  }
+
+  function updateHUD(){
+    if(!player || !bot){
+      playerHud.textContent='YOU';
+      botHud.textContent='BOT';
+      return;
+    }
+
+    const pPulse=playerScorePulse>0 ? ' ⚡' : '';
+    const bPulse=botScorePulse>0 ? ' ⚡' : '';
+
+    playerHud.innerHTML=
+      `YOU · ${POT[player.pot].name} · WIN ${winRecord.player}<br>`+
+      `HIT ${score.player}${pPulse} · CD ${POT[player.pot].cooldown.toFixed(1)}s · BOOST ${boostsLeft}`;
+
+    botHud.innerHTML=
+      `BOT · ${POT[bot.pot].name} · WIN ${winRecord.bot}<br>`+
+      `HIT ${score.bot}${bPulse} · CD ${POT[bot.pot].cooldown.toFixed(1)}s · BOOST ${botBoostsLeft}`;
+  }
+
+
+  function showPotInfo(type,btn){
+    btn.querySelector('.pot-tip')?.remove();
+    const tip=document.createElement('span');
+    tip.className='pot-tip';
+    const cd=POT[type].cooldown.toFixed(1);
+    tip.innerHTML=`쿨타임 ${cd}s<br>잔류시간 ${cd}s`;
+    btn.appendChild(tip);
+    setTimeout(()=>tip.remove(),1250);
+  }
+
+  document.querySelectorAll('.potBtn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(running && !gameOver) return;
+
+      document.querySelectorAll('.potBtn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedPot=btn.dataset.pot;
+      showPotInfo(selectedPot,btn);
+      centerMsg.textContent=
+        `${POT[selectedPot].name} · CD ${POT[selectedPot].cooldown.toFixed(1)}s · SPEED ${PROJECTILE_SPEED[selectedPot]}`;
+    });
+  });
+
+  newBtn.addEventListener('click',startGame);
+
+  winnerOverlay.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    dismissWinnerOverlay();
+  });
+
+  // 모바일 브라우저별 pointer 이벤트 차이를 피하기 위해
+  // 결과 화면이 떠 있을 때는 화면 어디를 눌러도 capture 단계에서 닫는다.
+  const dismissResultFromAnywhere=e=>{
+    if(gameOver && winnerOverlay?.classList.contains('show')){
+      dismissWinnerOverlay();
+    }
+  };
+
+  document.addEventListener('pointerdown',dismissResultFromAnywhere,true);
+  document.addEventListener('touchstart',dismissResultFromAnywhere,{capture:true,passive:true});
+  document.addEventListener('click',dismissResultFromAnywhere,true);
+
+  boostBtn.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    useBoost();
+  });
+
+  fireBtn.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    playerFire();
+  });
+
+  // PC 테스트 편의용
+  window.addEventListener('keydown',e=>{
+    if(e.code==='Space'){
+      e.preventDefault();
+      playerFire();
+    }
+
+    if(gameOver && (e.code==='Escape' || e.code==='Enter')){
+      dismissWinnerOverlay();
+    }
+  });
+
+  function loop(now){
+    const dt=Math.min(.032,(now-lastTime)/1000);
+    lastTime=now;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // 초기 데모 장면
+  obstacles=generateObstacles();
+  player=makeActor('player');
+  bot=makeActor('bot');
+  player.y=groundY-player.radius;
+  bot.y=groundY-bot.radius;
+  player.settled=true;
+  bot.settled=true;
+  updateHUD();
+  updateTimerHud();
+  updateBoostButton();
+  requestAnimationFrame(loop);
+})();
+</script>
