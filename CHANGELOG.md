@@ -21,6 +21,7 @@ POT BREAKER의 정규 버전 기록입니다.
 - Android 네이티브 백그라운드 상태를 확인해 지연된 효과음·BGM 콜백의 오디오 재시작 차단.
 - 복귀 시 단일 BGM 타이머로 재개하고 사용자 입력으로 오디오 활성화 재시도.
 - 백그라운드 게임 업데이트 중단 및 복귀 시 프레임 시간 초기화.
+- APK 빌드 SDK 설정에서 조회되지 않는 기본 `tools` 패키지를 제외하고 `platform-tools`만 설치하도록 수정.
 
 ### Code
 - MainActivity 수명주기·AndroidBridge
