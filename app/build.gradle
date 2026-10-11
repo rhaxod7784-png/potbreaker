@@ -1,0 +1,23 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.potbreaker.game'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.potbreaker.game'
+        minSdk 23
+        targetSdk 35
+        versionCode 1600
+        versionName '0.16.0'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
