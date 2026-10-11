@@ -13,3 +13,8 @@ captures/
 # OS
 .DS_Store
 Thumbs.db
+
+# Web tooling
+node_modules/
+.wrangler/
+

@@ -23,6 +23,7 @@ import org.json.JSONArray;
 
 public class MainActivity extends Activity {
     private WebView webView;
+    private volatile boolean appInBackground = true;
 
     @SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
     @Override
@@ -48,7 +49,12 @@ public class MainActivity extends Activity {
         settings.setSupportZoom(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                syncGameLifecycle();
+            }
+        });
         webView.setWebChromeClient(new WebChromeClient());
         webView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
 
@@ -64,14 +70,38 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (webView != null) webView.onResume();
+        appInBackground = false;
+        if (webView != null) {
+            webView.onResume();
+            syncGameLifecycle();
+        }
         enterImmersiveMode();
     }
 
     @Override
     protected void onPause() {
-        if (webView != null) webView.onPause();
+        appInBackground = true;
+        if (webView != null) {
+            syncGameLifecycle();
+            webView.onPause();
+        }
         super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        appInBackground = true;
+        syncGameLifecycle();
+        super.onStop();
+    }
+
+    private void syncGameLifecycle() {
+        if (webView != null) {
+            webView.evaluateJavascript(
+                "window.PotBreakerLifecycle && window.PotBreakerLifecycle.setNativeBackground("
+                    + appInBackground + ");", null
+            );
+        }
     }
 
     @Override
@@ -82,6 +112,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        appInBackground = true;
         if (webView != null) {
             webView.loadUrl("about:blank");
             webView.stopLoading();
@@ -118,9 +149,16 @@ public class MainActivity extends Activity {
 
     public static class AndroidBridge {
         private final Vibrator vibrator;
+        private final MainActivity activity;
 
-        AndroidBridge(Context context) {
+        AndroidBridge(MainActivity context) {
+            activity = context;
             vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        }
+
+        @JavascriptInterface
+        public boolean isAppInBackground() {
+            return activity.appInBackground;
         }
 
         @JavascriptInterface
@@ -146,3 +184,4 @@ public class MainActivity extends Activity {
         }
     }
 }
+

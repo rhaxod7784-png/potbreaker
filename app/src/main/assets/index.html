@@ -1,7 +1,7 @@
 <!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>POT BREAKER v0.16.0</title>
+<title>POT BREAKER v0.16.1</title>
 <style>
   :root{
     --ink:#3d79a8;
@@ -515,6 +515,49 @@
   let playerScorePulse = 0;
   let botScorePulse = 0;
   let audioCtx = null;
+  let nativeBackground = false;
+  let pageHidden = false;
+  let resumeBgm = false;
+
+  function isGameBackground(){
+    return nativeBackground || pageHidden || document.hidden ||
+      Boolean(window.AndroidBridge?.isAppInBackground?.());
+  }
+
+  function syncAudioLifecycle(){
+    if(isGameBackground()){
+      resumeBgm = resumeBgm || bgmStarted;
+      stopMischiefBgm();
+      // Close rather than suspend: discard queued notes and active effects.
+      const previousContext = audioCtx;
+      audioCtx = null;
+      if(previousContext && previousContext.state !== 'closed'){
+        previousContext.close().catch(()=>{});
+      }
+    }else{
+      lastTime = performance.now();
+      if(resumeBgm){
+        resumeBgm = false;
+        startMischiefBgm();
+      }
+    }
+  }
+
+  window.PotBreakerLifecycle = {
+    setNativeBackground(value){
+      nativeBackground = Boolean(value);
+      syncAudioLifecycle();
+    }
+  };
+  document.addEventListener('visibilitychange', syncAudioLifecycle);
+  window.addEventListener('pagehide', ()=>{
+    pageHidden = true;
+    syncAudioLifecycle();
+  });
+  window.addEventListener('pageshow', ()=>{
+    pageHidden = false;
+    syncAudioLifecycle();
+  });
   let bgmStarted = false;
   let bgmTimer = null;
   let bgmStep = 0;
@@ -669,7 +712,7 @@
     ensureAudio();
 
     try{
-      if(audioCtx && audioCtx.state==='suspended'){
+      if(!isGameBackground() && audioCtx && audioCtx.state==='suspended'){
         await audioCtx.resume();
       }
     }catch(_){}
@@ -720,9 +763,9 @@
   // 데스크톱/이미 가로인 모바일에서도 첫 입력 시 BGM unlock.
   stage.addEventListener('pointerdown',()=>{
     ensureAudio();
-    if(audioCtx?.state==='suspended') audioCtx.resume().catch(()=>{});
+    if(!isGameBackground() && audioCtx?.state==='suspended') audioCtx.resume().catch(()=>{});
     startMischiefBgm();
-  },{once:true});
+  });
 
   window.addEventListener('orientationchange',()=>{
     setTimeout(()=>{
@@ -1299,7 +1342,7 @@
 
   function playTone(freq,duration=.08,type='square',gainValue=.025,delay=0){
     ensureAudio();
-    if(!audioCtx) return;
+    if(isGameBackground() || !audioCtx) return;
     try{
       const t=audioCtx.currentTime+delay;
       const o=audioCtx.createOscillator();
@@ -1317,7 +1360,7 @@
 
   function startMischiefBgm(){
     ensureAudio();
-    if(!audioCtx || bgmStarted) return;
+    if(isGameBackground() || !audioCtx || bgmStarted) return;
 
     bgmStarted=true;
     bgmStep=0;
@@ -1339,7 +1382,7 @@
     ];
 
     bgmTimer=setInterval(()=>{
-      if(!audioCtx) return;
+      if(isGameBackground() || !audioCtx) return;
 
       const i=bgmStep%melody.length;
 
@@ -1377,7 +1420,7 @@
 
   function playBoing(intensity=1){
     ensureAudio();
-    if(!audioCtx) return;
+    if(isGameBackground() || !audioCtx) return;
     const now=performance.now();
     if(now-lastBoingAt<34) return;
     lastBoingAt=now;
@@ -1401,16 +1444,17 @@
   }
 
   function ensureAudio(){
+    if(isGameBackground()) return;
     try{
       if(!audioCtx){
         audioCtx=new (window.AudioContext || window.webkitAudioContext)();
       }
-      if(audioCtx.state==='suspended') audioCtx.resume();
+      if(audioCtx.state==='suspended') audioCtx.resume().catch(()=>{});
     }catch(_){}
   }
 
   function playShatterSound(strength=2){
-    if(!audioCtx) return;
+    if(isGameBackground() || !audioCtx) return;
 
     try{
       const now=audioCtx.currentTime;
@@ -2631,7 +2675,7 @@
     ctx.textAlign='center';
     ctx.font='700 12px system-ui';
     ctx.fillStyle='rgba(36,78,112,.60)';
-    ctx.fillText('20 SEC · AUTO LOCK · BOOST ATTACK · WILD POT · v0.16.0',W/2,24);
+    ctx.fillText('20 SEC · AUTO LOCK · BOOST ATTACK · WILD POT · v0.16.1',W/2,24);
     ctx.restore();
 
     ctx.restore();
@@ -2725,8 +2769,10 @@
   function loop(now){
     const dt=Math.min(.032,(now-lastTime)/1000);
     lastTime=now;
-    update(dt);
-    draw();
+    if(!isGameBackground()){
+      update(dt);
+      draw();
+    }
     requestAnimationFrame(loop);
   }
 

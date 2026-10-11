@@ -6,6 +6,37 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ---
 
+## v0.16.1 — 백그라운드 오디오 수정·Cloudflare 웹 배포
+
+**Release type:** PATCH  
+**Date:** 2026-10-11
+
+### Changed
+- Android와 웹이 동일한 HTML을 사용하는 Cloudflare Workers 정적 배포 설정 추가.
+- Wrangler 버전 고정, npm 실행·배포 명령 및 배포 설정 문서 추가.
+- 앱·HTML·npm 버전 0.16.1, Android versionCode 1601로 갱신.
+
+### Fixed
+- 홈 이동·앱 전환·화면 잠금·웹 페이지 이탈 시 BGM 타이머와 WebAudio 컨텍스트 종료.
+- Android 네이티브 백그라운드 상태를 확인해 지연된 효과음·BGM 콜백의 오디오 재시작 차단.
+- 복귀 시 단일 BGM 타이머로 재개하고 사용자 입력으로 오디오 활성화 재시도.
+- 백그라운드 게임 업데이트 중단 및 복귀 시 프레임 시간 초기화.
+
+### Code
+- MainActivity 수명주기·AndroidBridge
+- 게임 HTML 오디오 수명주기
+- wrangler.jsonc, package.json, package-lock.json
+- tests/audio-lifecycle.test.cjs
+
+### Reason
+- 휴대폰에서 게임을 벗어난 뒤에도 음악이 계속 나오는 문제를 수정하고 웹 배포 경로를 추가.
+
+### Compatibility
+- 게임 규칙과 localStorage 키 유지.
+- Android와 웹의 승리 기록은 서로 다른 저장소를 사용.
+
+---
+
 ## v0.16.0 — Android 설치 패키징
 
 **Release type:** MINOR  
@@ -627,3 +658,4 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ### Compatibility
 - 최초 버전이므로 이전 버전 호환 대상 없음.
+
