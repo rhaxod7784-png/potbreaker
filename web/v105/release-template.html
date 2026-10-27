@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"><meta name="theme-color" content="#84c7f7"><title>POT BREAKER RE · CBZP</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900;1000&family=Gowun+Dodum&display=swap');
+:root{--navy:#303d67;--royal:#5578bd;--cream:#fff9ee;--sky:#93d0fa;--coral:#f8a76d;--gold:#ffd47e;--shadow:#3b466e54;font-family:'Nunito','Gowun Dodum','Malgun Gothic',system-ui,sans-serif}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#8dc6f4;color:var(--navy)}button{font:inherit;cursor:pointer;touch-action:manipulation}button:focus-visible{outline:3px solid #ffbe6d;outline-offset:3px}.viewport{height:100dvh;width:100vw;display:grid;place-items:center;background:radial-gradient(circle at 50% 0%,#dff8ff 0,#a5d9fc 45%,#70b8ee 100%)}
+.stage{aspect-ratio:16/9;width:min(100vw,177.778dvh);height:min(100dvh,56.25vw);position:relative;overflow:hidden;isolation:isolate;background:#f6eedf;box-shadow:0 2vh 7vh #2b467669}.hidden{display:none!important}.screen{position:absolute;inset:0;z-index:2;overflow:hidden}.menu{background:linear-gradient(115deg,#e7f8ff 0%,#b0dffc 64%,#98cafa);display:flex;align-items:center;padding:4.5%;gap:4%}.menu::before{content:"";position:absolute;inset:-7%;background:url('assets/concept.webp') center/cover;filter:blur(13px) saturate(.8);opacity:.25}.menu::after{content:"";pointer-events:none;position:absolute;inset:0;background:linear-gradient(90deg,#fffefaec 0%,#fffefa85 51%,transparent 90%)}.menu-left{position:relative;z-index:1;width:54%;filter:drop-shadow(0 5px 14px #fff5)}.eyebrow{font-size:clamp(11px,1.15vw,17px);font-weight:900;letter-spacing:.22em;color:#6482b5}.logo{margin:12px 0 5px;font-family:'Nunito',system-ui,sans-serif;font-size:clamp(44px,7.6vw,117px);line-height:.85;font-weight:1000;letter-spacing:-.075em;color:var(--navy);paint-order:stroke fill;text-shadow:-4px -4px white,4px -4px white,-4px 4px white,4px 4px white,0 10px #4561913e}.logo .pot{color:#f29c56}.logo .re{color:#5389dc;text-shadow:0 0 0 white}.sticker{display:inline-flex;align-items:center;gap:8px;margin:13px 0 8px;background:#fff4d6;border-radius:30px;padding:8px 17px;font-size:clamp(12px,1.35vw,19px);font-weight:1000;box-shadow:0 3px 0 #e2b66f79;transform:rotate(-2deg)}.menu-desc{font-size:clamp(13px,1.6vw,24px);font-weight:900;line-height:1.48;margin:16px 0 20px}.cta{border:3px solid #fff;border-radius:100px;color:#fff;background:linear-gradient(145deg,#648ddc,#446ab6);box-shadow:0 6px 0 #38528499,0 12px 23px #3b57914d;padding:13px 28px;font-weight:1000;font-size:clamp(13px,1.5vw,22px);white-space:nowrap;transition:transform .1s ease}.cta:active{transform:translateY(4px);box-shadow:0 2px 0 #38528499}.cta.secondary{color:var(--navy);background:#fffdf9;border:3px solid #bfdbf6;box-shadow:0 5px 0 #9ab5d0}.meta{font-size:clamp(10px,.9vw,14px);font-weight:900;color:#617394;margin:18px 0 0}.menu-characters{position:absolute;z-index:1;right:6%;bottom:8%;width:38%;height:75%;display:flex;align-items:end;justify-content:center}.character{object-fit:contain;filter:drop-shadow(0 15px 4px #3b46612b)}.menu-characters .cat{width:55%;z-index:2;transform:translate(17%,-2%) rotate(-8deg)}.menu-characters .croc{width:72%;z-index:1;transform:translate(-8%,3%) rotate(5deg)}.menu-characters .spark{position:absolute;font-size:clamp(35px,5vw,80px);color:#ffd17e;top:4%;right:15%;text-shadow:0 0 10px white}.logo-mark{position:absolute;top:5%;right:5%;z-index:1;font-size:clamp(15px,1.8vw,24px);font-weight:1000;color:#3e5c99;background:#ffffffc9;padding:9px 17px;border:2px solid white;border-radius:22px}
+.intro{background:linear-gradient(115deg,#f1faff,#a7d5f9);display:grid;grid-template-columns:minmax(0,72%) 1fr;gap:2%;align-items:center;padding:1.7% 2.3%}.comic-cover{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 6px #4f71a139);border-radius:17px}.intro-side{display:flex;flex-direction:column;align-items:start;gap:min(2vw,24px);min-width:0}.intro-side h2{font-size:clamp(20px,3.15vw,45px);font-weight:1000;line-height:1.16;margin:0}.intro-side p{font-size:clamp(11px,1.25vw,19px);font-weight:800;line-height:1.5;margin:0}.intro-side small{font-size:clamp(10px,.95vw,15px);line-height:1.45;color:#617292}.paper{border:3px solid #fff;background:#fffcf5c9;border-radius:24px;padding:min(1.5vw,20px);box-shadow:0 6px 17px #456f9540}
+.play{background:#f3eada}#board{position:absolute;width:100%;height:100%;inset:0;display:block;touch-action:none}.play::before{content:"";position:absolute;z-index:1;pointer-events:none;inset:0;background:linear-gradient(#d5ebff58,transparent 19%,transparent 78%,#e5bd8050)}.hudbar{position:absolute;z-index:4;top:2.3%;left:2.4%;right:2.4%;display:flex;justify-content:space-between;align-items:start;gap:1.2%;pointer-events:none}.hud-panel{display:flex;align-items:center;gap:clamp(3px,.7vw,12px);border:2px solid #fff;padding:clamp(4px,.55vw,10px) clamp(6px,.9vw,15px);border-radius:19px;background:#fffdf1e8;box-shadow:0 5px 0 #536d9652,0 9px 20px #35456527;backdrop-filter:blur(7px);font-weight:1000;font-size:clamp(10px,1.2vw,18px);white-space:nowrap}.hud-panel.cat{border-color:#c6e5fb}.hud-panel.croc{border-color:#ffe0bb}.hud-img{height:clamp(25px,3.8vw,57px);width:clamp(25px,3.8vw,57px);object-fit:contain}.mini-pot{width:clamp(21px,2.2vw,36px);vertical-align:middle}.hud-name{font-size:clamp(9px,1vw,14px);color:#697b9c;display:block;line-height:1.1}.hud-value{font-size:clamp(12px,1.4vw,22px);line-height:1.25}.hud-status{align-items:center;gap:3px}.hud-center{display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:1000;font-size:clamp(10px,1.15vw,17px);color:#394b76;text-shadow:0 2px white}.hud-center>div{border:2px solid #fff;background:#ffffffc9;padding:3px 13px;border-radius:12px}.hud-pause{pointer-events:auto;align-self:start;border:2px solid white;background:#fffdf1eb;color:#4a6399;border-radius:50%;height:clamp(27px,3vw,48px);aspect-ratio:1;font-size:clamp(12px,1.3vw,20px);box-shadow:0 4px 0 #6b80a855}
+.touch-layer{position:absolute;inset:0;z-index:3;pointer-events:none}.joystick{position:absolute;left:3.6%;bottom:7%;width:clamp(102px,13vw,192px);aspect-ratio:1;border-radius:100%;border:3px solid #f8feffcb;background:radial-gradient(circle,#ffffff4f,#cedcf174);box-shadow:inset 0 1px 15px #ffffff7a,0 6px 12px #324c6b44;pointer-events:auto;touch-action:none}.joystick:before{content:'↑';font-size:17px;position:absolute;top:8px;left:50%;transform:translateX(-50%);color:#617cb0aa;font-weight:900}.knob{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:52%;aspect-ratio:1;border-radius:100%;background:linear-gradient(130deg,#fffffff2,#eef7ffdf);box-shadow:0 4px 11px #4458766b,inset 0 2px 6px #fff;border:3px solid #fff}.actions{position:absolute;right:3.5%;bottom:7%;display:flex;gap:clamp(9px,1.4vw,20px);align-items:end;pointer-events:auto}.action{display:flex;flex-direction:column;align-items:center;justify-content:center;width:clamp(75px,9vw,132px);aspect-ratio:1;border-radius:100%;border:4px solid #fffcf5;background:linear-gradient(160deg,#fff4c6,#e9c986);color:#394b73;box-shadow:0 6px 0 #68819f8a,0 7px 12px #3c507854;font-weight:1000;font-size:clamp(9px,1vw,16px)}.action .symbol{font-size:clamp(20px,3vw,46px);line-height:1.05}.action.jump{display:none}.action.fire{width:clamp(80px,9.5vw,138px)}.action.fire{background:linear-gradient(145deg,#77b7fe,#457cdb);color:#fff;font-size:clamp(11px,1.1vw,18px)}.action:disabled{opacity:.55;filter:grayscale(.45)}.action:active{transform:translateY(4px);box-shadow:0 2px 0 #68819f8a}.status-pill{position:absolute;top:17%;left:50%;transform:translateX(-50%);border:3px solid #fff;background:#fffaebf0;color:#75533c;box-shadow:0 4px 18px #584c5760;border-radius:99px;padding:5px 16px;font-weight:1000;font-size:clamp(10px,1.1vw,17px);pointer-events:none;z-index:4;white-space:nowrap}.bell{position:absolute;top:17%;left:50%;transform:translateX(-50%);font-weight:1000;color:#b47535;text-shadow:0 2px white;background:#fff6e1ce;padding:3px 16px;border-radius:99px;font-size:clamp(11px,1.25vw,20px);z-index:4;pointer-events:none}.legend{position:absolute;left:50%;bottom:2%;transform:translateX(-50%);z-index:3;font-size:clamp(8px,.9vw,13px);font-weight:1000;color:#5b6c8b;padding:4px 12px;border:1px solid #fff9;border-radius:99px;background:#fffbd2ba;white-space:nowrap;pointer-events:none}.end{background:#a2d9fd}.ending-art{width:100%;height:100%;object-fit:cover}.end::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#15203d70 0%,#15203d2b 35%,transparent 56%)}.end-panel{position:absolute;z-index:2;left:3.2%;top:9%;color:white;text-shadow:0 3px 8px #1f2a50aa;max-width:37%;padding:1.25vw 1.4vw;border-radius:1.4vw;background:#22355ca8;border:2px solid #ffffff52;backdrop-filter:blur(4px)}.end-panel .tag{font-size:clamp(12px,1.3vw,21px);color:#384c76;background:#fff4d3;padding:5px 14px;border-radius:99px;display:inline-block;text-shadow:none;font-weight:1000}.end-panel h2{font-size:clamp(20px,3.8vw,54px);line-height:1.08;margin:12px 0 10px;font-weight:1000;white-space:normal}.end-panel p{font-size:clamp(10px,1.15vw,18px);font-weight:900;line-height:1.42;margin:0}.end-btns{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}.loader{position:absolute;z-index:11;inset:0;display:grid;place-items:center;background:#e2f6ffec;backdrop-filter:blur(9px)}.loader-card{width:min(500px,85%);background:#fffdf2;border:4px solid white;border-radius:28px;padding:26px;box-shadow:0 10px 30px #3b64934d;text-align:center}.loading-spin{width:46px;height:46px;margin:auto auto 17px;border:6px solid #cbe1f9;border-top-color:#4a7cbd;border-radius:100%;animation:rot .8s linear infinite}@keyframes rot{to{transform:rotate(360deg)}}.loader-card strong{display:block;font-size:clamp(17px,2.2vw,31px)}.loader-card p{font-weight:700;font-size:clamp(11px,1.2vw,17px)}.loader-card button{margin-top:8px}.pause-overlay{position:absolute;z-index:8;inset:0;display:grid;place-items:center;background:#243254b0;backdrop-filter:blur(5px)}.pause-card{background:#fffcf0;border:4px solid white;box-shadow:0 14px 38px #1724497a;border-radius:24px;padding:30px;display:flex;flex-direction:column;align-items:center;gap:18px}.pause-card h2{font-size:clamp(20px,3vw,43px);margin:0}
+.rotate{position:absolute;z-index:20;inset:0;display:none;place-items:center;background:#e5f5ff;text-align:center;font-weight:1000;font-size:20px;padding:22px}@media (orientation:portrait) and (max-width:800px){.rotate{display:grid}}@media (max-width:700px){.end-panel{left:3%;top:7%;max-width:44%;padding:10px 12px}.end-btns{gap:8px}.end-btns .cta{padding:10px 18px}}@media (max-height:500px){.menu-desc{margin:8px 0 12px}.sticker{margin:5px 0}.meta{margin-top:7px}.intro-side{gap:9px}}@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* v1.0.1 mobile visual QA: keep full title and artwork unobstructed. */
+.menu{padding:3.2% 4%;gap:0;overflow:hidden}
+.menu::before{background:url('assets/concept.webp') center/cover;filter:blur(4px) saturate(.92);opacity:.38}
+.menu::after{background:linear-gradient(90deg,#fffefaef 0%,#fffefae0 41%,#fffefa88 60%,#ffffff08 90%)}
+.menu-left{width:54%;max-width:54%;min-width:0;flex:0 0 54%;filter:none;align-self:center;padding-left:1%;}
+.menu-left .logo{font-size:clamp(28px,5.2vw,78px);line-height:1.06;letter-spacing:-.045em;white-space:nowrap;max-width:100%;margin:8px 0 4px;}
+.menu-left .logo .re{font-size:.78em}
+.menu-desc{font-size:clamp(12px,1.28vw,21px);margin:12px 0 14px}
+.menu-left .sticker{max-width:100%;font-size:clamp(10px,1vw,16px);white-space:normal;margin:8px 0 5px}
+.menu-characters{right:2%;bottom:3%;width:42%;height:70%;align-items:end;justify-content:center;overflow:visible;}
+.menu-characters .cat{width:47%;max-height:95%;object-fit:contain;transform:translate(22%,-2%) rotate(-5deg)}
+.menu-characters .croc{width:65%;max-height:95%;object-fit:contain;transform:translate(-7%,0) rotate(4deg)}
+.menu-characters .spark{right:20%;top:2%;}
+.end::after{background:linear-gradient(0deg,#192c4d9e 0%,#192c4d3d 11%,transparent 29%);pointer-events:none}
+.end-panel{left:0;right:0;top:auto;bottom:3.1%;max-width:100%;width:100%;background:none;border:0;padding:0;backdrop-filter:none;box-shadow:none;text-shadow:none;}
+.end-panel .tag,.end-panel h2,.end-panel p{display:none}
+.end-panel .end-btns{justify-content:center;align-items:center;margin:0;gap:clamp(8px,1.7vw,20px)}
+.end-panel .cta{font-size:clamp(12px,1.25vw,20px);padding:clamp(7px,1vw,15px) clamp(15px,2.5vw,32px)}
+@media (max-height:480px){.menu-left .eyebrow{font-size:9px}.menu-left .logo{font-size:clamp(27px,5vw,65px)}.menu-left .meta{margin-top:8px;font-size:9px}.menu-desc{margin:7px 0 9px}.menu-left .sticker{margin:4px 0}}
+
+/* v1.0.3: match the approved hero illustration with no cropping */
+.menu{display:block!important;padding:0!important;background:linear-gradient(135deg,#c8e8ff,#a0ceee)}
+.menu::before,.menu::after{display:none!important}
+.title-illustration{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;display:block;background:#9acaf6}
+.start-art-button{position:absolute;left:35%;top:35%;width:31%;height:13%;border:0;background:transparent;color:transparent;font-size:0;z-index:4;border-radius:40px;cursor:pointer}
+.start-art-button:focus-visible{outline:4px solid #ffd26d;outline-offset:4px}
+.end-panel{position:absolute!important;top:auto!important;bottom:3.0%!important;left:50%!important;transform:translateX(-50%)!important;background:none!important;border:0!important;max-width:none!important;padding:0!important;backdrop-filter:none!important;box-shadow:none!important;text-shadow:none!important;width:max-content}
+.end-panel .end-btns{justify-content:center;margin:0!important;gap:clamp(8px,1vw,16px)}
+.end-panel .cta{font-size:clamp(13px,1.5vw,22px);padding:clamp(8px,1.2vw,14px) clamp(17px,3vw,36px)}
+.end::after{background:linear-gradient(to top,rgba(22,35,56,.33), transparent 22%)!important;pointer-events:none}
+.end-copy{display:none}
+.hud-panel{background:#fffdf2ec}
+
+/* v1.0.3: artwork fills the stage with matching blurred side extension; no inert art buttons. */
+#title{background:#9acaf6;overflow:hidden}
+#title::before{content:"";position:absolute;inset:-4%;background-image:url('assets/title.webp');background-position:center;background-size:cover;filter:blur(22px);transform:scale(1.07);opacity:.9}
+#title .title-illustration{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;z-index:1}
+#title .mask-unused{position:absolute;z-index:2;pointer-events:none;border-radius:12px;background:#86bff0dd;box-shadow:inset 0 0 19px #b4d8ffb8;backdrop-filter:blur(17px)}
+#title .mask-toolbar{top:0;right:0;width:25%;height:13%}
+#title .mask-record{top:47.2%;left:40%;width:20%;height:7.8%;background:#a0c6efbb}
+#title .actual-version{position:absolute;right:1.8%;bottom:1.5%;z-index:3;padding:3px 9px;border-radius:12px;color:#fff8df;background:#2d3d5a9e;font-size:clamp(9px,1.05vw,13px);font-weight:900}
+#gamePanel .crow-token-hud{display:flex;gap:4px;align-items:center;color:#344361}
+#gamePanel .crow-head-hud{font-size:clamp(15px,2vw,25px);line-height:1}
+#freeze{position:absolute;z-index:5;left:50%;top:22%;transform:translateX(-50%);border:2px solid white;background:#3f567be8;color:white;padding:5px 14px;border-radius:99px;font-weight:900;font-size:clamp(10px,1vw,16px)}
+
+/* v1.0.5: entire approved illustration displayed without crop or fake blur rectangles */
+#title .mask-unused{display:none!important}
+#title .start-art-button{left:38%;top:40%;width:24%;height:12%;border-radius:48px}
+#title .actual-version{right:1.2%;bottom:1.4%;font-size:clamp(8px,1.0vw,13px)}
+.action.dash{background:linear-gradient(160deg,#b8eaff,#73aedf);color:#34446e;width:clamp(74px,8.4vw,122px)}
+.action.dash:disabled{opacity:.7;filter:grayscale(.5)}
+#catHP{color:#ea6668;letter-spacing:1px;font-size:clamp(12px,1.42vw,22px)}
+#bossHP{color:#ce6683;font-size:clamp(12px,1.28vw,19px)}
+@media(max-height:430px){.actions{bottom:3%}.joystick{bottom:3%}.hudbar{top:1%}}
+</style></head><body>
+<div class="viewport"><main class="stage" id="stage">
+<section class="screen menu" id="title" aria-label="POT BREAKER RE 메인 화면"><img class="title-illustration" src="assets/title.webp" alt="CBZP 사무실 배경의 POT BREAKER RE 메인 화면. 아래에는 뒤돌아선 기묘와 크다 부장이 보입니다."><span class="actual-version">POT BREAKER RE v1.0.5</span><button class="start-art-button" id="openIntro" aria-label="게임 시작">게임 시작</button></section>
+<section class="screen intro hidden" id="intro"><img class="comic-cover" src="assets/opening.webp" alt="기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화"><div class="intro-side"><div class="paper"><span class="eyebrow">EP.01 / FIRST DAY</span><h2>이상한 회사의<br>인턴 생활</h2><p>정말... 이 회사에서<br>살아남을 수 있을까?</p></div><button class="cta" id="begin">사무실로 입장 ▶</button><small>조이스틱: 이동<br>화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)<br>PC: 방향키 / WASD · Space(공격) · Shift(대시)</small></div></section>
+<section class="screen play hidden" id="gamePanel"><canvas id="board" aria-label="기묘와 크다 부장이 화분을 던지고 피하는 사무실 게임"></canvas><div class="hudbar"><div class="hud-panel cat"><img class="hud-img" src="assets/gimyo.webp" alt=""><div><span class="hud-name">기묘 / PLAYER</span><span class="hud-value">🪴 <span id="catAmmo">1</span> · HP <span id="catHP">♥♥♥</span></span></div></div><div class="hud-center"><div>POT BREAKER <b style="color:#6588d4">RE</b></div><button class="hud-pause" id="pause" aria-label="일시정지">Ⅱ</button></div><div class="hud-panel croc"><img class="hud-img" src="assets/keuda.webp" alt=""><div><span class="hud-name">크다 부장 / NPC</span><span class="hud-value">🪴 <span id="bossAmmo">5</span>/5 · HP <span id="bossHP">5/5</span></span></div></div></div><div class="status-pill hidden" id="notice"></div><div class="bell hidden" id="bell">딸랑딸랑</div><div class="touch-layer"><div id="joystick" class="joystick" role="group" aria-label="기묘 이동 조이스틱"><div id="knob" class="knob"></div></div><div class="actions"><button class="action dash" id="dash" aria-label="3칸 대시"><span class="symbol">➤</span><span id="dashLabel">대시</span></button><button class="action fire" id="fire" aria-label="화분 던지기"><span class="symbol">🪴</span>던지기</button></div></div><div class="legend"><span class="crow-token-hud"><span class="crow-head-hud">🐦‍⬛</span> 감 과장: 피격 시 피해를 주는 랜덤 화분 폭격 · 기묘: 대시 3초 / 크다: 대시 5초</span></div></section>
+<section class="screen end hidden" id="end"><img class="ending-art" id="endingArt" src="assets/victory.webp" alt="승패 결과 일러스트"><div class="end-panel"><div class="end-copy hidden"><span id="endTag"></span><h2 id="endTitle"></h2><p id="endText"></p></div><div class="end-btns"><button class="cta" id="again">↻ 다시 도전</button><button class="cta secondary" id="home">처음으로</button></div></div></section>
+<section class="loader hidden" id="loader"><div class="loader-card"><div class="loading-spin"></div><strong>사무실 문을 열고 있습니다</strong><p>Python 게임 엔진을 준비하고 있습니다.</p><p id="loadStatus"></p><button class="cta secondary hidden" id="retry">다시 시도하기</button></div></section>
+<section class="pause-overlay hidden" id="pausePanel"><div class="pause-card"><h2>잠깐 휴식!</h2><button class="cta" id="resume">계속하기</button><button class="cta secondary" id="pauseHome">처음으로</button></div></section>
+<div class="rotate">📱 스마트폰을 가로로 돌려주세요.<br>가로 화면에 맞춰 제작한 게임입니다.</div>
+</main></div><script src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js" defer></script><script>window.POT_ASSETS=__ASSET_MAP__;
+(()=>{'use strict';
+const $=id=>document.getElementById(id),canvas=$('board'),ctx=canvas.getContext('2d');
+const W=19,H=11,dirs={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+let runtime=null,game=null,active=false,paused=false,raf=0,last=0,acc=0,world=null,keys=new Set(),stick=[0,0],fire=false,dash=false,tick=0,visualPositions=new Map(),frameStep=.016,hitParticles=[],hitLastId=0,movingWallTracks=[],previousWalls=[];
+const images={};for(const n of ['gimyo','keuda']){let im=new Image();im.src=window.POT_ASSETS[n];images[n]=im}
+const show=id=>['title','intro','gamePanel','end'].forEach(n=>$(n).classList.toggle('hidden',n!==id));
+$('openIntro').onclick=()=>show('intro');$('begin').onclick=start;$('again').onclick=start;$('home').onclick=()=>{stop();show('title')};$('pauseHome').onclick=()=>{stop();$('pausePanel').classList.add('hidden');show('title')};$('pause').onclick=()=>{paused=true;$('pausePanel').classList.remove('hidden')};$('resume').onclick=()=>{paused=false;$('pausePanel').classList.add('hidden');last=performance.now()};$('retry').onclick=()=>{ $('loader').classList.add('hidden');start()};
+$('fire').addEventListener('pointerdown',e=>{e.preventDefault();fire=true});$('dash').addEventListener('pointerdown',e=>{e.preventDefault();dash=true});
+window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','ShiftLeft','ShiftRight'].includes(e.code))e.preventDefault();keys.add(e.code);if(e.code==='Space')fire=true;if(e.code==='ShiftLeft'||e.code==='ShiftRight')dash=true;if(e.code==='Escape'&&active)$('pause').click()});window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{keys.clear();stick=[0,0]});
+// Analog-looking stick, discrete grid movement for deterministic Python logic.
+const joy=$('joystick'),knob=$('knob');let stickId=null;function moveStick(e){const r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let x=e.clientX-cx,y=e.clientY-cy,dist=Math.hypot(x,y),radius=r.width*.28;if(dist>radius){x=x/dist*radius;y=y/dist*radius}knob.style.transform=`translate(calc(-50% + ${x}px),calc(-50% + ${y}px))`;stick=dist>radius*.28?[x/radius,y/radius]:[0,0]}
+joy.addEventListener('pointerdown',e=>{e.preventDefault();stickId=e.pointerId;joy.setPointerCapture(stickId);moveStick(e)});joy.addEventListener('pointermove',e=>{if(e.pointerId===stickId)moveStick(e)});function release(e){if(e.pointerId!==stickId)return;stickId=null;stick=[0,0];knob.style.transform='translate(-50%,-50%)'}for(const event of ['pointerup','pointercancel','lostpointercapture'])joy.addEventListener(event,release);
+function stop(){active=false;paused=false;cancelAnimationFrame(raf);keys.clear();stick=[0,0];fire=false;dash=false}
+async function load(){if(game)return;$('loader').classList.remove('hidden');$('retry').classList.add('hidden');$('loadStatus').textContent='첫 실행에는 Python WebAssembly를 내려받습니다.';try{
+ if(!window.loadPyodide)throw new Error('Pyodide 스크립트를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.');
+ runtime=await window.loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/'});
+ const r={text:async()=>document.getElementById('pythonEngine').textContent};
+ runtime.runPython((await r.text())+'\ngame = PotBreaker()');game=runtime.globals.get('game');
+ }catch(e){$('loadStatus').textContent=String(e);$('retry').classList.remove('hidden');throw e}finally{if(game)$('loader').classList.add('hidden')}}
+async function start(){stop();try{await load()}catch(e){return}try{world=JSON.parse(game.reset());visualPositions.clear();hitParticles=[];hitLastId=0;movingWallTracks=[];previousWalls=(world.moving_walls||[]).map(p=>[...p]);acc=0;active=true;show('gamePanel');last=performance.now();updateHUD(world);draw(world);raf=requestAnimationFrame(loop)}catch(e){$('loader').classList.remove('hidden');$('loadStatus').textContent=String(e);$('retry').classList.remove('hidden')}}
+function getMove(){for(const [k,d] of [['ArrowUp',[0,-1]],['KeyW',[0,-1]],['ArrowDown',[0,1]],['KeyS',[0,1]],['ArrowLeft',[-1,0]],['KeyA',[-1,0]],['ArrowRight',[1,0]],['KeyD',[1,0]]])if(keys.has(k))return d;const [x,y]=stick;return Math.max(Math.abs(x),Math.abs(y))<.23?[0,0]:Math.abs(x)>Math.abs(y)?[Math.sign(x),0]:[0,Math.sign(y)]}
+function updateHUD(s){
+ $('catAmmo').textContent=s.ammo;$('bossAmmo').textContent=s.boss_ammo;
+ $('catHP').textContent='♥'.repeat(Math.max(0,s.player_hp))+'♡'.repeat(Math.max(0,3-s.player_hp));
+ $('bossHP').textContent=s.boss_hp+'/5';$('dashLabel').textContent=s.player_dash_cd>0?s.player_dash_cd.toFixed(1)+'s':'대시';
+ $('dash').disabled=s.player_dash_cd>0;$('fire').disabled=s.ammo<1;
+ $('notice').textContent=s.notice;$('notice').classList.toggle('hidden',!s.notice);
+ $('bell').classList.toggle('hidden',!s.bell)
+}
+function loop(now){if(!active)return;if(!paused){let dt=Math.min(.12,(now-last)/1000||.03);tick+=dt;acc+=dt;frameStep=dt;for(const p of hitParticles){p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=dt*3.2}hitParticles=hitParticles.filter(p=>p.t<p.life);let count=0;while(acc>=.04&&count++<3){const [mx,my]=getMove();const fireNow=fire,dashNow=dash;fire=false;dash=false;world=JSON.parse(game.step(.04,mx,my,dashNow,fireNow,0,0));trackEffects(world);acc-=.04;updateHUD(world);if(world.phase!=='playing')break}draw(world);if(world.phase!=='playing'){active=false;window.setTimeout(()=>end(world.phase),450);return}}last=now;raf=requestAnimationFrame(loop)}
+function end(outcome){show('end');let win=outcome==='win';$('endingArt').src=window.POT_ASSETS[win?'victory':'defeat'];$('endTag').textContent=win?'★ WINNER ★':'GAME OVER';$('endTitle').textContent=win?'기묘 승리!':'크다 부장 승리!';$('endText').textContent=win?'화분 한 방! 크다 부장의 뚝배기를 깼습니다.':'기묘가 화분에 머리만 내놓고 심어졌습니다…'}
+function rr(x,y,w,h,r,c,stroke,sw){ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(c){ctx.fillStyle=c;ctx.fill()}if(stroke){ctx.lineWidth=sw||.025;ctx.strokeStyle=stroke;ctx.stroke()}}
+function ellipse(x,y,rx,ry,color){ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fillStyle=color;ctx.fill()}
+function strokeLine(pts,c='#8593b1',width=.035){ctx.beginPath();ctx.moveTo(...pts[0]);for(const p of pts.slice(1))ctx.lineTo(...p);ctx.lineWidth=width;ctx.strokeStyle=c;ctx.stroke()}
+function plant(x,y,size=1,glow=false){ctx.save();ctx.translate(x,y);ctx.scale(size,size);ellipse(.01,.26,.31,.12,'#66788739');ellipse(0,-.04,.25,.12,'#385d37');for(const [ox,oy,r] of [[-.13,-.23,-.7],[.12,-.28,.4],[0,-.35,0],[-.16,-.05,-1],[.16,-.13,.8]]){ctx.save();ctx.translate(ox,oy);ctx.rotate(r);ellipse(0,0,.12,.19,'#769e55');ellipse(-.025,-.03,.05,.11,'#a6cc75');ctx.restore()}ctx.beginPath();ctx.moveTo(-.26,-.08);ctx.lineTo(.26,-.08);ctx.lineTo(.19,.33);ctx.quadraticCurveTo(0,.39,-.19,.33);ctx.closePath();ctx.fillStyle='#d08b57';ctx.fill();ctx.strokeStyle='#9d654e';ctx.lineWidth=.045;ctx.stroke();rr(-.29,-.12,.58,.105,.04,'#e6a66d','#ae7654',.037);strokeLine([[-.07,.03],[-.055,.22]],'#f4c28c',.04);if(glow){ctx.strokeStyle='#fff1b7';ctx.lineWidth=.052;ctx.beginPath();ctx.arc(0,-.02,.48,0,Math.PI*2);ctx.stroke();for(let i=0;i<4;i++){const a=tick*1.6+i*Math.PI/2;ellipse(Math.cos(a)*.44,Math.sin(a)*.39-.03,.055,.055,'#fff6b7')}}ctx.restore()}
+function desk(x,y,variant=0){ctx.save();ctx.translate(x,y);ellipse(.04,.36,.48,.15,'#55637d29');rr(-.47,-.37,.93,.65,.09,'#b3a6a1');rr(-.49,-.43,.94,.63,.09,'#d6c0aa','#b4a89f',.026);rr(-.46,-.41,.88,.54,.06,'#f4e4cd');rr(-.27,-.15,.49,.23,.035,'#e6e4e1','#c1b7b3',.018);if(variant%3===0){rr(.16,.12,.25,.18,.016,'#fffdfa','#c7bab3',.013);strokeLine([[.20,.16],[.34,.16]],'#a9c3ce',.018)}else{rr(.21,.12,.19,.13,.02,'#fbfbf5');strokeLine([[.24,.16],[.34,.16]],'#c7c3b7',.018)}ctx.restore()}
+function wall(x,y,kind){ctx.save();ctx.translate(x,y);ellipse(.52,.83,.5,.13,'#56698524');rr(.09,.11,.87,.78,.06,'#748baf');rr(.045,.045,.91,.77,.05,'#c8d6e4','#8398b4',.03);rr(.075,.065,.84,.11,.025,'#f1f7ff');rr(.10,.21,.79,.41,.04,'#e8f2fc','#a6b5cc',.02);strokeLine([[.15,.20],[.15,.62]],'#c4d2e1',.016);rr(.07,.66,.87,.11,.02,'#9ab0cf');if(kind%4===0){rr(.46,.33,.25,.29,.01,'#fff4d4','#e2cfa4',.018);strokeLine([[.48,.38],[.64,.38]],'#cfb982',.016)}ctx.restore()}
+function floor(){const grad=ctx.createLinearGradient(0,0,W,H);grad.addColorStop(0,'#fff4e9');grad.addColorStop(.55,'#eee8e2');grad.addColorStop(1,'#e1eaf4');ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){ctx.fillStyle=(x+y)%3===0?'#ffffff0c':'#87a9c30a';ctx.fillRect(x,y,1,1);ctx.strokeStyle='#afbed052';ctx.lineWidth=.015;ctx.strokeRect(x,y,1,1)}ctx.save();const g=ctx.createLinearGradient(-3,0,13,10);g.addColorStop(0,'#ffffff90');g.addColorStop(.53,'#ffffff10');g.addColorStop(1,'#ffffff02');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(7,0);ctx.lineTo(16,11);ctx.lineTo(7,11);ctx.closePath();ctx.fill();ctx.restore()}
+function vision(s){let x=s.boss[0]+.5,y=s.boss[1]+.5,angle=Math.atan2(s.boss_face[1],s.boss_face[0]);for(const off of [[5,155],[-155,-5]]){const a=angle+off[0]*Math.PI/180,b=angle+off[1]*Math.PI/180;ctx.beginPath();ctx.moveTo(x,y);ctx.arc(x,y,s.vision_radius,a,b,false);ctx.closePath();ctx.fillStyle='#fa928a30';ctx.fill();ctx.strokeStyle='#f1a29b66';ctx.lineWidth=.025;ctx.stroke()}}
+function movableWall(x,y){ctx.save();ctx.translate(x,y);rr(.10,.09,.8,.81,.08,'#afcde7','#6d9bbd',.045);rr(.13,.12,.74,.12,.03,'#f5feff');rr(.14,.31,.72,.38,.045,'#c7e6f1','#93bdcf',.02);ctx.fillStyle='#5c9ac68a';ctx.beginPath();ctx.moveTo(.38,.17);ctx.lineTo(.62,.17);ctx.lineTo(.5,.06);ctx.fill();ctx.restore()}
+function aimArc(s){if(!s.aim)return;const x=s.player[0]+.5,y=s.player[1]+.5;const base=Math.atan2(s.boss[1]-s.player[1],s.boss[0]-s.player[0]);ctx.save();ctx.beginPath();ctx.moveTo(x,y);ctx.arc(x,y,2.4,base-Math.PI/4,base+Math.PI/4);ctx.closePath();ctx.fillStyle='#76b6f818';ctx.fill();ctx.strokeStyle='#75b8ff61';ctx.lineWidth=.035;ctx.stroke();ctx.restore()}
+function drawAimRay(pos,aim,color){if(!aim)return;const x=pos[0]+.5,y=pos[1]+.5;strokeLine([[x,y],[x+aim[0]*1.7,y+aim[1]*1.7]],color,.055)}
+function actor(asset,coords,role){
+ let pos=visualPositions.get(role);if(!pos){pos=[coords[0],coords[1]];visualPositions.set(role,pos)}
+ const blend=1-Math.exp(-Math.min(.1,frameStep)*17.5);
+ pos[0]+=(coords[0]-pos[0])*blend;pos[1]+=(coords[1]-pos[1])*blend;
+ const [x,y]=pos,bob=Math.sin(tick*(role==='player'?12:8))*.016;
+ ctx.save();ctx.translate(x+.5,y+.5);ellipse(0,.35,role==='player'?.42:.51,.135,'#525b7a38');
+ const im=images[asset],w=role==='player'?1.25:1.63,h=role==='player'?1.18:1.48;
+ if(im.complete&&im.naturalWidth){ctx.filter='drop-shadow(0px 0.04px 0.04px #59688145)';ctx.drawImage(im,-w/2,-h*.68+bob,w,h)}
+ else ellipse(0,-.2,.37,.47,role==='player'?'#9b9088':'#9bba73');ctx.restore()
+}
+function crowHead(x,y,size=1,flight=false){
+ ctx.save();ctx.translate(x,y);ctx.scale(size,size);
+ ellipse(0,.29,.46,.15,'#32405c42');
+ if(flight){const flap=Math.sin(tick*18)*.17;ctx.save();ctx.rotate(flap);ellipse(-.41,-.1,.38,.14,'#343c50');ellipse(.42,-.1,.38,.14,'#343c50');ctx.restore()}
+ ellipse(0,0,.34,.34,'#313a50');ellipse(-.08,.02,.11,.115,'#555e79');
+ ctx.fillStyle='#e9b56e';ctx.beginPath();ctx.moveTo(.20,.055);ctx.lineTo(.52,.10);ctx.lineTo(.20,.20);ctx.closePath();ctx.fill();
+ ellipse(.10,-.115,.047,.052,'#fafbfd');ellipse(.113,-.113,.02,.023,'#242d43');ctx.restore()
+}
+function trackEffects(s){
+ const oldSet=new Set(previousWalls.map(p=>p.join(',')));
+ const newSet=new Set((s.moving_walls||[]).map(p=>p.join(',')));
+ const removed=previousWalls.filter(p=>!newSet.has(p.join(',')));
+ const added=(s.moving_walls||[]).filter(p=>!oldSet.has(p.join(',')));
+ const used=new Set();if(added.length) movingWallTracks=[];
+ for(const to of added){let pick=-1,best=999;
+   removed.forEach((from,i)=>{const cost=Math.abs(from[0]-to[0])+Math.abs(from[1]-to[1]);if(!used.has(i)&&cost<best){best=cost;pick=i}});
+   if(pick>=0&&best===1){used.add(pick);movingWallTracks.push({from:removed[pick],to,start:tick,duration:.42})}
+ }
+ previousWalls=(s.moving_walls||[]).map(p=>[...p]);
+ for(const hit of (s.hits||[]))if(hit.id>hitLastId){hitLastId=hit.id;const px=hit.x+.5,py=hit.y+.5;for(let i=0;i<10;i++){const a=i*Math.PI/5;hitParticles.push({x:px,y:py,vx:Math.cos(a)*(1.5+i*.055),vy:Math.sin(a)*(1.35+i*.07)-.7,t:0,life:.58,label:i===0})}}
+}
+function shatterFx(){for(const p of hitParticles){const ratio=p.t/p.life,opacity=Math.max(0,1-ratio);ctx.save();ctx.globalAlpha=opacity;ctx.translate(p.x,p.y);ctx.rotate(p.t*3);if(p.label){ctx.font='900 .46px sans-serif';ctx.textAlign='center';ctx.strokeStyle='#fff8ed';ctx.lineWidth=.08;ctx.strokeText('쨍그랑!',0,-.34);ctx.fillStyle='#c4673e';ctx.fillText('쨍그랑!',0,-.34)}else{ctx.fillStyle='#dfad78';ctx.strokeStyle='#fff4d1';ctx.lineWidth=.025;ctx.beginPath();ctx.moveTo(-.08,-.045);ctx.lineTo(.04,-.09);ctx.lineTo(.09,.055);ctx.closePath();ctx.fill();ctx.stroke()}ctx.restore()}}
+function bubbles(s){if(s.bell){ctx.save();ctx.fillStyle='#fff9e8c9';rr(8.3,9.25,2.35,.48,.25,'#fff6decc','#e6c58f',.026);ctx.font='bold .29px sans-serif';ctx.fillStyle='#bc8a4f';ctx.textAlign='center';ctx.fillText('딸랑딸랑',9.47,9.58);ctx.restore()}}
+function draw(s){const dpr=Math.min(2,devicePixelRatio||1),box=canvas.getBoundingClientRect();if(!box.width||!box.height)return;const rw=Math.floor(box.width*dpr),rh=Math.floor(box.height*dpr);if(canvas.width!==rw||canvas.height!==rh){canvas.width=rw;canvas.height=rh}ctx.setTransform(rw/W,0,0,rh/H,0,0);ctx.clearRect(0,0,W,H);floor();
+const obstacles=new Set(s.walls.map(p=>p.join(',')));const mobile=new Set((s.moving_walls||[]).map(p=>p.join(',')));for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(obstacles.has(x+','+y))wall(x,y,x*7+y*3);else if((x*13+y*19)%29===1 && (Math.abs(x-s.player[0])+Math.abs(y-s.player[1])>2))desk(x+.5,y+.42,x+y);else if((x*7+y*11)%47===9){ctx.save();ctx.globalAlpha=.55;plant(x+.5,y+.5,.43);ctx.restore()}}for(const pos of (s.moving_walls||[])){let xx=pos[0],yy=pos[1];const track=movingWallTracks.find(t=>t.to[0]===xx&&t.to[1]===yy);if(track){const t=Math.max(0,Math.min(1,(tick-track.start)/track.duration));xx=track.from[0]+(xx-track.from[0])*t;yy=track.from[1]+(yy-track.from[1])*t}movableWall(xx,yy)}aimArc(s);
+for(const p of (s.crow_bombs||[])){ctx.save();ctx.beginPath();ctx.arc(p.x+.5,p.y+.5,.41,0,Math.PI*2);ctx.fillStyle='#f5aa5b4a';ctx.fill();ctx.strokeStyle='#d37e54';ctx.lineWidth=.05;ctx.stroke();ctx.restore()} if(s.crow_flight)crowHead(s.crow_flight.x+.5,s.crow_flight.y+.5,1.25,true);for(const p of s.pots)plant(p[0]+.5,p[1]+.42,.83,true);
+actor('keuda',s.boss,'boss');actor('gimyo',s.player,'player');drawAimRay(s.player,s.aim,'#5287cf');drawAimRay(s.boss,s.boss_aim,'#f2a675');for(const p of s.projectiles){plant(p.x+.5,p.y+.26,p.boss?.72:.52,true)}shatterFx();bubbles(s);
+}
+// Debug-only manual visual check: local tests can set a state without loading Pyodide.
+window.__potBreakerVisualCheck=(state)=>{world=state;show('gamePanel');draw(state)};
+})();
+</script>
+<script type="text/plain" id="pythonEngine">"""POT BREAKER RE v1.0.5 — single-player deterministic Python game rules.
+UI draws state with Canvas; Cloudflare only serves static assets / Python source.
+"""
+import json
+import math
+import random
+from collections import deque
+
+WIDTH, HEIGHT = 19, 11
+DIRECTIONS = ((1, 0), (-1, 0), (0, 1), (0, -1))
+# QA-only tunables; dash pad creation/expiry were not specified by the user.
+PAD_SPAWN_SECONDS = 1.15
+PAD_LIFETIME_SECONDS = 8.0
+PAD_LIMIT = 8
+PARTITION_MOVE_SECONDS = 1.7
+VISION_RANGE = None    # Boss can locate both player and pickup positions across entire map.
+AIM_SWEEP_DEGREES = 45.0
+AIM_SWEEP_SPEED = 6.5 * (2 / 3)  # QA default: faster ±30° automatic targeting
+PLAYER_DASH_COOLDOWN = 3.0
+BOSS_DASH_COOLDOWN = 5.0
+PLAYER_HP = 3
+BOSS_HP = 5
+HIT_INVULNERABILITY = 0.72
+CROW_FLIGHT_SECONDS = 4.2
+CROW_DROP_SECONDS = 1.05  # ±30° gives a full 60° arc.
+
+
+def distance(a, b):
+    return math.hypot(a[0] - b[0], a[1] - b[1])
+
+
+class PotBreaker:
+    def __init__(self, seed=None):
+        self.rng = random.Random(seed)
+        self.reset()
+
+    def reset(self):
+        self.phase, self.clock = 'playing', 0.0
+        self.player = list(self.rng.choice([(1, 1), (1, HEIGHT - 2),
+                                            (WIDTH - 2, 1), (WIDTH - 2, HEIGHT - 2)]))
+        self.boss = [WIDTH // 2, HEIGHT // 2]
+        self.face, self.boss_face = [1, 0], [-1, 0]
+        self.walls, self.moving_walls = set(), set()
+        safe = {tuple(self.player), tuple(self.boss)}
+        for y in range(1, HEIGHT - 1):
+            for x in range(1, WIDTH - 1):
+                p = (x, y)
+                if p in safe or min(distance(p, self.player), distance(p, self.boss)) < 2.3:
+                    continue
+                r = self.rng.random()
+                if r < .135:
+                    self.walls.add(p)
+                elif r < .20:
+                    self.moving_walls.add(p)
+        for _ in range(180):
+            if self._path_step(self.player, self.boss) != tuple(self.player):
+                break
+            if self.walls:
+                self.walls.remove(self.rng.choice(tuple(self.walls)))
+            elif self.moving_walls:
+                self.moving_walls.remove(self.rng.choice(tuple(self.moving_walls)))
+            else:
+                break
+        self.ammo, self.boss_ammo, self.max_boss_ammo = 1, 5, 5
+        self.throw_cd, self.boss_throw_cd = 0.0, 1.2
+        self.player_move_cd, self.boss_move_cd = 0.0, .5
+        self.projectiles, self.pots = [], []
+        self.crow_flight, self.crow_bombs = None, []
+        self.hit_events = []
+        self.hit_seq = 0
+        self.crow_spawn_timer = 8.0
+        self.player_hp, self.boss_hp = PLAYER_HP, BOSS_HP
+        self.player_invuln, self.boss_invuln = 0.0, 0.0
+        self.player_dash_cd, self.boss_dash_cd = 0.0, 0.0
+        self.partition_timer = PARTITION_MOVE_SECONDS
+        self.notice, self.notice_time = '대시 버튼: 3칸 돌진 · 3초 재사용 대기', 2.2
+        self.bell = 0.0
+        self.dash_effect = None
+        self.boss_target = None
+        for _ in range(3): self._add_pot()
+        
+        return self.state()
+
+    def _free(self, x, y):
+        return 0 <= x < WIDTH and 0 <= y < HEIGHT and (x, y) not in self.walls and (x, y) not in self.moving_walls
+
+    def _add_pot(self):
+        choices = [(x, y) for y in range(HEIGHT) for x in range(WIDTH)
+                   if self._free(x, y) and [x, y] not in (self.player, self.boss)
+                   and [x, y] not in self.pots]
+        if choices:
+            self.pots.append(list(self.rng.choice(choices)))
+
+    def _nearest_pot(self, who):
+        # Use walkable path distance, not straight-line distance, to avoid NPC freezing at a partition.
+        best = None
+        bestlen = float('inf')
+        for pot in self.pots:
+            path = self._path(who, pot)
+            if not path:
+                continue  # Ignore temporarily sealed-off pickups; do not stand still.
+            cost = len(path)
+            if cost < bestlen:
+                best, bestlen = list(pot), cost
+        return best
+
+    def _path(self, start, goal):
+        start, goal = tuple(start), tuple(goal)
+        q = deque([start]); came = {start: None}
+        while q:
+            x, y = q.popleft()
+            if (x, y) == goal: break
+            for dx, dy in DIRECTIONS:
+                p = (x + dx, y + dy)
+                if p not in came and self._free(*p):
+                    came[p] = (x, y); q.append(p)
+        if goal not in came: return []
+        result = [goal]
+        while came[result[-1]] is not None: result.append(came[result[-1]])
+        return list(reversed(result))
+
+    def _path_step(self, start, goal):
+        path = self._path(start, goal)
+        return path[1] if len(path) >= 2 else tuple(start)
+
+    def _update_crow(self, dt):
+        self.crow_spawn_timer -= dt
+        if self.crow_spawn_timer <= 0 and self.crow_flight is None:
+            self.crow_flight = {'x': 1.0, 'y': float(self.rng.randint(1, HEIGHT-2)),
+                                'ttl': CROW_FLIGHT_SECONDS, 'drop': .35}
+            self.crow_spawn_timer = 11.0
+            self.notice, self.notice_time = '감 과장 출동! 랜덤 화분 폭격!', 1.0
+        for bomb in list(self.crow_bombs):
+            bomb['ttl'] -= dt
+            if bomb['ttl'] <= 0:
+                self.crow_bombs.remove(bomb)
+                if distance(self.player, (bomb['x'],bomb['y'])) < .72: self._damage(False)
+                if distance(self.boss, (bomb['x'],bomb['y'])) < .72: self._damage(True)
+                # Crow bombs only damage. Never become collectable ammunition.
+        bird = self.crow_flight
+        if bird is None: return
+        bird['ttl'] -= dt
+        elapsed = CROW_FLIGHT_SECONDS - bird['ttl']
+        bird['x'] = min(WIDTH-1.0, 1.0 + elapsed * (WIDTH-2)/CROW_FLIGHT_SECONDS)
+        bird['y'] = max(.75, min(HEIGHT-1.3, 5.0 + math.sin(elapsed*3.2)*2.3))
+        bird['drop'] -= dt
+        if bird['drop'] <= 0:
+            bird['drop'] = CROW_DROP_SECONDS
+            tx=self.rng.randint(1,WIDTH-2); ty=self.rng.randint(1,HEIGHT-2)
+            if self._free(tx,ty):
+                self.crow_bombs.append({'x':tx,'y':ty,'ttl':.83})
+        if bird['ttl'] <= 0: self.crow_flight=None
+
+    def _damage(self, npc):
+        if self.phase != 'playing': return False
+        if npc:
+            if self.boss_invuln > 0: return False
+            self.boss_hp=max(0,self.boss_hp-1)
+            self.boss_invuln=HIT_INVULNERABILITY
+            pos=self.boss
+            if self.boss_hp == 0: self.phase='win'
+        else:
+            if self.player_invuln > 0: return False
+            self.player_hp=max(0,self.player_hp-1)
+            self.player_invuln=HIT_INVULNERABILITY
+            pos=self.player
+            if self.player_hp == 0: self.phase='lose'
+        self.hit_seq += 1
+        self.hit_events.append({'id':self.hit_seq,'x':pos[0],'y':pos[1], 'target':'boss' if npc else 'player'})
+        self.hit_events=self.hit_events[-5:]
+        return True
+
+    def _move_partitions(self, dt):
+        self.partition_timer -= dt
+        if self.partition_timer > 0: return
+        self.partition_timer = PARTITION_MOVE_SECONDS
+        occupied = {tuple(self.player), tuple(self.boss), *[tuple(p) for p in self.pots]}
+        new_positions = set(self.moving_walls)
+        for old in self.rng.sample(sorted(self.moving_walls), min(5, len(self.moving_walls))):
+            dirs = list(DIRECTIONS); self.rng.shuffle(dirs)
+            for dx, dy in dirs:
+                target = (old[0] + dx, old[1] + dy)
+                if target[0] < 1 or target[0] >= WIDTH - 1 or target[1] < 1 or target[1] >= HEIGHT - 1:
+                    continue
+                if target in self.walls or target in new_positions or target in occupied: continue
+                new_positions.remove(old)
+                new_positions.add(target)
+                break
+        self.moving_walls = new_positions
+
+    def _dash(self, who, dx, dy, npc):
+        if not (dx or dy): return False
+        attr = 'boss_dash_cd' if npc else 'player_dash_cd'
+        if getattr(self,attr)>0: return False
+        start=who[:]; length=5 if npc else 3
+        candidate=None
+        for amount in range(length,0,-1):
+            tx,ty=start[0]+dx*amount,start[1]+dy*amount
+            if self._free(tx,ty):
+                candidate=[tx,ty];break
+        if candidate is None:return False
+        # Collision during dash costs one player HP, respecting damage invulnerability.
+        other=self.player if npc else self.boss
+        crosses=(dx and other[1]==start[1] and (other[0]-start[0])*dx>0 and abs(other[0]-start[0])<=abs(candidate[0]-start[0])) or (dy and other[0]==start[0] and (other[1]-start[1])*dy>0 and abs(other[1]-start[1])<=abs(candidate[1]-start[1]))
+        if crosses: self._damage(False)
+        who[:]=candidate
+        setattr(self,attr,BOSS_DASH_COOLDOWN if npc else PLAYER_DASH_COOLDOWN)
+        self.dash_effect={'from':start,'to':candidate[:],'npc':npc,'age':0.0}
+        self._contact()
+        return True
+
+    def _contact(self):
+        if self.player == self.boss: self._damage(False)
+
+    def _pickups(self):
+        for who, cap, attr in ((self.player, 1, 'ammo'), (self.boss, 5, 'boss_ammo')):
+            if getattr(self, attr) >= cap: continue
+            for pot in list(self.pots):
+                if who == pot:
+                    setattr(self, attr, getattr(self, attr) + 1)
+                    self.pots.remove(pot)
+                    self._add_pot()   # Field always has at least 3 ordinary pickups.
+                    break
+
+    def _drop_pot(self, x, y):
+        xx, yy = max(0, min(WIDTH-1, round(x))), max(0, min(HEIGHT-1, round(y)))
+        for radius in range(5):
+            for dx in range(-radius, radius+1):
+                for dy in range(-radius, radius+1):
+                    if abs(dx) + abs(dy) != radius: continue
+                    nx, ny = xx+dx, yy+dy
+                    if self._free(nx, ny) and [nx, ny] not in self.pots and [nx, ny] not in (self.boss, self.player):
+                        self.pots.append([nx, ny]); return
+
+    def _aim(self, src, target):
+        base = math.atan2(target[1] - src[1], target[0] - src[0])
+        swing = math.radians(AIM_SWEEP_DEGREES) * math.sin(self.clock * AIM_SWEEP_SPEED)
+        angle = base + swing
+        return [math.cos(angle), math.sin(angle)]
+
+    def _fire(self, who, vec, npc=False):
+        attr = 'boss_ammo' if npc else 'ammo'
+        if getattr(self, attr) <= 0: return
+        magnitude = math.hypot(*vec)
+        if magnitude < 1e-6: return
+        setattr(self, attr, getattr(self, attr) - 1)
+        self.projectiles.append({'x': float(who[0]), 'y': float(who[1]),
+                                'dx': vec[0] / magnitude, 'dy': vec[1] / magnitude,
+                                'range': 7.3 if npc else 4.4, 'boss': npc})
+
+    def _move_boss(self):
+        # Omniscient NPC: target the player when equipped; seek nearest pot otherwise.
+        if self.boss_ammo == 0:
+            target = self._nearest_pot(self.boss)
+        elif self.boss_ammo <= 2 and self.pots:
+            pickup = self._nearest_pot(self.boss)
+            cost_pot = len(self._path(self.boss, pickup)) if pickup else 999
+            cost_player = len(self._path(self.boss, self.player))
+            target = pickup if pickup and cost_pot <= cost_player + 2 else self.player[:]
+        else:
+            target = self.player[:]
+        if target is None:
+            # Temporarily enclosed by moving partitions: patrol until a pickup path opens.
+            reachable = [p for p in ((self.boss[0]+dx,self.boss[1]+dy) for dx,dy in DIRECTIONS) if self._free(*p)]
+            if reachable:
+                target = list(self.rng.choice(reachable))
+            else:
+                return
+        self.boss_target = target
+        next_step = self._path_step(self.boss, target)
+        if next_step == tuple(self.boss):
+            if target != self.boss and self.boss_dash_cd <= 0:
+                dx = 0 if target[0]==self.boss[0] else (1 if target[0]>self.boss[0] else -1)
+                dy = 0 if target[1]==self.boss[1] else (1 if target[1]>self.boss[1] else -1)
+                if dx and dy: dy=0
+                self._dash(self.boss,dx,dy,True)
+            return
+        if self.boss_dash_cd <= 0 and distance(self.boss,target)>=3.4 and self.rng.random()<.34:
+            dx=next_step[0]-self.boss[0];dy=next_step[1]-self.boss[1]
+            if self._dash(self.boss,dx,dy,True):return
+        dx, dy = next_step[0] - self.boss[0], next_step[1] - self.boss[1]
+        self.boss_face = [dx, dy]
+        self.boss = list(next_step)
+        self._contact()
+
+    def _advance_projectiles(self, dt):
+        for p in list(self.projectiles):
+            x, y = p['x'], p['y']
+            speed = 7.2 if p['boss'] else 9.4
+            p['x'] += p['dx'] * dt * speed
+            p['y'] += p['dy'] * dt * speed
+            p['range'] -= dt * speed
+            hit_wall = not p['boss'] and (round(p['x']), round(p['y'])) in (self.walls | self.moving_walls)
+            outside = not (0 <= p['x'] < WIDTH and 0 <= p['y'] < HEIGHT)
+            if p['range'] <= 0 or hit_wall or outside:
+                self.projectiles.remove(p)
+                self._drop_pot(x, y)
+                continue
+            target = self.player if p['boss'] else self.boss
+            if distance((p['x'], p['y']), target) < .55:
+                self._damage(not p['boss'])
+                if p in self.projectiles:self.projectiles.remove(p)
+                if self.phase != 'playing':
+                    self.projectiles.clear()
+                    return
+                continue
+            for other in list(self.projectiles):
+                if p is other or other['boss'] == p['boss']: continue
+                if distance((p['x'], p['y']), (other['x'], other['y'])) < .48:
+                    small = p if not p['boss'] else other
+                    if small in self.projectiles:
+                        self.projectiles.remove(small)
+                        self._drop_pot(small['x'], small['y'])
+                    break
+
+    def step(self, dt, mx=0, my=0, jump=False, fire=False, aimx=0, aimy=0):
+        # Keep previous API signature for the existing Pyodide front-end.
+        if self.phase != 'playing': return self.state()
+        dt = min(.085, max(.01, float(dt)))
+        self.clock += dt
+        self.player_dash_cd=max(0.,self.player_dash_cd-dt)
+        self.boss_dash_cd=max(0.,self.boss_dash_cd-dt)
+        self.player_invuln=max(0.,self.player_invuln-dt)
+        self.boss_invuln=max(0.,self.boss_invuln-dt)
+        self.throw_cd = max(0., self.throw_cd-dt)
+        self.boss_throw_cd = max(0., self.boss_throw_cd-dt)
+        self.player_move_cd -= dt
+        self.boss_move_cd -= dt
+        self.notice_time = max(0., self.notice_time-dt)
+        self.bell = max(0., self.bell-dt)
+        self._move_partitions(dt)
+        self._update_crow(dt)
+        if self.dash_effect:
+            self.dash_effect['age'] += dt
+            if self.dash_effect['age'] > .35: self.dash_effect = None
+        dx, dy = int(mx), int(my)
+        if dx and dy: dy = 0
+        if dx or dy: self.face = [dx, dy]
+        if jump and (dx or dy) and self.player_dash_cd <= 0:
+            self._dash(self.player, dx, dy, False)
+            self.player_move_cd = .095
+        if self.player_move_cd <= 0 and (dx or dy):
+            tx, ty = self.player[0] + dx, self.player[1] + dy
+            if self._free(tx, ty):
+                self.player = [tx, ty]
+                self._contact()
+            self.player_move_cd = .115
+        if self.phase != 'playing': return self.state()
+        if fire and self.throw_cd <= 0 and self.ammo:
+            self._fire(self.player, self._aim(self.player, self.boss))
+            self.throw_cd = .38
+        if self.boss_move_cd <= 0:
+            self._move_boss()
+            self.boss_move_cd = .225
+        if self.phase != 'playing': return self.state()
+        self._pickups()
+        # Boss projectile decision depends on ammo but no field-of-view angle.
+        if self.boss_throw_cd <= 0 and self.boss_ammo > 0 and distance(self.player, self.boss) < 7.3:
+            aim = self._aim(self.boss, self.player)
+            base_angle = math.atan2(aim[1], aim[0])
+            # Paired projectiles converge around the swept automatic aim ray.
+            for offset in (-.105, .105) if self.boss_ammo >= 2 else (0,):
+                angle = base_angle + offset
+                self._fire(self.boss, [math.cos(angle), math.sin(angle)], npc=True)
+            self.boss_throw_cd = 1.1
+        if (dx or dy) and distance(self.player, self.boss) <= 5:
+            self.bell = .65
+        self._advance_projectiles(dt)
+        return self.state()
+
+    def state(self):
+        return json.dumps({'phase': self.phase, 'player': self.player, 'boss': self.boss,
+                           'face': self.face, 'boss_face': self.boss_face,
+                           'walls': sorted(self.walls), 'moving_walls': sorted(self.moving_walls),
+                           'pots': self.pots, 'projectiles': self.projectiles,
+                           'crow_flight': self.crow_flight, 'crow_bombs': self.crow_bombs,
+                           'player_hp': self.player_hp, 'boss_hp': self.boss_hp,
+                           'player_dash_cd': round(self.player_dash_cd,2), 'boss_dash_cd': round(self.boss_dash_cd,2),
+                           'ammo': self.ammo, 'boss_ammo': self.boss_ammo,
+                           'aim': self._aim(self.player, self.boss),
+                           'boss_aim': self._aim(self.boss, self.player),
+                           'aim_sweep_degrees': 90,
+                           'dash_effect': self.dash_effect,
+                           'bell': self.bell > 0,
+                           'notice': self.notice if self.notice_time else '',
+                           'clock': round(self.clock, 2), 'hits': self.hit_events}, ensure_ascii=False)
+
+if __name__ == '__main__':
+    g = PotBreaker(42)
+    for i in range(2500):
+        s = json.loads(g.step(.04, 1 if i % 6 < 3 else -1, 0, False, i % 17 == 0))
+        assert len(s['pots']) >= 3
+        assert 0 <= s['boss_ammo'] <= 5
+        assert 0 <= s['player_hp'] <= 3 and 0 <= s['boss_hp'] <= 5
+        if s['phase'] != 'playing': g.reset()
+    print('OK: 2500 deterministic engine ticks')
+</script></body></html>
