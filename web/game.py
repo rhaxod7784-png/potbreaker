@@ -1,6 +1,20 @@
-import random, math, json
+"""POT BREAKER RE v1.0.2 — single-player deterministic Python game rules.
+UI draws state with Canvas; Cloudflare only serves static assets / Python source.
+"""
+import json
+import math
+import random
+from collections import deque
 
 WIDTH, HEIGHT = 19, 11
+DIRECTIONS = ((1, 0), (-1, 0), (0, 1), (0, -1))
+# QA-only tunables; dash pad creation/expiry were not specified by the user.
+PAD_SPAWN_SECONDS = 3.5
+PAD_LIFETIME_SECONDS = 8.0
+PAD_LIMIT = 3
+PARTITION_MOVE_SECONDS = 1.1
+VISION_RANGE = None    # Boss can locate both player and pickup positions across entire map.
+AIM_SWEEP_DEGREES = 30.0  # ±30° gives a full 60° arc.
 
 
 def distance(a, b):
@@ -8,286 +22,299 @@ def distance(a, b):
 
 
 class PotBreaker:
-    """Single-player office maze rules; deterministic JSON state for Canvas UI."""
-
     def __init__(self, seed=None):
         self.rng = random.Random(seed)
         self.reset()
 
     def reset(self):
-        self.phase = 'playing'
-        self.clock = 0.0
-        self.player = list(self.rng.choice([(1, 1), (1, HEIGHT - 2), (WIDTH - 2, 1), (WIDTH - 2, HEIGHT - 2)]))
+        self.phase, self.clock = 'playing', 0.0
+        self.player = list(self.rng.choice([(1, 1), (1, HEIGHT - 2),
+                                            (WIDTH - 2, 1), (WIDTH - 2, HEIGHT - 2)]))
         self.boss = [WIDTH // 2, HEIGHT // 2]
-        self.face = [1, 0]
-        self.boss_face = [1, 0]
-        self.walls = set()
+        self.face, self.boss_face = [1, 0], [-1, 0]
+        self.walls, self.moving_walls = set(), set()
         safe = {tuple(self.player), tuple(self.boss)}
-        for y in range(1, HEIGHT-1):
-            for x in range(1, WIDTH-1):
-                if (x, y) not in safe and abs(x - self.player[0]) + abs(y - self.player[1]) > 2 and abs(x - self.boss[0]) + abs(y - self.boss[1]) > 2 and self.rng.random() < 0.23:
-                    self.walls.add((x, y))
-        # Carve openings if a random partition layout blocks every route.
-        while self.walls and not self._is_connected(self.player, self.boss):
-            self.walls.remove(self.rng.choice(tuple(self.walls)))
-        self.ammo = 1
-        self.boss_ammo = 2
-        self.jump_stacks = 1.0
-        self.boss_jump_cd = 0.0
-        self.throw_cd = 0.0
-        self.boss_throw_cd = 1.5
-        self.player_move_cd = 0.0
-        self.boss_move_cd = 0.4
-        self.alert = 0.0
-        self.last_seen = None
+        for y in range(1, HEIGHT - 1):
+            for x in range(1, WIDTH - 1):
+                p = (x, y)
+                if p in safe or min(distance(p, self.player), distance(p, self.boss)) < 2.3:
+                    continue
+                r = self.rng.random()
+                if r < .135:
+                    self.walls.add(p)
+                elif r < .20:
+                    self.moving_walls.add(p)
+        for _ in range(180):
+            if self._path_step(self.player, self.boss) != tuple(self.player):
+                break
+            if self.walls:
+                self.walls.remove(self.rng.choice(tuple(self.walls)))
+            elif self.moving_walls:
+                self.moving_walls.remove(self.rng.choice(tuple(self.moving_walls)))
+            else:
+                break
+        self.ammo, self.boss_ammo, self.max_boss_ammo = 1, 5, 5
+        self.throw_cd, self.boss_throw_cd = 0.0, 1.2
+        self.player_move_cd, self.boss_move_cd = 0.0, .5
+        self.projectiles, self.pots, self.pads = [], [], []
+        self.pad_spawn_timer, self.partition_timer = .6, 1.1
+        self.notice, self.notice_time = '대시 패드를 밟으면 기묘는 3칸 이동합니다.', 2.2
         self.bell = 0.0
-        self.notice = '크다 부장의 시야를 피해 이동하세요.'
-        self.notice_time = 2.2
-        self.projectiles = []
-        self.pots = []
-        self.roam = None
-        for _ in range(3):
-            self._add_pot()
+        self.dash_effect = None
+        self.boss_target = None
+        for _ in range(3): self._add_pot()
         return self.state()
 
     def _free(self, x, y):
-        return 0 <= x < WIDTH and 0 <= y < HEIGHT and (x, y) not in self.walls
-
-    def _is_connected(self, start, goal):
-        q, seen = [tuple(start)], {tuple(start)}
-        for x, y in q:
-            if (x, y) == tuple(goal):
-                return True
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                nx, ny = x + dx, y + dy
-                if self._free(nx, ny) and (nx, ny) not in seen:
-                    seen.add((nx, ny))
-                    q.append((nx, ny))
-        return False
+        return 0 <= x < WIDTH and 0 <= y < HEIGHT and (x, y) not in self.walls and (x, y) not in self.moving_walls
 
     def _add_pot(self):
-        choices = [(x, y) for x in range(WIDTH) for y in range(HEIGHT)
-                   if self._free(x, y) and [x, y] not in (self.player, self.boss) and [x, y] not in self.pots]
+        choices = [(x, y) for y in range(HEIGHT) for x in range(WIDTH)
+                   if self._free(x, y) and [x, y] not in (self.player, self.boss)
+                   and [x, y] not in self.pots]
         if choices:
             self.pots.append(list(self.rng.choice(choices)))
 
     def _nearest_pot(self, who):
-        return min(self.pots, key=lambda p: distance(who, p)) if self.pots else None
+        # Use walkable path distance, not straight-line distance, to avoid NPC freezing at a partition.
+        best = None
+        bestlen = float('inf')
+        for pot in self.pots:
+            path = self._path(who, pot)
+            cost = len(path) if path else 999
+            if cost < bestlen:
+                best, bestlen = list(pot), cost
+        return best
 
-    def _drop_pot_near(self, x, y):
-        base = (max(0, min(WIDTH - 1, int(round(x)))), max(0, min(HEIGHT - 1, int(round(y)))))
-        candidates = [base]
-        for r in range(1, 4):
-            for dy in range(-r, r + 1):
-                for dx in range(-r, r + 1):
-                    if abs(dx) + abs(dy) == r:
-                        candidates.append((base[0] + dx, base[1] + dy))
-        for nx, ny in candidates:
-            if self._free(nx, ny) and [nx, ny] not in self.pots and [nx, ny] not in (self.player, self.boss):
-                # Keep the three field pots invariant, while leaving the missed pot at its landing spot.
-                if len(self.pots) >= 3:
-                    self.pots.pop(self.rng.randrange(len(self.pots)))
-                self.pots.append([nx, ny])
+    def _path(self, start, goal):
+        start, goal = tuple(start), tuple(goal)
+        q = deque([start]); came = {start: None}
+        while q:
+            x, y = q.popleft()
+            if (x, y) == goal: break
+            for dx, dy in DIRECTIONS:
+                p = (x + dx, y + dy)
+                if p not in came and self._free(*p):
+                    came[p] = (x, y); q.append(p)
+        if goal not in came: return []
+        result = [goal]
+        while came[result[-1]] is not None: result.append(came[result[-1]])
+        return list(reversed(result))
+
+    def _path_step(self, start, goal):
+        path = self._path(start, goal)
+        return path[1] if len(path) >= 2 else tuple(start)
+
+    def _spawn_pad(self):
+        positions = {(p['x'], p['y']) for p in self.pads}
+        choices = [(x, y) for y in range(1, HEIGHT - 1) for x in range(1, WIDTH - 1)
+                   if self._free(x, y) and (x, y) not in positions
+                   and [x, y] not in self.pots and [x, y] not in (self.player, self.boss)]
+        if choices:
+            x, y = self.rng.choice(choices)
+            self.pads.append({'x': x, 'y': y, 'ttl': PAD_LIFETIME_SECONDS})
+
+    def _update_pads(self, dt):
+        for pad in list(self.pads):
+            pad['ttl'] -= dt
+            if pad['ttl'] <= 0: self.pads.remove(pad)
+        self.pad_spawn_timer -= dt
+        if self.pad_spawn_timer <= 0:
+            self.pad_spawn_timer = PAD_SPAWN_SECONDS
+            if len(self.pads) < PAD_LIMIT: self._spawn_pad()
+
+    def _move_partitions(self, dt):
+        self.partition_timer -= dt
+        if self.partition_timer > 0: return
+        self.partition_timer = PARTITION_MOVE_SECONDS
+        occupied = {tuple(self.player), tuple(self.boss), *[tuple(p) for p in self.pots]}
+        occupied.update((pad['x'], pad['y']) for pad in self.pads)
+        new_positions = set(self.moving_walls)
+        for old in self.rng.sample(sorted(self.moving_walls), min(5, len(self.moving_walls))):
+            dirs = list(DIRECTIONS); self.rng.shuffle(dirs)
+            for dx, dy in dirs:
+                target = (old[0] + dx, old[1] + dy)
+                if target[0] < 1 or target[0] >= WIDTH - 1 or target[1] < 1 or target[1] >= HEIGHT - 1:
+                    continue
+                if target in self.walls or target in new_positions or target in occupied: continue
+                new_positions.remove(old)
+                new_positions.add(target)
+                break
+        self.moving_walls = new_positions
+
+    def _dash(self, who, dx, dy, npc):
+        if not (dx or dy): return False
+        start = who[:]
+        length = 5 if npc else 3
+        # Skip barriers while dashing; only free landing tiles are allowed.
+        candidate = None
+        for amount in range(length, 0, -1):
+            tx, ty = start[0] + dx * amount, start[1] + dy * amount
+            if self._free(tx, ty):
+                candidate = [tx, ty]
+                break
+        if candidate is None: return False
+        who[:] = candidate
+        self.dash_effect = {'from': start, 'to': candidate[:], 'npc': npc, 'age': 0.0}
+        self.notice, self.notice_time = ('쾅! 크다 부장 5칸 대시!' if npc else '슝! 기묘 3칸 대시!'), .55
+        self._contact()
+        return True
+
+    def _activate_pad(self, who, direction, npc=False):
+        for pad in list(self.pads):
+            if [pad['x'], pad['y']] != who: continue
+            if self._dash(who, direction[0], direction[1], npc):
+                self.pads.remove(pad)
                 return True
         return False
 
-    def _path_step(self, start, goal):
-        start, goal = tuple(start), tuple(goal)
-        if start == goal:
-            return start
-        q = [start]
-        came = {start: None}
-        for p in q:
-            if p == goal:
-                break
-            for dx, dy in self.rng.sample([(0,1),(1,0),(0,-1),(-1,0)], 4):
-                n = (p[0]+dx, p[1]+dy)
-                if self._free(*n) and n not in came:
-                    came[n] = p
-                    q.append(n)
-        if goal not in came:
-            return start
-        p = goal
-        while came[p] not in (None, start):
-            p = came[p]
-        return p
-
-    def _sees_player(self):
-        # Partition walls do NOT obstruct vision; configurable distance is in grid cells.
-        if distance(self.player, self.boss) > 3.4:
-            return False
-        dx, dy = self.player[0] - self.boss[0], self.player[1] - self.boss[1]
-        theta = abs(math.degrees(math.atan2(self.boss_face[0]*dy-self.boss_face[1]*dx,
-                                             self.boss_face[0]*dx+self.boss_face[1]*dy)))
-        return 5 <= theta <= 155
+    def _contact(self):
+        if self.player == self.boss: self.phase = 'lose'
 
     def _pickups(self):
-        for who, cap, attr in ((self.player, 1, 'ammo'), (self.boss, 2, 'boss_ammo')):
-            if getattr(self, attr) >= cap:
-                continue
+        for who, cap, attr in ((self.player, 1, 'ammo'), (self.boss, 5, 'boss_ammo')):
+            if getattr(self, attr) >= cap: continue
             for pot in list(self.pots):
-                if distance(who, pot) < 0.65:
+                if who == pot:
                     setattr(self, attr, getattr(self, attr) + 1)
                     self.pots.remove(pot)
-                    self._add_pot()
+                    self._add_pot()   # Field always has at least 3 ordinary pickups.
                     break
 
-    def _fire(self, who, vec, boss=False):
-        ammo_field = 'boss_ammo' if boss else 'ammo'
-        if getattr(self, ammo_field) < 1:
-            return
-        length = math.hypot(*vec)
-        if length < 0.001:
-            vec, length = [1, 0], 1
-        setattr(self, ammo_field, getattr(self, ammo_field) - 1)
-        self.projectiles.append({'x':float(who[0]),'y':float(who[1]),
-                                 'dx':vec[0]/length,'dy':vec[1]/length,
-                                 'range':7.3 if boss else 4.2,'boss':boss})
+    def _drop_pot(self, x, y):
+        xx, yy = max(0, min(WIDTH-1, round(x))), max(0, min(HEIGHT-1, round(y)))
+        for radius in range(5):
+            for dx in range(-radius, radius+1):
+                for dy in range(-radius, radius+1):
+                    if abs(dx) + abs(dy) != radius: continue
+                    nx, ny = xx+dx, yy+dy
+                    if self._free(nx, ny) and [nx, ny] not in self.pots and [nx, ny] not in (self.boss, self.player):
+                        self.pots.append([nx, ny]); return
 
-    def _jump_player(self, dx, dy):
-        if self.jump_stacks < 1 or not (dx or dy):
-            return False
-        x, y = self.player
-        if (x+dx,y+dy) not in self.walls or not self._free(x+2*dx,y+2*dy):
-            return False
-        self.player = [x+2*dx,y+2*dy]
-        self.jump_stacks -= 1
-        return True
+    def _aim(self, src, target):
+        base = math.atan2(target[1] - src[1], target[0] - src[0])
+        swing = math.radians(AIM_SWEEP_DEGREES) * math.sin(self.clock * 2.25)
+        angle = base + swing
+        return [math.cos(angle), math.sin(angle)]
+
+    def _fire(self, who, vec, npc=False):
+        attr = 'boss_ammo' if npc else 'ammo'
+        if getattr(self, attr) <= 0: return
+        magnitude = math.hypot(*vec)
+        if magnitude < 1e-6: return
+        setattr(self, attr, getattr(self, attr) - 1)
+        self.projectiles.append({'x': float(who[0]), 'y': float(who[1]),
+                                'dx': vec[0] / magnitude, 'dy': vec[1] / magnitude,
+                                'range': 7.3 if npc else 4.4, 'boss': npc})
 
     def _move_boss(self):
-        visible = self._sees_player()
-        if visible:
-            self.last_seen = list(self.player)
-            self.alert = 2.8
-        target = None
-        if self.boss_ammo <= 0 and self.pots:
-            target = list(self._nearest_pot(self.boss))
-        elif self.boss_ammo < 2 and self.pots and (not visible or self.rng.random() < 0.65):
-            target = list(self._nearest_pot(self.boss))
-        elif self.alert > 0 and self.last_seen:
-            target = self.last_seen
-        if not target:
-            if self.roam is None or self.boss == self.roam or self.rng.random() < .10:
-                self.roam = [self.rng.randrange(1,WIDTH-1), self.rng.randrange(1,HEIGHT-1)]
-            target = self.roam
-        dx = 0 if target[0] == self.boss[0] else (1 if target[0] > self.boss[0] else -1)
-        dy = 0 if target[1] == self.boss[1] else (1 if target[1] > self.boss[1] else -1)
-        primary = (dx,0) if abs(target[0]-self.boss[0]) >= abs(target[1]-self.boss[1]) else (0,dy)
-        if primary == (0,0):
-            primary = (dx,dy)
-        if visible and self.boss_jump_cd <= 0 and self.boss_ammo > 0:
-            for d in ([primary,(0,dy),(dx,0)]):
-                if d == (0,0):
-                    continue
-                tx, ty = self.boss
-                count = 0
-                while (tx+d[0],ty+d[1]) in self.walls and count < 3:
-                    tx += d[0]
-                    ty += d[1]
-                    count += 1
-                if count and self._free(tx+d[0],ty+d[1]):
-                    self.boss = [tx+d[0], ty+d[1]]
-                    self.boss_face = list(d)
-                    self.boss_jump_cd = 15.0
-                    self.notice, self.notice_time = '쾅! 크다 부장이 파티션을 뚫었습니다!', 0.9
-                    return
-        nxt = self._path_step(self.boss, target)
-        if nxt != tuple(self.boss):
-            self.boss_face = [nxt[0]-self.boss[0],nxt[1]-self.boss[1]]
-            self.boss = list(nxt)
-        elif not visible:
-            self.roam = None
+        # Omniscient NPC: target the player when equipped; seek nearest pot otherwise.
+        if self.boss_ammo == 0:
+            target = self._nearest_pot(self.boss)
+        elif self.boss_ammo <= 2 and self.pots and self.rng.random() < .60:
+            target = self._nearest_pot(self.boss)
+        else:
+            target = self.player[:]
+        if target is None: return
+        self.boss_target = target
+        next_step = self._path_step(self.boss, target)
+        if next_step == tuple(self.boss): return
+        dx, dy = next_step[0] - self.boss[0], next_step[1] - self.boss[1]
+        self.boss_face = [dx, dy]
+        self.boss = list(next_step)
+        self._contact()
+        if self.phase == 'playing': self._activate_pad(self.boss, (dx, dy), npc=True)
 
     def _advance_projectiles(self, dt):
         for p in list(self.projectiles):
-            prevx, prevy = p['x'], p['y']
-            p['x'] += p['dx'] * dt * (7.1 if p['boss'] else 9.6)
-            p['y'] += p['dy'] * dt * (7.1 if p['boss'] else 9.6)
-            p['range'] -= dt * (7.1 if p['boss'] else 9.6)
-            if p['range'] <= 0 or not (0 <= p['x'] < WIDTH and 0 <= p['y'] < HEIGHT):
+            x, y = p['x'], p['y']
+            speed = 7.2 if p['boss'] else 9.4
+            p['x'] += p['dx'] * dt * speed
+            p['y'] += p['dy'] * dt * speed
+            p['range'] -= dt * speed
+            hit_wall = not p['boss'] and (round(p['x']), round(p['y'])) in (self.walls | self.moving_walls)
+            outside = not (0 <= p['x'] < WIDTH and 0 <= p['y'] < HEIGHT)
+            if p['range'] <= 0 or hit_wall or outside:
                 self.projectiles.remove(p)
-                self._drop_pot_near(prevx, prevy)
+                self._drop_pot(x, y)
                 continue
-            if not p['boss'] and (round(p['x']),round(p['y'])) in self.walls:
-                self.projectiles.remove(p)
-                self._drop_pot_near(prevx, prevy)
-                continue
+            target = self.player if p['boss'] else self.boss
+            if distance((p['x'], p['y']), target) < .55:
+                self.phase = 'lose' if p['boss'] else 'win'
+                self.projectiles.clear()
+                return
             for other in list(self.projectiles):
-                if other is p or other['boss'] == p['boss']:
-                    continue
-                if math.hypot(p['x']-other['x'],p['y']-other['y']) < .5:
+                if p is other or other['boss'] == p['boss']: continue
+                if distance((p['x'], p['y']), (other['x'], other['y'])) < .48:
                     small = p if not p['boss'] else other
                     if small in self.projectiles:
                         self.projectiles.remove(small)
-                        self._drop_pot_near(small['x'],small['y'])
+                        self._drop_pot(small['x'], small['y'])
                     break
-            if p not in self.projectiles:
-                continue
-            target = self.player if p['boss'] else self.boss
-            if distance((p['x'],p['y']),target) < .56:
-                self.phase = 'lose' if p['boss'] else 'win'
-                self.projectiles.clear()
-                break
 
     def step(self, dt, mx=0, my=0, jump=False, fire=False, aimx=0, aimy=0):
-        if self.phase != 'playing':
-            return self.state()
-        dt = min(.085,max(0.01,float(dt)))
+        # Keep previous API signature for the existing Pyodide front-end.
+        if self.phase != 'playing': return self.state()
+        dt = min(.085, max(.01, float(dt)))
         self.clock += dt
-        self.jump_stacks = min(3.,self.jump_stacks+dt/5.)
-        self.boss_jump_cd = max(0.,self.boss_jump_cd-dt)
-        self.throw_cd = max(0.,self.throw_cd-dt)
-        self.boss_throw_cd = max(0.,self.boss_throw_cd-dt)
+        self.throw_cd = max(0., self.throw_cd-dt)
+        self.boss_throw_cd = max(0., self.boss_throw_cd-dt)
         self.player_move_cd -= dt
         self.boss_move_cd -= dt
-        self.notice_time = max(0.,self.notice_time-dt)
-        self.bell = max(0.,self.bell-dt)
-        self.alert = max(0.,self.alert-dt)
+        self.notice_time = max(0., self.notice_time-dt)
+        self.bell = max(0., self.bell-dt)
+        self._move_partitions(dt)
+        self._update_pads(dt)
+        if self.dash_effect:
+            self.dash_effect['age'] += dt
+            if self.dash_effect['age'] > .35: self.dash_effect = None
         dx, dy = int(mx), int(my)
-        if dx and dy:
-            dy = 0
-        if dx or dy:
-            self.face = [dx,dy]
-        if (dx or dy):
-            tx, ty = self.player[0] + dx, self.player[1] + dy
-            bx, by = self.player[0] + 2 * dx, self.player[1] + 2 * dy
-            if (tx, ty) in self.walls and self.jump_stacks >= 1 and self._free(bx, by):
-                self._jump_player(dx, dy)
-                self.player_move_cd = .10
-                self.notice, self.notice_time = '기묘가 파티션을 재빨리 넘었습니다!', 0.45
+        if dx and dy: dy = 0
+        if dx or dy: self.face = [dx, dy]
         if self.player_move_cd <= 0 and (dx or dy):
-            tx,ty = self.player[0]+dx,self.player[1]+dy
-            if self._free(tx,ty):
-                self.player = [tx,ty]
+            tx, ty = self.player[0] + dx, self.player[1] + dy
+            if self._free(tx, ty):
+                self.player = [tx, ty]
+                self._contact()
+                if self.phase == 'playing': self._activate_pad(self.player, (dx, dy))
             self.player_move_cd = .115
+        if self.phase != 'playing': return self.state()
         if fire and self.throw_cd <= 0 and self.ammo:
-            self._fire(self.player,[float(aimx) if aimx or aimy else self.face[0],
-                                    float(aimy) if aimx or aimy else self.face[1]])
-            self.throw_cd = .40
+            self._fire(self.player, self._aim(self.player, self.boss))
+            self.throw_cd = .38
         if self.boss_move_cd <= 0:
             self._move_boss()
-            self.boss_move_cd = .32
-        if self.boss_throw_cd <= 0 and self.boss_ammo and distance(self.player,self.boss) < 7.4 and self._sees_player():
-            self._fire(self.boss,[self.player[0]-self.boss[0],self.player[1]-self.boss[1]],True)
-            self.boss_throw_cd = 2.8
-        if (dx or dy) and distance(self.player,self.boss) <= 5:
-            self.bell = .7
-        self._advance_projectiles(dt)
+            self.boss_move_cd = .225
+        if self.phase != 'playing': return self.state()
         self._pickups()
+        # Boss projectile decision depends on ammo but no field-of-view angle.
+        if self.boss_throw_cd <= 0 and self.boss_ammo > 0 and distance(self.player, self.boss) < 7.3:
+            self._fire(self.boss, self._aim(self.boss, self.player), npc=True)
+            self.boss_throw_cd = 1.1
+        if (dx or dy) and distance(self.player, self.boss) <= 5:
+            self.bell = .65
+        self._advance_projectiles(dt)
         return self.state()
 
     def state(self):
-        return json.dumps({'phase':self.phase,'player':self.player,'boss':self.boss,
-            'face':self.face,'boss_face':self.boss_face,'walls':list(self.walls),'pots':self.pots,
-            'ammo':self.ammo,'boss_ammo':self.boss_ammo,'stacks':int(self.jump_stacks),
-            'jump_progress':round(self.jump_stacks%1,2),'boss_cd':round(self.boss_jump_cd,1),
-            'bell':self.bell>0,'notice':self.notice if self.notice_time else '',
-            'projectiles':self.projectiles,'vision_radius':3.4},ensure_ascii=False)
+        return json.dumps({'phase': self.phase, 'player': self.player, 'boss': self.boss,
+                           'face': self.face, 'boss_face': self.boss_face,
+                           'walls': sorted(self.walls), 'moving_walls': sorted(self.moving_walls),
+                           'pots': self.pots, 'pads': self.pads, 'projectiles': self.projectiles,
+                           'ammo': self.ammo, 'boss_ammo': self.boss_ammo,
+                           'aim': self._aim(self.player, self.boss),
+                           'boss_aim': self._aim(self.boss, self.player),
+                           'aim_sweep_degrees': 60,
+                           'dash_effect': self.dash_effect,
+                           'bell': self.bell > 0,
+                           'notice': self.notice if self.notice_time else '',
+                           'clock': round(self.clock, 2)}, ensure_ascii=False)
 
 if __name__ == '__main__':
-    game=PotBreaker(9)
-    for i in range(2000):
-        s=json.loads(game.step(.04,1 if i%6 < 3 else -1, 0, i%30==0, i%18==0,1,0))
-        assert len(s['pots'])==3 and 0<=s['stacks']<=3
-        if s['phase']!='playing': game.reset()
-    print('OK: 2000 ticks')
+    g = PotBreaker(42)
+    for i in range(2500):
+        s = json.loads(g.step(.04, 1 if i % 6 < 3 else -1, 0, False, i % 17 == 0))
+        assert len(s['pots']) >= 3
+        assert 0 <= s['boss_ammo'] <= 5
+        if s['phase'] != 'playing': g.reset()
+    print('OK: 2500 deterministic engine ticks')
