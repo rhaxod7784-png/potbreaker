@@ -6,7 +6,7 @@ const path=new URL(request.url).pathname;
 if(!["GET","HEAD"].includes(request.method))
   return new Response("Method Not Allowed",{status:405,headers:{Allow:"GET, HEAD"}});
 if(path==="/health")
-  return new Response(JSON.stringify({ok:true,version:"1.0.13",visual:"illustrated",engine:"Python/Pyodide"}),{headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store"}});
+  return new Response(JSON.stringify({ok:true,version:"1.0.14",visual:"illustrated",engine:"Python/Pyodide"}),{headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store"}});
 const page=path==="/"||path==="/index.html";
 if(!page&&path!=="/game.py")return new Response("Not Found",{status:404});
 const headers={"content-type":page?"text/html; charset=utf-8":"text/plain; charset=utf-8","cache-control":"public, max-age=60","x-content-type-options":"nosniff"};

@@ -125,6 +125,8 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
         self.assertIn("POT BREAKER RE v1.0.14", html)
+        build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
+        self.assertIn('version:"1.0.14"', build)
         self.assertIn('transform:rotate(90deg)', html)
         self.assertIn('id="rotateStart"', html)
         self.assertIn("(orientation:portrait) and (max-width:900px)", html)
