@@ -109,6 +109,8 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertIn("window.addEventListener('pointermove'", html)
         self.assertIn("window.addEventListener(event,release)", html)
         self.assertIn("function shatterSound()", html)
+        self.assertIn("unlockGameAudio();requestLandscapeMode();show('intro')", html)
+        self.assertIn("unlockGameAudio();requestLandscapeMode();stop()", html)
         self.assertIn("s.pot_breaks||[]", html)
 
     def test_opening_comic_has_four_equal_sized_panels(self):
