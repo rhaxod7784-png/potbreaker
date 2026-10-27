@@ -1,29 +1,73 @@
 import json
-from web.game import PotBreaker
+import re
+import unittest
+from pathlib import Path
 
-def test_simulation():
-    g=PotBreaker(10)
-    for _ in range(2000):
-        s=json.loads(g.step(.04,1,0,False,True,1,0))
-        assert len(s['pots']) == 3 and 0 <= s['stacks'] <= 3
-        if s['phase']!='playing': g.reset()
+from web.game import CROW_DROP_SECONDS, CROW_RESPAWN_SECONDS, PotBreaker
 
-def test_visibility_ignores_partition():
-    g=PotBreaker(1);g.walls={(9,6)};g.boss=[9,5];g.boss_face=[1,0];g.player=[9,7]
-    assert g._sees_player()
-    g.player=[10,5];assert not g._sees_player()
-    g.player=[8,5];assert not g._sees_player()
 
-def test_player_wall_jump_without_pot():
-    g=PotBreaker(1);g.walls={(9,6)};g.player=[9,5];g.ammo=0;g.jump_stacks=1
-    assert g._jump_player(0,1) and g.player==[9,7] and len(g.walls)==1
+class PotBreakerBalanceTests(unittest.TestCase):
+    def test_deterministic_engine_ticks_preserve_core_bounds(self):
+        game = PotBreaker(42)
+        for i in range(2500):
+            state = json.loads(game.step(.04, 1 if i % 6 < 3 else -1, 0, False, i % 17 == 0))
+            self.assertEqual(len(state["pots"]), 6)
+            self.assertTrue(0 <= state["boss_ammo"] <= 5)
+            self.assertTrue(0 <= state["player_hp"] <= 3 and 0 <= state["boss_hp"] <= 5)
+            if state["phase"] != "playing":
+                game.reset()
 
-def test_boss_breach_requires_pot_and_has_cooldown():
-    g=PotBreaker(4);g.boss=[9,5];g.player=[9,8];g.boss_face=[1,0];g.walls={(9,6),(9,7)};g.boss_ammo=0
-    g._move_boss();assert g.boss_jump_cd==0
-    g.boss=[9,5];g.boss_ammo=1;g._move_boss()
-    assert g.boss_jump_cd==15 and g.boss==[9,8]
+    def test_boss_dash_stops_at_partition(self):
+        game = PotBreaker(1)
+        game.boss = [9, 5]
+        game.moving_walls = {(10, 5)}
+        game.boss_dash_cd = 0
 
-def test_pickup_immediately_replenishes():
-    g=PotBreaker(13);g.ammo=0;g.player=list(g.pots[0]);g._pickups()
-    assert len(g.pots)==3 and g.ammo==1
+        self.assertFalse(game._dash(game.boss, 1, 0, True))
+        self.assertEqual(game.boss, [9, 5])
+
+    def test_boss_projectile_collides_with_partition(self):
+        game = PotBreaker(1)
+        game.player = [15, 5]
+        game.boss = [9, 5]
+        game.walls = {(10, 5)}
+        game._fire(game.boss, [1, 0], npc=True)
+
+        game._advance_projectiles(.085)
+
+        self.assertEqual(game.projectiles, [])
+
+    def test_boss_pots_are_slower_and_crow_events_are_rebalanced(self):
+        game = PotBreaker(1)
+        game.boss = [4, 5]
+        game.player = [15, 5]
+        game._fire(game.boss, [1, 0], npc=True)
+        game._advance_projectiles(.05)
+
+        self.assertAlmostEqual(game.projectiles[0]["x"] - 4, .32, places=2)
+        self.assertGreater(CROW_RESPAWN_SECONDS, 9.0)
+        self.assertLess(CROW_DROP_SECONDS, 1.05)
+
+        game = PotBreaker(2)
+        game.crow_spawn_timer = 0
+        created = 0
+        for _ in range(95):
+            before = game.crow_flight["drop"] if game.crow_flight else None
+            game._update_crow(.05)
+            after = game.crow_flight["drop"] if game.crow_flight else None
+            if before is not None and after is not None and after > before:
+                created += 1
+        self.assertGreaterEqual(created, 6)
+
+    def test_opening_comic_has_four_equal_sized_panels(self):
+        html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
+        match = re.search(r"const boxes=(\[[^;]+)", html)
+        self.assertIsNotNone(match)
+        boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
+        self.assertEqual(len(boxes), 4)
+        self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
+        self.assertIn("POT BREAKER RE v1.0.8", html)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -15,7 +15,7 @@ PAD_LIMIT = 8
 PARTITION_MOVE_SECONDS = 1.7
 FIELD_POT_COUNT = 6  # Exactly six collectible pots; throws relocate rather than add.
 CROW_FIRST_APPEAR_SECONDS = 2.5
-CROW_RESPAWN_SECONDS = 9.0
+CROW_RESPAWN_SECONDS = 14.0
 VISION_RANGE = None    # Boss can locate both player and pickup positions across entire map.
 AIM_SWEEP_DEGREES = 45.0
 AIM_SWEEP_SPEED = 6.5 * (2 / 3)  # QA default: faster ±30° automatic targeting
@@ -25,7 +25,7 @@ PLAYER_HP = 3
 BOSS_HP = 5
 HIT_INVULNERABILITY = 0.72
 CROW_FLIGHT_SECONDS = 4.2
-CROW_DROP_SECONDS = 1.05  # ±30° gives a full 60° arc.
+CROW_DROP_SECONDS = 0.6  # ±30° gives a full 60° arc.
 
 
 def distance(a, b):
@@ -135,7 +135,7 @@ class PotBreaker:
         self.crow_spawn_timer -= dt
         if self.crow_spawn_timer <= 0 and self.crow_flight is None:
             self.crow_flight = {'x': 1.0, 'y': float(self.rng.randint(1, HEIGHT-2)),
-                                'ttl': CROW_FLIGHT_SECONDS, 'drop': .35}
+                                'ttl': CROW_FLIGHT_SECONDS, 'drop': .3}
             self.crow_spawn_timer = CROW_RESPAWN_SECONDS
             self.notice, self.notice_time = '감 과장 출동! 랜덤 화분 폭격!', 1.0
         for bomb in list(self.crow_bombs):
@@ -215,7 +215,7 @@ class PotBreaker:
         candidate=None
         for amount in range(length,0,-1):
             tx,ty=start[0]+dx*amount,start[1]+dy*amount
-            if self._free(tx,ty):
+            if all(self._free(start[0]+dx*step,start[1]+dy*step) for step in range(1,amount+1)):
                 candidate=[tx,ty];break
         if candidate is None:return False
         # Collision during dash costs one player HP, respecting damage invulnerability.
@@ -312,18 +312,22 @@ class PotBreaker:
     def _advance_projectiles(self, dt):
         for p in list(self.projectiles):
             x, y = p['x'], p['y']
-            speed = 7.2 if p['boss'] else 9.4
-            p['x'] += p['dx'] * dt * speed
-            p['y'] += p['dy'] * dt * speed
+            speed = 6.4 if p['boss'] else 9.4
+            nx = x + p['dx'] * dt * speed
+            ny = y + p['dy'] * dt * speed
             p['range'] -= dt * speed
-            hit_wall = not p['boss'] and (round(p['x']), round(p['y'])) in (self.walls | self.moving_walls)
-            outside = not (0 <= p['x'] < WIDTH and 0 <= p['y'] < HEIGHT)
+            travel = max(abs(nx - x), abs(ny - y))
+            samples = max(1, math.ceil(travel * 8))
+            hit_wall = any((round(x + (nx-x)*i/samples), round(y + (ny-y)*i/samples)) in (self.walls | self.moving_walls)
+                           for i in range(1, samples+1))
+            outside = not (0 <= nx < WIDTH and 0 <= ny < HEIGHT)
             if p['range'] <= 0 or hit_wall or outside:
                 self.projectiles.remove(p)
                 self._drop_pot(x, y)
                 continue
+            p['x'], p['y'] = nx, ny
             target = self.player if p['boss'] else self.boss
-            if distance((p['x'], p['y']), target) < .55:
+            if distance((p['x'], p['y']), target) < (.62 if p['boss'] else .55):
                 self._damage(not p['boss'])
                 if p in self.projectiles:self.projectiles.remove(p)
                 if self.phase != 'playing':
