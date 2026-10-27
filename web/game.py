@@ -81,7 +81,9 @@ class PotBreaker:
         bestlen = float('inf')
         for pot in self.pots:
             path = self._path(who, pot)
-            cost = len(path) if path else 999
+            if not path:
+                continue  # Ignore temporarily sealed-off pickups; do not stand still.
+            cost = len(path)
             if cost < bestlen:
                 best, bestlen = list(pot), cost
         return best
@@ -211,11 +213,20 @@ class PotBreaker:
         # Omniscient NPC: target the player when equipped; seek nearest pot otherwise.
         if self.boss_ammo == 0:
             target = self._nearest_pot(self.boss)
-        elif self.boss_ammo <= 2 and self.pots and self.rng.random() < .60:
-            target = self._nearest_pot(self.boss)
+        elif self.boss_ammo <= 2 and self.pots:
+            pickup = self._nearest_pot(self.boss)
+            cost_pot = len(self._path(self.boss, pickup)) if pickup else 999
+            cost_player = len(self._path(self.boss, self.player))
+            target = pickup if pickup and cost_pot <= cost_player + 2 else self.player[:]
         else:
             target = self.player[:]
-        if target is None: return
+        if target is None:
+            # Temporarily enclosed by moving partitions: patrol until a pickup path opens.
+            reachable = [p for p in ((self.boss[0]+dx,self.boss[1]+dy) for dx,dy in DIRECTIONS) if self._free(*p)]
+            if reachable:
+                target = list(self.rng.choice(reachable))
+            else:
+                return
         self.boss_target = target
         next_step = self._path_step(self.boss, target)
         if next_step == tuple(self.boss): return
