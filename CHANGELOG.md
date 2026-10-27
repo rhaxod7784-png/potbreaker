@@ -1,4 +1,18 @@
 # POT BREAKER CHANGELOG
+## v1.0.11 — 모바일 첫 화면 잘림 수정
+
+**Release type:** PATCH  
+**Date:** 2026-10-27
+
+### Fixed
+- 모바일에서 설명 문구가 화면 폭 기준으로 커져 4컷 소개 화면과 입장 버튼이 아래로 잘리던 문제.
+- 4컷과 설명 영역을 게임 무대 높이 안에 맞추고 글자와 여백을 무대 크기에 따라 조정.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.10 — 기묘 이동 속도 소폭 상향
 
 **Release type:** PATCH  

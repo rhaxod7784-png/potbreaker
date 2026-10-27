@@ -78,8 +78,14 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.10", html)
+        self.assertIn("POT BREAKER RE v1.0.11", html)
         self.assertIn('transform:rotate(90deg)', html)
+
+    def test_mobile_intro_uses_stage_height_and_scaled_copy(self):
+        html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
+        self.assertIn(".intro{grid-template-rows:minmax(0,1fr);min-height:0}", html)
+        self.assertIn("font-size:clamp(15px,3.15cqw,45px)", html)
+        self.assertIn("min-height:0;max-height:100%", html)
         self.assertIn('stage.requestFullscreen', html)
         self.assertIn('11cqw', html)
         self.assertIn('.legend{display:none}', html)
