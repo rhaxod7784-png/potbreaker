@@ -1,4 +1,17 @@
 # POT BREAKER CHANGELOG
+## v1.0.10 — 기묘 이동 속도 소폭 상향
+
+**Release type:** PATCH  
+**Date:** 2026-10-27
+
+### Changed
+- 기묘의 일반 이동 간격을 0.115초에서 0.105초로, 돌진 후 이동 간격을 0.095초에서 0.09초로 줄여 이동 속도를 약 10% 높임.
+
+### Code
+- `web/game.py`, `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.9 — 모바일 화면 회전과 조작 UI 조정
 
 **Release type:** PATCH  

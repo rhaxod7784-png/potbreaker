@@ -3,7 +3,13 @@ import re
 import unittest
 from pathlib import Path
 
-from web.game import CROW_DROP_SECONDS, CROW_RESPAWN_SECONDS, PotBreaker
+from web.game import (
+    CROW_DROP_SECONDS,
+    CROW_RESPAWN_SECONDS,
+    PLAYER_DASH_MOVE_INTERVAL,
+    PLAYER_MOVE_INTERVAL,
+    PotBreaker,
+)
 
 
 class PotBreakerBalanceTests(unittest.TestCase):
@@ -59,6 +65,12 @@ class PotBreakerBalanceTests(unittest.TestCase):
                 created += 1
         self.assertGreaterEqual(created, 6)
 
+    def test_kimyo_movement_is_slightly_faster(self):
+        self.assertAlmostEqual(PLAYER_MOVE_INTERVAL, 0.105)
+        self.assertAlmostEqual(PLAYER_DASH_MOVE_INTERVAL, 0.09)
+        self.assertLess(PLAYER_MOVE_INTERVAL, 0.115)
+        self.assertLess(PLAYER_DASH_MOVE_INTERVAL, 0.095)
+
     def test_opening_comic_has_four_equal_sized_panels(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
         match = re.search(r"const boxes=(\[[^;]+)", html)
@@ -66,7 +78,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.9", html)
+        self.assertIn("POT BREAKER RE v1.0.10", html)
         self.assertIn('transform:rotate(90deg)', html)
         self.assertIn('stage.requestFullscreen', html)
         self.assertIn('11cqw', html)

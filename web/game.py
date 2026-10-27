@@ -21,6 +21,8 @@ AIM_SWEEP_DEGREES = 45.0
 AIM_SWEEP_SPEED = 6.5 * (2 / 3)  # QA default: faster ±30° automatic targeting
 PLAYER_DASH_COOLDOWN = 3.0
 BOSS_DASH_COOLDOWN = 5.0
+PLAYER_MOVE_INTERVAL = 0.105
+PLAYER_DASH_MOVE_INTERVAL = 0.09
 PLAYER_HP = 3
 BOSS_HP = 5
 HIT_INVULNERABILITY = 0.72
@@ -367,13 +369,13 @@ class PotBreaker:
         if dx or dy: self.face = [dx, dy]
         if jump and (dx or dy) and self.player_dash_cd <= 0:
             self._dash(self.player, dx, dy, False)
-            self.player_move_cd = .095
+            self.player_move_cd = PLAYER_DASH_MOVE_INTERVAL
         if self.player_move_cd <= 0 and (dx or dy):
             tx, ty = self.player[0] + dx, self.player[1] + dy
             if self._free(tx, ty):
                 self.player = [tx, ty]
                 self._contact()
-            self.player_move_cd = .115
+            self.player_move_cd = PLAYER_MOVE_INTERVAL
         if self.phase != 'playing': return self.state()
         if fire and self.throw_cd <= 0 and self.ammo:
             self._fire(self.player, self._aim(self.player, self.boss))
