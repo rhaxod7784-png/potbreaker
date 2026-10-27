@@ -1,4 +1,19 @@
 # POT BREAKER CHANGELOG
+## v1.0.12 — 모바일 조이스틱 대각선과 터치 영역 개선
+
+**Release type:** PATCH  
+**Date:** 2026-10-27
+
+### Changed
+- 모바일 조이스틱으로 8방향 이동을 지원하고, 대각선 이동 때 모서리 벽을 통과하지 않도록 처리.
+- 대각선 이동 간격을 보정해 기존 이동 속도를 유지.
+- 모바일 던지기 버튼의 터치 영역을 최소 112×112 CSS px로 확대.
+
+### Code
+- `web/game.py`, `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.11 — 모바일 첫 화면 잘림 수정
 
 **Release type:** PATCH  

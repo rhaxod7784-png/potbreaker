@@ -84,6 +84,13 @@ class PotBreaker:
     def _free(self, x, y):
         return 0 <= x < WIDTH and 0 <= y < HEIGHT and (x, y) not in self.walls and (x, y) not in self.moving_walls
 
+    def _free_step(self, x, y, dx, dy):
+        nx, ny = x + dx, y + dy
+        if not self._free(nx, ny): return False
+        if dx and dy:
+            return self._free(x + dx, y) and self._free(x, y + dy)
+        return True
+
     def _add_pot(self):
         if len(self.pots) >= FIELD_POT_COUNT: return
         choices = [(x, y) for y in range(HEIGHT) for x in range(WIDTH)
@@ -217,7 +224,8 @@ class PotBreaker:
         candidate=None
         for amount in range(length,0,-1):
             tx,ty=start[0]+dx*amount,start[1]+dy*amount
-            if all(self._free(start[0]+dx*step,start[1]+dy*step) for step in range(1,amount+1)):
+            if all(self._free_step(start[0]+dx*(step-1),start[1]+dy*(step-1),dx,dy)
+                   for step in range(1,amount+1)):
                 candidate=[tx,ty];break
         if candidate is None:return False
         # Collision during dash costs one player HP, respecting damage invulnerability.
@@ -365,17 +373,16 @@ class PotBreaker:
             self.dash_effect['age'] += dt
             if self.dash_effect['age'] > .35: self.dash_effect = None
         dx, dy = int(mx), int(my)
-        if dx and dy: dy = 0
         if dx or dy: self.face = [dx, dy]
         if jump and (dx or dy) and self.player_dash_cd <= 0:
             self._dash(self.player, dx, dy, False)
-            self.player_move_cd = PLAYER_DASH_MOVE_INTERVAL
+            self.player_move_cd = PLAYER_DASH_MOVE_INTERVAL * (math.sqrt(2) if dx and dy else 1)
         if self.player_move_cd <= 0 and (dx or dy):
             tx, ty = self.player[0] + dx, self.player[1] + dy
-            if self._free(tx, ty):
+            if self._free_step(self.player[0], self.player[1], dx, dy):
                 self.player = [tx, ty]
                 self._contact()
-            self.player_move_cd = PLAYER_MOVE_INTERVAL
+            self.player_move_cd = PLAYER_MOVE_INTERVAL * (math.sqrt(2) if dx and dy else 1)
         if self.phase != 'playing': return self.state()
         if fire and self.throw_cd <= 0 and self.ammo:
             self._fire(self.player, self._aim(self.player, self.boss))

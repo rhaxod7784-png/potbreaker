@@ -71,6 +71,26 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertLess(PLAYER_MOVE_INTERVAL, 0.115)
         self.assertLess(PLAYER_DASH_MOVE_INTERVAL, 0.095)
 
+    def test_diagonal_player_movement_and_corner_collision(self):
+        game = PotBreaker(3)
+        game.player = [5, 5]
+        game.walls = {(6, 5)}
+        game.player_move_cd = 0
+        game.step(.04, 1, 1)
+        self.assertEqual(game.player, [5, 5])
+
+        game.walls.clear()
+        game.player_move_cd = 0
+        game.step(.04, 1, 1)
+        self.assertEqual(game.player, [6, 6])
+        self.assertAlmostEqual(game.player_move_cd, PLAYER_MOVE_INTERVAL * 2**0.5)
+
+    def test_mobile_controls_allow_diagonal_and_large_throw_target(self):
+        html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
+        self.assertIn("[Math.abs(x)>.23?Math.sign(x):0,Math.abs(y)>.23?Math.sign(y):0]", html)
+        self.assertIn("@media (pointer:coarse),(max-height:520px)", html)
+        self.assertIn(".action.fire{width:clamp(112px,17cqw,152px);min-width:112px;min-height:112px}", html)
+
     def test_opening_comic_has_four_equal_sized_panels(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
         match = re.search(r"const boxes=(\[[^;]+)", html)
@@ -78,7 +98,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.11", html)
+        self.assertIn("POT BREAKER RE v1.0.12", html)
         self.assertIn('transform:rotate(90deg)', html)
 
     def test_mobile_intro_uses_stage_height_and_scaled_copy(self):
