@@ -250,7 +250,7 @@ class PotBreaker:
             'bell':self.bell>0,'notice':self.notice if self.notice_time else '',
             'projectiles':self.projectiles,'vision_radius':3.4},ensure_ascii=False)
 
-if __name__ == '__main__':
+if __name__ == '__main__' and not globals().get('IN_BROWSER', False):
     game=PotBreaker(9)
     for i in range(2000):
         s=json.loads(game.step(.04,1 if i%6 < 3 else -1, 0, i%30==0, i%18==0,1,0))
