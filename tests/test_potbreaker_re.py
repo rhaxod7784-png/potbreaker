@@ -121,6 +121,8 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertIn("POT BREAKER RE v1.0.13", html)
         self.assertIn('transform:rotate(90deg)', html)
         self.assertIn('id="rotateStart"', html)
+        self.assertIn("(orientation:portrait) and (max-width:900px)", html)
+        self.assertIn("position:fixed;z-index:100", html)
         self.assertIn("requestLandscapeMode();show('intro')", html)
 
     def test_mobile_intro_uses_stage_height_and_scaled_copy(self):
