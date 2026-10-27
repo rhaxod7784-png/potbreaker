@@ -40,7 +40,9 @@ class PotBreaker:
             for x in range(1, WIDTH-1):
                 if (x, y) not in safe and abs(x - self.player[0]) + abs(y - self.player[1]) > 2 and abs(x - self.boss[0]) + abs(y - self.boss[1]) > 2 and self.rng.random() < 0.23:
                     self.walls.add((x, y))
-        self.walls = {p for p in self.walls if self._is_connected(self.player, self.boss)}
+        # Carve openings if a random partition layout blocks every route.
+        while self.walls and not self._is_connected(self.player, self.boss):
+            self.walls.remove(self.rng.choice(tuple(self.walls)))
         self.ammo = 1
         self.boss_ammo = 2
         self.jump_stacks = 1.0
@@ -268,7 +270,6 @@ if __name__ == '__main__':
         assert len(s['pots'])==3 and 0<=s['stacks']<=3
         if s['phase']!='playing': game.reset()
     print('OK: 2000 ticks')
-
 </script>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
 <script>
