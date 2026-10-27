@@ -584,4 +584,16 @@ if __name__ == '__main__':
         assert 0 <= s['player_hp'] <= 3 and 0 <= s['boss_hp'] <= 5
         if s['phase'] != 'playing': g.reset()
     print('OK: 2500 deterministic engine ticks')
+</script><script>
+/* v1.0.7 equal-sized 4-panel comic layout */
+(()=>{const img=document.querySelector('img.comic-cover');if(!img||img.dataset.uniform4)return;
+const render=()=>{if(img.naturalWidth!==1448||img.naturalHeight!==1086)return;
+const c=document.createElement('canvas');c.width=1448;c.height=1086;
+const g=c.getContext('2d');if(!g)return;g.drawImage(img,0,0);
+g.fillStyle='#fffaf2';g.fillRect(0,184,1448,902);
+const crops=[[23,192,674,350],[716,192,668,392],[27,546,651,474],[716,604,666,426]];
+const boxes=[[26,196,672,409],[717,196,672,409],[26,618,672,409],[717,618,672,409]];
+crops.forEach((q,i)=>{const [x,y,w,h]=boxes[i];g.fillStyle='#fff';g.fillRect(x-4,y-4,w+8,h+8);g.save();g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,14);else g.rect(x,y,w,h);g.clip();g.drawImage(img,...q,x,y,w,h);g.restore();g.lineWidth=2;g.strokeStyle='#eeebdf';g.strokeRect(x-2,y-2,w+4,h+4);});
+img.dataset.uniform4='1';img.src=c.toDataURL('image/webp',.92);};
+if(img.complete&&img.naturalWidth)render();else img.addEventListener('load',render,{once:true});})();
 </script></body></html>
