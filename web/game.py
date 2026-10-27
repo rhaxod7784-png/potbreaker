@@ -71,6 +71,26 @@ class PotBreaker:
         if choices:
             self.pots.append(list(self.rng.choice(choices)))
 
+    def _nearest_pot(self, who):
+        return min(self.pots, key=lambda p: distance(who, p)) if self.pots else None
+
+    def _drop_pot_near(self, x, y):
+        base = (max(0, min(WIDTH - 1, int(round(x)))), max(0, min(HEIGHT - 1, int(round(y)))))
+        candidates = [base]
+        for r in range(1, 4):
+            for dy in range(-r, r + 1):
+                for dx in range(-r, r + 1):
+                    if abs(dx) + abs(dy) == r:
+                        candidates.append((base[0] + dx, base[1] + dy))
+        for nx, ny in candidates:
+            if self._free(nx, ny) and [nx, ny] not in self.pots and [nx, ny] not in (self.player, self.boss):
+                # Keep the three field pots invariant, while leaving the missed pot at its landing spot.
+                if len(self.pots) >= 3:
+                    self.pots.pop(self.rng.randrange(len(self.pots)))
+                self.pots.append([nx, ny])
+                return True
+        return False
+
     def _path_step(self, start, goal):
         start, goal = tuple(start), tuple(goal)
         if start == goal:
@@ -139,7 +159,13 @@ class PotBreaker:
         if visible:
             self.last_seen = list(self.player)
             self.alert = 2.8
-        target = self.last_seen if self.alert > 0 and self.last_seen else None
+        target = None
+        if self.boss_ammo <= 0 and self.pots:
+            target = list(self._nearest_pot(self.boss))
+        elif self.boss_ammo < 2 and self.pots and (not visible or self.rng.random() < 0.65):
+            target = list(self._nearest_pot(self.boss))
+        elif self.alert > 0 and self.last_seen:
+            target = self.last_seen
         if not target:
             if self.roam is None or self.boss == self.roam or self.rng.random() < .10:
                 self.roam = [self.rng.randrange(1,WIDTH-1), self.rng.randrange(1,HEIGHT-1)]
@@ -174,14 +200,17 @@ class PotBreaker:
 
     def _advance_projectiles(self, dt):
         for p in list(self.projectiles):
+            prevx, prevy = p['x'], p['y']
             p['x'] += p['dx'] * dt * (7.1 if p['boss'] else 9.6)
             p['y'] += p['dy'] * dt * (7.1 if p['boss'] else 9.6)
             p['range'] -= dt * (7.1 if p['boss'] else 9.6)
             if p['range'] <= 0 or not (0 <= p['x'] < WIDTH and 0 <= p['y'] < HEIGHT):
                 self.projectiles.remove(p)
+                self._drop_pot_near(prevx, prevy)
                 continue
             if not p['boss'] and (round(p['x']),round(p['y'])) in self.walls:
                 self.projectiles.remove(p)
+                self._drop_pot_near(prevx, prevy)
                 continue
             for other in list(self.projectiles):
                 if other is p or other['boss'] == p['boss']:
@@ -190,6 +219,7 @@ class PotBreaker:
                     small = p if not p['boss'] else other
                     if small in self.projectiles:
                         self.projectiles.remove(small)
+                        self._drop_pot_near(small['x'],small['y'])
                     break
             if p not in self.projectiles:
                 continue
@@ -218,9 +248,13 @@ class PotBreaker:
             dy = 0
         if dx or dy:
             self.face = [dx,dy]
-        if jump and (dx or dy):
-            if self._jump_player(dx,dy):
+        if (dx or dy):
+            tx, ty = self.player[0] + dx, self.player[1] + dy
+            bx, by = self.player[0] + 2 * dx, self.player[1] + 2 * dy
+            if (tx, ty) in self.walls and self.jump_stacks >= 1 and self._free(bx, by):
+                self._jump_player(dx, dy)
                 self.player_move_cd = .10
+                self.notice, self.notice_time = '기묘가 파티션을 재빨리 넘었습니다!', 0.45
         if self.player_move_cd <= 0 and (dx or dy):
             tx,ty = self.player[0]+dx,self.player[1]+dy
             if self._free(tx,ty):
