@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.3 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.4 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -12,13 +12,17 @@ DIRECTIONS = ((1, 0), (-1, 0), (0, 1), (0, -1))
 PAD_SPAWN_SECONDS = 1.15
 PAD_LIFETIME_SECONDS = 8.0
 PAD_LIMIT = 8
-PARTITION_MOVE_SECONDS = 1.1
+PARTITION_MOVE_SECONDS = 1.7
 VISION_RANGE = None    # Boss can locate both player and pickup positions across entire map.
-AIM_SWEEP_DEGREES = 30.0
-AIM_SWEEP_SPEED = 8.5  # QA default: faster ±30° automatic targeting
-MONITOR_FREEZE_SECONDS = 2.1  # QA provisional; user did not define duration
-CROW_FLIGHT_SECONDS = 6.0
-CROW_DROP_SECONDS = 0.75  # ±30° gives a full 60° arc.
+AIM_SWEEP_DEGREES = 45.0
+AIM_SWEEP_SPEED = 6.5  # QA default: faster ±30° automatic targeting
+PLAYER_DASH_COOLDOWN = 3.0
+BOSS_DASH_COOLDOWN = 5.0
+PLAYER_HP = 3
+BOSS_HP = 10
+HIT_INVULNERABILITY = 0.42
+CROW_FLIGHT_SECONDS = 4.2
+CROW_DROP_SECONDS = 1.05  # ±30° gives a full 60° arc.
 
 
 def distance(a, b):
@@ -60,20 +64,19 @@ class PotBreaker:
         self.ammo, self.boss_ammo, self.max_boss_ammo = 1, 5, 5
         self.throw_cd, self.boss_throw_cd = 0.0, 1.2
         self.player_move_cd, self.boss_move_cd = 0.0, .5
-        self.projectiles, self.pots, self.pads = [], [], []
-        self.monitors, self.crows, self.crow_flight = [], [], None
-        self.player_freeze = self.boss_freeze = 0.0
-        self.monitor_spawn_timer = 1.4
-        self.crow_spawn_timer = 3.0
-        self.pad_spawn_timer, self.partition_timer = .3, 1.1
-        self.notice, self.notice_time = '대시 패드를 밟으면 기묘는 3칸 이동합니다.', 2.2
+        self.projectiles, self.pots = [], []
+        self.crow_flight, self.crow_bombs = None, []
+        self.crow_spawn_timer = 8.0
+        self.player_hp, self.boss_hp = PLAYER_HP, BOSS_HP
+        self.player_invuln, self.boss_invuln = 0.0, 0.0
+        self.player_dash_cd, self.boss_dash_cd = 0.0, 0.0
+        self.partition_timer = PARTITION_MOVE_SECONDS
+        self.notice, self.notice_time = '대시 버튼: 3칸 돌진 · 3초 재사용 대기', 2.2
         self.bell = 0.0
         self.dash_effect = None
         self.boss_target = None
         for _ in range(3): self._add_pot()
-        for _ in range(4): self._spawn_pad()
-        self._spawn_collectible('monitor')
-        self._spawn_collectible('crow')
+        
         return self.state()
 
     def _free(self, x, y):
@@ -118,85 +121,54 @@ class PotBreaker:
         path = self._path(start, goal)
         return path[1] if len(path) >= 2 else tuple(start)
 
-    def _spawn_collectible(self, kind):
-        target = self.monitors if kind == 'monitor' else self.crows
-        occupied = {tuple(self.player), tuple(self.boss)}
-        occupied.update(tuple(q) for q in self.pots)
-        occupied.update((q['x'], q['y']) for q in self.pads)
-        occupied.update(tuple(q) for q in self.monitors + self.crows)
-        options = [(x, y) for y in range(1, HEIGHT-1) for x in range(1, WIDTH-1)
-                   if self._free(x, y) and (x, y) not in occupied]
-        if options and len(target) < 2:
-            target.append(list(self.rng.choice(options)))
-
-    def _collect_special(self):
-        for who, npc in ((self.player, False), (self.boss, True)):
-            for pos in list(self.monitors):
-                if who != pos: continue
-                self.monitors.remove(pos)
-                if npc: self.boss_freeze = MONITOR_FREEZE_SECONDS
-                else: self.player_freeze = MONITOR_FREEZE_SECONDS
-                self.notice, self.notice_time = ('크다 부장 모니터 정지!' if npc else '기묘 모니터 정지!'), 1.1
-                self.monitor_spawn_timer = max(self.monitor_spawn_timer, 2.0)
-            for pos in list(self.crows):
-                if who != pos: continue
-                self.crows.remove(pos)
-                self.crow_flight = {'x': float(who[0]), 'y': float(who[1]),
-                                    'ttl': CROW_FLIGHT_SECONDS, 'drop': .20}
-                self.notice, self.notice_time = '감 과장 출동! 화분 투하!', 1.35
-                self.crow_spawn_timer = max(self.crow_spawn_timer, CROW_FLIGHT_SECONDS + 1)
-
-    def _update_special(self, dt):
-        self.player_freeze = max(0., self.player_freeze-dt)
-        self.boss_freeze = max(0., self.boss_freeze-dt)
-        self.monitor_spawn_timer -= dt
+    def _update_crow(self, dt):
         self.crow_spawn_timer -= dt
-        if self.monitor_spawn_timer <= 0:
-            self.monitor_spawn_timer = 5.5
-            self._spawn_collectible('monitor')
-        if self.crow_spawn_timer <= 0:
-            self.crow_spawn_timer = 12.0
-            self._spawn_collectible('crow')
+        if self.crow_spawn_timer <= 0 and self.crow_flight is None:
+            self.crow_flight = {'x': 1.0, 'y': float(self.rng.randint(1, HEIGHT-2)),
+                                'ttl': CROW_FLIGHT_SECONDS, 'drop': .35}
+            self.crow_spawn_timer = 11.0
+            self.notice, self.notice_time = '감 과장 출동! 랜덤 화분 폭격!', 1.0
+        for bomb in list(self.crow_bombs):
+            bomb['ttl'] -= dt
+            if bomb['ttl'] <= 0:
+                self.crow_bombs.remove(bomb)
+                if distance(self.player, (bomb['x'],bomb['y'])) < .72: self._damage(False)
+                if distance(self.boss, (bomb['x'],bomb['y'])) < .72: self._damage(True)
+                self._drop_pot(bomb['x'], bomb['y'])
         bird = self.crow_flight
-        if not bird: return
+        if bird is None: return
         bird['ttl'] -= dt
-        t = CROW_FLIGHT_SECONDS - bird['ttl']
-        bird['x'] = (t * 3.0 + 1.0) % (WIDTH - 2) + 1.0
-        bird['y'] = max(.7, min(HEIGHT-1.5, HEIGHT/2 + math.sin(t*2.4)*3.1))
+        elapsed = CROW_FLIGHT_SECONDS - bird['ttl']
+        bird['x'] = min(WIDTH-1.0, 1.0 + elapsed * (WIDTH-2)/CROW_FLIGHT_SECONDS)
+        bird['y'] = max(.75, min(HEIGHT-1.3, 5.0 + math.sin(elapsed*3.2)*2.3))
         bird['drop'] -= dt
         if bird['drop'] <= 0:
             bird['drop'] = CROW_DROP_SECONDS
-            # The crow adds real collectible flowerpots on the field.
-            self._drop_pot(bird['x'], bird['y'])
-        if bird['ttl'] <= 0: self.crow_flight = None
+            tx=self.rng.randint(1,WIDTH-2); ty=self.rng.randint(1,HEIGHT-2)
+            if self._free(tx,ty):
+                self.crow_bombs.append({'x':tx,'y':ty,'ttl':.83})
+        if bird['ttl'] <= 0: self.crow_flight=None
 
-    def _spawn_pad(self):
-        positions = {(p['x'], p['y']) for p in self.pads}
-        choices = [(x, y) for y in range(1, HEIGHT - 1) for x in range(1, WIDTH - 1)
-                   if self._free(x, y) and (x, y) not in positions
-                   and [x, y] not in self.pots and [x, y] not in (self.player, self.boss)]
-        if choices:
-            x, y = self.rng.choice(choices)
-            self.pads.append({'x': x, 'y': y, 'ttl': PAD_LIFETIME_SECONDS})
-
-    def _update_pads(self, dt):
-        for pad in list(self.pads):
-            pad['ttl'] -= dt
-            if pad['ttl'] <= 0: self.pads.remove(pad)
-        self.pad_spawn_timer -= dt
-        if self.pad_spawn_timer <= 0:
-            self.pad_spawn_timer = PAD_SPAWN_SECONDS
-            if len(self.pads) < PAD_LIMIT: self._spawn_pad()
+    def _damage(self, npc):
+        if self.phase != 'playing': return
+        if npc:
+            if self.boss_invuln > 0: return
+            self.boss_hp=max(0,self.boss_hp-1)
+            self.boss_invuln=HIT_INVULNERABILITY
+            if self.boss_hp == 0: self.phase='win'
+        else:
+            if self.player_invuln > 0: return
+            self.player_hp=max(0,self.player_hp-1)
+            self.player_invuln=HIT_INVULNERABILITY
+            if self.player_hp == 0: self.phase='lose'
 
     def _move_partitions(self, dt):
         self.partition_timer -= dt
         if self.partition_timer > 0: return
         self.partition_timer = PARTITION_MOVE_SECONDS
         occupied = {tuple(self.player), tuple(self.boss), *[tuple(p) for p in self.pots]}
-        occupied.update((pad['x'], pad['y']) for pad in self.pads)
-        occupied.update(tuple(p) for p in self.monitors + self.crows)
         new_positions = set(self.moving_walls)
-        for old in self.rng.sample(sorted(self.moving_walls), min(5, len(self.moving_walls))):
+        for old in self.rng.sample(sorted(self.moving_walls), min(3, len(self.moving_walls))):
             dirs = list(DIRECTIONS); self.rng.shuffle(dirs)
             for dx, dy in dirs:
                 target = (old[0] + dx, old[1] + dy)
@@ -210,29 +182,26 @@ class PotBreaker:
 
     def _dash(self, who, dx, dy, npc):
         if not (dx or dy): return False
-        start = who[:]
-        length = 5 if npc else 3
-        # Skip barriers while dashing; only free landing tiles are allowed.
-        candidate = None
-        for amount in range(length, 0, -1):
-            tx, ty = start[0] + dx * amount, start[1] + dy * amount
-            if self._free(tx, ty):
-                candidate = [tx, ty]
-                break
-        if candidate is None: return False
-        who[:] = candidate
-        self.dash_effect = {'from': start, 'to': candidate[:], 'npc': npc, 'age': 0.0}
-        self.notice, self.notice_time = ('쾅! 크다 부장 5칸 대시!' if npc else '슝! 기묘 3칸 대시!'), .55
+        attr = 'boss_dash_cd' if npc else 'player_dash_cd'
+        if getattr(self,attr)>0: return False
+        start=who[:]; length=5 if npc else 3
+        candidate=None
+        for amount in range(length,0,-1):
+            tx,ty=start[0]+dx*amount,start[1]+dy*amount
+            if self._free(tx,ty):
+                candidate=[tx,ty];break
+        if candidate is None:return False
+        # Contact is fatal even when a dash crosses the opponent.
+        other=self.player if npc else self.boss
+        if dx and other[1]==start[1] and (other[0]-start[0])*dx>0 and abs(other[0]-start[0])<=abs(candidate[0]-start[0]):
+            self.phase='lose'
+        if dy and other[0]==start[0] and (other[1]-start[1])*dy>0 and abs(other[1]-start[1])<=abs(candidate[1]-start[1]):
+            self.phase='lose'
+        who[:]=candidate
+        setattr(self,attr,BOSS_DASH_COOLDOWN if npc else PLAYER_DASH_COOLDOWN)
+        self.dash_effect={'from':start,'to':candidate[:],'npc':npc,'age':0.0}
         self._contact()
         return True
-
-    def _activate_pad(self, who, direction, npc=False):
-        for pad in list(self.pads):
-            if [pad['x'], pad['y']] != who: continue
-            if self._dash(who, direction[0], direction[1], npc):
-                self.pads.remove(pad)
-                return True
-        return False
 
     def _contact(self):
         if self.player == self.boss: self.phase = 'lose'
@@ -292,14 +261,21 @@ class PotBreaker:
             else:
                 return
         self.boss_target = target
-        if self.boss_freeze > 0: return
         next_step = self._path_step(self.boss, target)
-        if next_step == tuple(self.boss): return
+        if next_step == tuple(self.boss):
+            if target != self.boss and self.boss_dash_cd <= 0:
+                dx = 0 if target[0]==self.boss[0] else (1 if target[0]>self.boss[0] else -1)
+                dy = 0 if target[1]==self.boss[1] else (1 if target[1]>self.boss[1] else -1)
+                if dx and dy: dy=0
+                self._dash(self.boss,dx,dy,True)
+            return
+        if self.boss_dash_cd <= 0 and distance(self.boss,target)>=3.4 and self.rng.random()<.34:
+            dx=next_step[0]-self.boss[0];dy=next_step[1]-self.boss[1]
+            if self._dash(self.boss,dx,dy,True):return
         dx, dy = next_step[0] - self.boss[0], next_step[1] - self.boss[1]
         self.boss_face = [dx, dy]
         self.boss = list(next_step)
         self._contact()
-        if self.phase == 'playing': self._activate_pad(self.boss, (dx, dy), npc=True)
 
     def _advance_projectiles(self, dt):
         for p in list(self.projectiles):
@@ -316,9 +292,12 @@ class PotBreaker:
                 continue
             target = self.player if p['boss'] else self.boss
             if distance((p['x'], p['y']), target) < .55:
-                self.phase = 'lose' if p['boss'] else 'win'
-                self.projectiles.clear()
-                return
+                self._damage(not p['boss'])
+                if p in self.projectiles:self.projectiles.remove(p)
+                if self.phase != 'playing':
+                    self.projectiles.clear()
+                    return
+                continue
             for other in list(self.projectiles):
                 if p is other or other['boss'] == p['boss']: continue
                 if distance((p['x'], p['y']), (other['x'], other['y'])) < .48:
@@ -333,6 +312,10 @@ class PotBreaker:
         if self.phase != 'playing': return self.state()
         dt = min(.085, max(.01, float(dt)))
         self.clock += dt
+        self.player_dash_cd=max(0.,self.player_dash_cd-dt)
+        self.boss_dash_cd=max(0.,self.boss_dash_cd-dt)
+        self.player_invuln=max(0.,self.player_invuln-dt)
+        self.boss_invuln=max(0.,self.boss_invuln-dt)
         self.throw_cd = max(0., self.throw_cd-dt)
         self.boss_throw_cd = max(0., self.boss_throw_cd-dt)
         self.player_move_cd -= dt
@@ -340,33 +323,33 @@ class PotBreaker:
         self.notice_time = max(0., self.notice_time-dt)
         self.bell = max(0., self.bell-dt)
         self._move_partitions(dt)
-        self._update_pads(dt)
-        self._update_special(dt)
+        self._update_crow(dt)
         if self.dash_effect:
             self.dash_effect['age'] += dt
             if self.dash_effect['age'] > .35: self.dash_effect = None
         dx, dy = int(mx), int(my)
         if dx and dy: dy = 0
         if dx or dy: self.face = [dx, dy]
-        if self.player_freeze <= 0 and self.player_move_cd <= 0 and (dx or dy):
+        if jump and (dx or dy) and self.player_dash_cd <= 0:
+            self._dash(self.player, dx, dy, False)
+            self.player_move_cd = .095
+        if self.player_move_cd <= 0 and (dx or dy):
             tx, ty = self.player[0] + dx, self.player[1] + dy
             if self._free(tx, ty):
                 self.player = [tx, ty]
                 self._contact()
-                if self.phase == 'playing': self._activate_pad(self.player, (dx, dy))
             self.player_move_cd = .115
         if self.phase != 'playing': return self.state()
-        if self.player_freeze <= 0 and fire and self.throw_cd <= 0 and self.ammo:
+        if fire and self.throw_cd <= 0 and self.ammo:
             self._fire(self.player, self._aim(self.player, self.boss))
             self.throw_cd = .38
-        if self.boss_move_cd <= 0 and self.boss_freeze <= 0:
+        if self.boss_move_cd <= 0:
             self._move_boss()
             self.boss_move_cd = .225
         if self.phase != 'playing': return self.state()
         self._pickups()
-        self._collect_special()
         # Boss projectile decision depends on ammo but no field-of-view angle.
-        if self.boss_freeze <= 0 and self.boss_throw_cd <= 0 and self.boss_ammo > 0 and distance(self.player, self.boss) < 7.3:
+        if self.boss_throw_cd <= 0 and self.boss_ammo > 0 and distance(self.player, self.boss) < 7.3:
             aim = self._aim(self.boss, self.player)
             base_angle = math.atan2(aim[1], aim[0])
             # Paired projectiles converge around the swept automatic aim ray.
@@ -383,13 +366,14 @@ class PotBreaker:
         return json.dumps({'phase': self.phase, 'player': self.player, 'boss': self.boss,
                            'face': self.face, 'boss_face': self.boss_face,
                            'walls': sorted(self.walls), 'moving_walls': sorted(self.moving_walls),
-                           'pots': self.pots, 'pads': self.pads, 'projectiles': self.projectiles,
-                           'monitors': self.monitors, 'crows': self.crows, 'crow_flight': self.crow_flight,
-                           'player_freeze': round(self.player_freeze,2), 'boss_freeze': round(self.boss_freeze,2),
+                           'pots': self.pots, 'projectiles': self.projectiles,
+                           'crow_flight': self.crow_flight, 'crow_bombs': self.crow_bombs,
+                           'player_hp': self.player_hp, 'boss_hp': self.boss_hp,
+                           'player_dash_cd': round(self.player_dash_cd,2), 'boss_dash_cd': round(self.boss_dash_cd,2),
                            'ammo': self.ammo, 'boss_ammo': self.boss_ammo,
                            'aim': self._aim(self.player, self.boss),
                            'boss_aim': self._aim(self.boss, self.player),
-                           'aim_sweep_degrees': 60,
+                           'aim_sweep_degrees': 90,
                            'dash_effect': self.dash_effect,
                            'bell': self.bell > 0,
                            'notice': self.notice if self.notice_time else '',
@@ -401,5 +385,6 @@ if __name__ == '__main__':
         s = json.loads(g.step(.04, 1 if i % 6 < 3 else -1, 0, False, i % 17 == 0))
         assert len(s['pots']) >= 3
         assert 0 <= s['boss_ammo'] <= 5
+        assert 0 <= s['player_hp'] <= 3 and 0 <= s['boss_hp'] <= 10
         if s['phase'] != 'playing': g.reset()
     print('OK: 2500 deterministic engine ticks')
