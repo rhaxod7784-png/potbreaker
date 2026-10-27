@@ -1,4 +1,18 @@
 # POT BREAKER CHANGELOG
+## v1.0.14 — 모바일 조이스틱 터치 입력 보강
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 포인터 이벤트에 터치 이벤트 처리를 추가해 모바일에서 조이스틱 입력이 끊기지 않게 보강.
+- 세로 화면 회전 대체 모드에서 화면 좌표를 게임 방향에 맞게 변환.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.13 — 조이스틱 응답성과 화분 파손음
 
 **Release type:** PATCH  

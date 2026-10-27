@@ -107,7 +107,11 @@ class PotBreakerBalanceTests(unittest.TestCase):
     def test_mobile_stick_capture_and_shatter_audio_are_wired(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
         self.assertIn("window.addEventListener('pointermove'", html)
-        self.assertIn("window.addEventListener(event,release)", html)
+        self.assertIn("joy.addEventListener('touchstart'", html)
+        self.assertIn("window.addEventListener('touchmove'", html)
+        self.assertIn("new DOMMatrix(transform).inverse()", html)
+        self.assertIn("window.addEventListener(event,releasePointer)", html)
+        self.assertIn("window.addEventListener(event,releaseTouch", html)
         self.assertIn("function shatterSound()", html)
         self.assertIn("unlockGameAudio();requestLandscapeMode();show('intro')", html)
         self.assertIn("unlockGameAudio();requestLandscapeMode();stop()", html)
@@ -120,7 +124,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.13", html)
+        self.assertIn("POT BREAKER RE v1.0.14", html)
         self.assertIn('transform:rotate(90deg)', html)
         self.assertIn('id="rotateStart"', html)
         self.assertIn("(orientation:portrait) and (max-width:900px)", html)
