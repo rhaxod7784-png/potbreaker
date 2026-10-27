@@ -1,4 +1,26 @@
 # POT BREAKER CHANGELOG
+## v1.0.9 — 모바일 화면 회전과 조작 UI 조정
+
+**Release type:** PATCH  
+**Date:** 2026-10-27
+
+### Changed
+- 모바일에서 게임 시작 시 전체 화면과 가로 방향 잠금을 요청하고, 잠금이 지원되지 않으면 게임 화면을 자동으로 가로 배치.
+- 게임 무대 크기에 맞춰 HUD와 터치 조작 크기를 계산하도록 조정.
+- 모바일 인트로에서 4컷 만화를 크게 보여주고, 설명 패널을 숨겨 패널이 잘리지 않게 조정.
+- 작은 화면에서 하단 안내 문구를 감춰 캐릭터와 맵 가림을 줄임.
+
+### Fixed
+- 모바일 브라우저의 넓은 viewport 기준으로 조작 버튼이 커져 캐릭터를 가리던 문제.
+- 세로 화면에서 고정 16:9 무대가 작게 축소되던 문제.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+### Reason
+- 휴대폰에서 게임을 가로 화면으로 크게 표시하고, 주요 캐릭터와 전장을 쉽게 볼 수 있도록 개선.
+
+---
 ## v1.0.8 — RE 전투 밸런스 및 파티션 충돌
 
 **Release type:** PATCH  

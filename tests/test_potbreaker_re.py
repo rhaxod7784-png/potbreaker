@@ -66,7 +66,11 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.8", html)
+        self.assertIn("POT BREAKER RE v1.0.9", html)
+        self.assertIn('transform:rotate(90deg)', html)
+        self.assertIn('stage.requestFullscreen', html)
+        self.assertIn('11cqw', html)
+        self.assertIn('.legend{display:none}', html)
 
 
 if __name__ == "__main__":
