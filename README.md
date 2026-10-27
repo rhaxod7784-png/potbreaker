@@ -1,4 +1,24 @@
-# POT BREAKER Android v0.16.0
+# POT BREAKER RE : CBZP — v1.0.0
+
+**CBZP 세계관의 사무실 미로 추격 게임.** 플레이어인 기묘가 NPC 크다 부장의 시야를 피하고 화분을 던져 먼저 명중시키면 승리합니다.
+
+- **배포:** https://potbreaker.com (Cloudflare Workers `potbreaker`)
+- **웹 게임:** [web/index.html](web/index.html) · **Python 게임 로직:** [web/game.py](web/game.py)
+- **실행 방식:** 브라우저에서 Pyodide(WebAssembly)로 Python 게임 규칙을 실행하고 HTML Canvas로 렌더링
+- **게임 조작:** 스마트폰 가로 화면 터치 / PC 방향키·WASD, Shift(벽 넘기), Space(화분 투척)
+- **핵심:** 기묘 5초당 스택 1(최대 3), 크다 부장 화분 보유 시 벽 최대 3개 돌파·15초 재사용 대기, 파티션 시야 차단 없음, 바닥 화분 3개 항시 유지
+- **테스트:** `python web/game.py` 및 `python -m pytest tests/test_potbreaker_re.py`
+- **Worker 재생성:** `python scripts/build_worker.py` 후 `cloudflare/worker.js`를 Cloudflare Workers에 배포
+
+**주의:** Python 엔진 실행에는 첫 접속 시 Pyodide 런타임 CDN 다운로드가 필요합니다. 오프닝 4컷과 승패 컷신은 1차 구현용 임시 그래픽입니다.
+
+## 이전 버전 보존
+
+기존 브라우저 게임을 Android WebView로 패키징한 **v0.16.0** 코드는 아래 문서와 `app/src/main/assets/index.html`에 보존했습니다. 이 APK는 v1.0.0 웹 게임과 별개입니다.
+
+---
+
+# POT BREAKER Android v0.16.0 — 레거시 버전
 
 POT BREAKER 브라우저 게임을 **안드로이드 앱으로 설치할 수 있도록 WebView로 패키징한 프로젝트**입니다.
 
