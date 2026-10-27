@@ -69,6 +69,8 @@ class PotBreaker:
         self.crow_flight, self.crow_bombs = None, []
         self.hit_events = []
         self.hit_seq = 0
+        self.pot_break_events = []
+        self.pot_break_seq = 0
         self.crow_spawn_timer = CROW_FIRST_APPEAR_SECONDS
         self.player_hp, self.boss_hp = PLAYER_HP, BOSS_HP
         self.player_invuln, self.boss_invuln = 0.0, 0.0
@@ -268,6 +270,12 @@ class PotBreaker:
                     self._maintain_field_pots()
                     return
 
+    def _break_pot(self, x, y):
+        self.pot_break_seq += 1
+        self.pot_break_events.append({'id': self.pot_break_seq, 'x': round(x, 2), 'y': round(y, 2)})
+        self.pot_break_events = self.pot_break_events[-8:]
+        self._drop_pot(x, y)
+
     def _aim(self, src, target):
         base = math.atan2(target[1] - src[1], target[0] - src[0])
         swing = math.radians(AIM_SWEEP_DEGREES) * math.sin(self.clock * AIM_SWEEP_SPEED)
@@ -333,12 +341,16 @@ class PotBreaker:
             outside = not (0 <= nx < WIDTH and 0 <= ny < HEIGHT)
             if p['range'] <= 0 or hit_wall or outside:
                 self.projectiles.remove(p)
-                self._drop_pot(x, y)
+                if hit_wall or outside:
+                    self._break_pot(x, y)
+                else:
+                    self._drop_pot(x, y)
                 continue
             p['x'], p['y'] = nx, ny
             target = self.player if p['boss'] else self.boss
             if distance((p['x'], p['y']), target) < (.62 if p['boss'] else .55):
                 self._damage(not p['boss'])
+                self._break_pot(p['x'], p['y'])
                 if p in self.projectiles:self.projectiles.remove(p)
                 if self.phase != 'playing':
                     self.projectiles.clear()
@@ -350,7 +362,7 @@ class PotBreaker:
                     small = p if not p['boss'] else other
                     if small in self.projectiles:
                         self.projectiles.remove(small)
-                        self._drop_pot(small['x'], small['y'])
+                        self._break_pot(small['x'], small['y'])
                     break
 
     def step(self, dt, mx=0, my=0, jump=False, fire=False, aimx=0, aimy=0):
@@ -372,17 +384,20 @@ class PotBreaker:
         if self.dash_effect:
             self.dash_effect['age'] += dt
             if self.dash_effect['age'] > .35: self.dash_effect = None
-        dx, dy = int(mx), int(my)
+        mx, my = float(mx), float(my)
+        strength = min(1.0, math.hypot(mx, my))
+        dx = 1 if mx > 0 else -1 if mx < 0 else 0
+        dy = 1 if my > 0 else -1 if my < 0 else 0
         if dx or dy: self.face = [dx, dy]
         if jump and (dx or dy) and self.player_dash_cd <= 0:
             self._dash(self.player, dx, dy, False)
-            self.player_move_cd = PLAYER_DASH_MOVE_INTERVAL * (math.sqrt(2) if dx and dy else 1)
+            self.player_move_cd = PLAYER_DASH_MOVE_INTERVAL / max(.7, strength) * (math.sqrt(2) if dx and dy else 1)
         if self.player_move_cd <= 0 and (dx or dy):
             tx, ty = self.player[0] + dx, self.player[1] + dy
             if self._free_step(self.player[0], self.player[1], dx, dy):
                 self.player = [tx, ty]
                 self._contact()
-            self.player_move_cd = PLAYER_MOVE_INTERVAL * (math.sqrt(2) if dx and dy else 1)
+            self.player_move_cd = PLAYER_MOVE_INTERVAL / max(.7, strength) * (math.sqrt(2) if dx and dy else 1)
         if self.phase != 'playing': return self.state()
         if fire and self.throw_cd <= 0 and self.ammo:
             self._fire(self.player, self._aim(self.player, self.boss))
@@ -419,7 +434,8 @@ class PotBreaker:
                            'aim_sweep_degrees': 90,
                            'dash_effect': self.dash_effect,
                            'notice': self.notice if self.notice_time else '',
-                           'clock': round(self.clock, 2), 'hits': self.hit_events}, ensure_ascii=False)
+                           'clock': round(self.clock, 2), 'hits': self.hit_events,
+                           'pot_breaks': self.pot_break_events}, ensure_ascii=False)
 
 if __name__ == '__main__':
     g = PotBreaker(42)

@@ -1,4 +1,19 @@
 # POT BREAKER CHANGELOG
+## v1.0.13 — 조이스틱 응답성과 화분 파손음
+
+**Release type:** PATCH  
+**Date:** 2026-10-27
+
+### Changed
+- 조이스틱 입력을 8방향 양자화에서 힘 조절이 되는 방향 입력으로 바꾸고, 이동 간격에 입력 세기를 반영.
+- 포인터 캡처가 실패해도 창 전체에서 손가락 이동과 해제를 추적하도록 보강하고 입력 데드존을 낮춤.
+- 화분이 벽/캐릭터/다른 화분과 충돌해 깨질 때 짧은 쨍그랑 효과음 재생.
+
+### Code
+- `web/game.py`, `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.12 — 모바일 조이스틱 대각선과 터치 영역 개선
 
 **Release type:** PATCH  

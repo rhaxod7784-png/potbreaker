@@ -42,6 +42,8 @@ class PotBreakerBalanceTests(unittest.TestCase):
         game._advance_projectiles(.085)
 
         self.assertEqual(game.projectiles, [])
+        self.assertEqual(len(game.pot_break_events), 1)
+        self.assertEqual(json.loads(game.state())["pot_breaks"][0]["id"], 1)
 
     def test_boss_pots_are_slower_and_crow_events_are_rebalanced(self):
         game = PotBreaker(1)
@@ -85,11 +87,29 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertEqual(game.player, [6, 6])
         self.assertAlmostEqual(game.player_move_cd, PLAYER_MOVE_INTERVAL * 2**0.5)
 
+    def test_partial_stick_pressure_moves_and_scales_speed(self):
+        game = PotBreaker(7)
+        game.player = [5, 5]
+        game.player_move_cd = 0
+        game.walls.clear()
+        game.moving_walls.clear()
+        game.step(.04, .15, 0)
+        self.assertEqual(game.player, [6, 5])
+        self.assertAlmostEqual(game.player_move_cd, PLAYER_MOVE_INTERVAL / .7)
+
     def test_mobile_controls_allow_diagonal_and_large_throw_target(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
-        self.assertIn("[Math.abs(x)>.23?Math.sign(x):0,Math.abs(y)>.23?Math.sign(y):0]", html)
+        self.assertIn("magnitude<.12", html)
+        self.assertIn("Math.round(Math.atan2(y,x)/(Math.PI/4))", html)
         self.assertIn("@media (pointer:coarse),(max-height:520px)", html)
         self.assertIn(".action.fire{width:clamp(112px,17cqw,152px);min-width:112px;min-height:112px}", html)
+
+    def test_mobile_stick_capture_and_shatter_audio_are_wired(self):
+        html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
+        self.assertIn("window.addEventListener('pointermove'", html)
+        self.assertIn("window.addEventListener(event,release)", html)
+        self.assertIn("function shatterSound()", html)
+        self.assertIn("s.pot_breaks||[]", html)
 
     def test_opening_comic_has_four_equal_sized_panels(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
@@ -98,8 +118,10 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.12", html)
+        self.assertIn("POT BREAKER RE v1.0.13", html)
         self.assertIn('transform:rotate(90deg)', html)
+        self.assertIn('id="rotateStart"', html)
+        self.assertIn("requestLandscapeMode();show('intro')", html)
 
     def test_mobile_intro_uses_stage_height_and_scaled_copy(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
