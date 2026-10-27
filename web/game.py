@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.4 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.6 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -13,14 +13,17 @@ PAD_SPAWN_SECONDS = 1.15
 PAD_LIFETIME_SECONDS = 8.0
 PAD_LIMIT = 8
 PARTITION_MOVE_SECONDS = 1.7
+FIELD_POT_COUNT = 6  # Exactly six collectible pots; throws relocate rather than add.
+CROW_FIRST_APPEAR_SECONDS = 2.5
+CROW_RESPAWN_SECONDS = 9.0
 VISION_RANGE = None    # Boss can locate both player and pickup positions across entire map.
 AIM_SWEEP_DEGREES = 45.0
-AIM_SWEEP_SPEED = 6.5  # QA default: faster ±30° automatic targeting
+AIM_SWEEP_SPEED = 6.5 * (2 / 3)  # QA default: faster ±30° automatic targeting
 PLAYER_DASH_COOLDOWN = 3.0
 BOSS_DASH_COOLDOWN = 5.0
 PLAYER_HP = 3
-BOSS_HP = 10
-HIT_INVULNERABILITY = 0.42
+BOSS_HP = 5
+HIT_INVULNERABILITY = 0.72
 CROW_FLIGHT_SECONDS = 4.2
 CROW_DROP_SECONDS = 1.05  # ±30° gives a full 60° arc.
 
@@ -40,7 +43,7 @@ class PotBreaker:
                                             (WIDTH - 2, 1), (WIDTH - 2, HEIGHT - 2)]))
         self.boss = [WIDTH // 2, HEIGHT // 2]
         self.face, self.boss_face = [1, 0], [-1, 0]
-        self.walls, self.moving_walls = set(), set()
+        self.walls, self.moving_walls = set(), set()  # All partition tiles are dynamic.
         safe = {tuple(self.player), tuple(self.boss)}
         for y in range(1, HEIGHT - 1):
             for x in range(1, WIDTH - 1):
@@ -48,16 +51,12 @@ class PotBreaker:
                 if p in safe or min(distance(p, self.player), distance(p, self.boss)) < 2.3:
                     continue
                 r = self.rng.random()
-                if r < .135:
-                    self.walls.add(p)
-                elif r < .20:
+                if r < .20:
                     self.moving_walls.add(p)
         for _ in range(180):
             if self._path_step(self.player, self.boss) != tuple(self.player):
                 break
-            if self.walls:
-                self.walls.remove(self.rng.choice(tuple(self.walls)))
-            elif self.moving_walls:
+            if self.moving_walls:
                 self.moving_walls.remove(self.rng.choice(tuple(self.moving_walls)))
             else:
                 break
@@ -66,16 +65,17 @@ class PotBreaker:
         self.player_move_cd, self.boss_move_cd = 0.0, .5
         self.projectiles, self.pots = [], []
         self.crow_flight, self.crow_bombs = None, []
-        self.crow_spawn_timer = 8.0
+        self.hit_events = []
+        self.hit_seq = 0
+        self.crow_spawn_timer = CROW_FIRST_APPEAR_SECONDS
         self.player_hp, self.boss_hp = PLAYER_HP, BOSS_HP
         self.player_invuln, self.boss_invuln = 0.0, 0.0
         self.player_dash_cd, self.boss_dash_cd = 0.0, 0.0
         self.partition_timer = PARTITION_MOVE_SECONDS
         self.notice, self.notice_time = '대시 버튼: 3칸 돌진 · 3초 재사용 대기', 2.2
-        self.bell = 0.0
         self.dash_effect = None
         self.boss_target = None
-        for _ in range(3): self._add_pot()
+        for _ in range(FIELD_POT_COUNT): self._add_pot()
         
         return self.state()
 
@@ -83,11 +83,21 @@ class PotBreaker:
         return 0 <= x < WIDTH and 0 <= y < HEIGHT and (x, y) not in self.walls and (x, y) not in self.moving_walls
 
     def _add_pot(self):
+        if len(self.pots) >= FIELD_POT_COUNT: return
         choices = [(x, y) for y in range(HEIGHT) for x in range(WIDTH)
                    if self._free(x, y) and [x, y] not in (self.player, self.boss)
                    and [x, y] not in self.pots]
         if choices:
             self.pots.append(list(self.rng.choice(choices)))
+
+    def _maintain_field_pots(self):
+        # All six floor items remain collectible. A thrown pot does not create a seventh.
+        while len(self.pots) < FIELD_POT_COUNT:
+            before = len(self.pots)
+            self._add_pot()
+            if len(self.pots) == before: break
+        if len(self.pots) > FIELD_POT_COUNT:
+            self.pots[:] = self.pots[:FIELD_POT_COUNT]
 
     def _nearest_pot(self, who):
         # Use walkable path distance, not straight-line distance, to avoid NPC freezing at a partition.
@@ -126,15 +136,15 @@ class PotBreaker:
         if self.crow_spawn_timer <= 0 and self.crow_flight is None:
             self.crow_flight = {'x': 1.0, 'y': float(self.rng.randint(1, HEIGHT-2)),
                                 'ttl': CROW_FLIGHT_SECONDS, 'drop': .35}
-            self.crow_spawn_timer = 11.0
+            self.crow_spawn_timer = CROW_RESPAWN_SECONDS
             self.notice, self.notice_time = '감 과장 출동! 랜덤 화분 폭격!', 1.0
         for bomb in list(self.crow_bombs):
             bomb['ttl'] -= dt
             if bomb['ttl'] <= 0:
                 self.crow_bombs.remove(bomb)
-                if distance(self.player, (bomb['x'],bomb['y'])) < .72: self._damage(False)
-                if distance(self.boss, (bomb['x'],bomb['y'])) < .72: self._damage(True)
-                self._drop_pot(bomb['x'], bomb['y'])
+                if distance(self.player, (bomb['x'],bomb['y'])) < .86: self._damage(False)
+                if distance(self.boss, (bomb['x'],bomb['y'])) < .86: self._damage(True)
+                # Damage-only. Crow bombs never become field ammunition.
         bird = self.crow_flight
         if bird is None: return
         bird['ttl'] -= dt
@@ -144,37 +154,54 @@ class PotBreaker:
         bird['drop'] -= dt
         if bird['drop'] <= 0:
             bird['drop'] = CROW_DROP_SECONDS
-            tx=self.rng.randint(1,WIDTH-2); ty=self.rng.randint(1,HEIGHT-2)
-            if self._free(tx,ty):
-                self.crow_bombs.append({'x':tx,'y':ty,'ttl':.83})
+            # Local random target around either actor makes the thrown pots visible in play.
+            center = self.player if self.rng.random() < .65 else self.boss
+            candidates = [(center[0]+dx, center[1]+dy) for dx in range(-3,4) for dy in range(-3,4)]
+            candidates = [(x,y) for x,y in candidates if 0 <= x < WIDTH and 0 <= y < HEIGHT]
+            if candidates:
+                tx,ty=self.rng.choice(candidates)
+                flight_time=.98
+                self.crow_bombs.append({'x':tx,'y':ty,'ttl':flight_time,'duration':flight_time,
+                                        'from_x':round(bird['x'],2),'from_y':round(bird['y'],2)})
         if bird['ttl'] <= 0: self.crow_flight=None
 
     def _damage(self, npc):
-        if self.phase != 'playing': return
+        if self.phase != 'playing': return False
         if npc:
-            if self.boss_invuln > 0: return
+            if self.boss_invuln > 0: return False
             self.boss_hp=max(0,self.boss_hp-1)
             self.boss_invuln=HIT_INVULNERABILITY
+            pos=self.boss
             if self.boss_hp == 0: self.phase='win'
         else:
-            if self.player_invuln > 0: return
+            if self.player_invuln > 0: return False
             self.player_hp=max(0,self.player_hp-1)
             self.player_invuln=HIT_INVULNERABILITY
+            pos=self.player
             if self.player_hp == 0: self.phase='lose'
+        self.hit_seq += 1
+        self.hit_events.append({'id':self.hit_seq,'x':pos[0],'y':pos[1], 'target':'boss' if npc else 'player'})
+        self.hit_events=self.hit_events[-5:]
+        return True
 
     def _move_partitions(self, dt):
         self.partition_timer -= dt
         if self.partition_timer > 0: return
         self.partition_timer = PARTITION_MOVE_SECONDS
         occupied = {tuple(self.player), tuple(self.boss), *[tuple(p) for p in self.pots]}
+        # Every partition is movable: no static decorative blocking partitions.
+        # Shuffle movement order, and allow entering already-vacated cells.
+        pending = list(self.moving_walls)
+        self.rng.shuffle(pending)
         new_positions = set(self.moving_walls)
-        for old in self.rng.sample(sorted(self.moving_walls), min(3, len(self.moving_walls))):
+        for old in pending:
             dirs = list(DIRECTIONS); self.rng.shuffle(dirs)
             for dx, dy in dirs:
                 target = (old[0] + dx, old[1] + dy)
-                if target[0] < 1 or target[0] >= WIDTH - 1 or target[1] < 1 or target[1] >= HEIGHT - 1:
+                if not (1 <= target[0] < WIDTH - 1 and 1 <= target[1] < HEIGHT - 1):
                     continue
-                if target in self.walls or target in new_positions or target in occupied: continue
+                if target in new_positions or target in occupied:
+                    continue
                 new_positions.remove(old)
                 new_positions.add(target)
                 break
@@ -191,12 +218,10 @@ class PotBreaker:
             if self._free(tx,ty):
                 candidate=[tx,ty];break
         if candidate is None:return False
-        # Contact is fatal even when a dash crosses the opponent.
+        # Collision during dash costs one player HP, respecting damage invulnerability.
         other=self.player if npc else self.boss
-        if dx and other[1]==start[1] and (other[0]-start[0])*dx>0 and abs(other[0]-start[0])<=abs(candidate[0]-start[0]):
-            self.phase='lose'
-        if dy and other[0]==start[0] and (other[1]-start[1])*dy>0 and abs(other[1]-start[1])<=abs(candidate[1]-start[1]):
-            self.phase='lose'
+        crosses=(dx and other[1]==start[1] and (other[0]-start[0])*dx>0 and abs(other[0]-start[0])<=abs(candidate[0]-start[0])) or (dy and other[0]==start[0] and (other[1]-start[1])*dy>0 and abs(other[1]-start[1])<=abs(candidate[1]-start[1]))
+        if crosses: self._damage(False)
         who[:]=candidate
         setattr(self,attr,BOSS_DASH_COOLDOWN if npc else PLAYER_DASH_COOLDOWN)
         self.dash_effect={'from':start,'to':candidate[:],'npc':npc,'age':0.0}
@@ -204,7 +229,7 @@ class PotBreaker:
         return True
 
     def _contact(self):
-        if self.player == self.boss: self.phase = 'lose'
+        if self.player == self.boss: self._damage(False)
 
     def _pickups(self):
         for who, cap, attr in ((self.player, 1, 'ammo'), (self.boss, 5, 'boss_ammo')):
@@ -213,18 +238,25 @@ class PotBreaker:
                 if who == pot:
                     setattr(self, attr, getattr(self, attr) + 1)
                     self.pots.remove(pot)
-                    self._add_pot()   # Field always has at least 3 ordinary pickups.
+                    self._maintain_field_pots()  # Field count stays exactly six.
                     break
 
     def _drop_pot(self, x, y):
+        # Relocate an existing ordinary floor pot rather than creating extra items.
+        # This retains the 'thrown pot lands on the floor' feedback without inflation.
         xx, yy = max(0, min(WIDTH-1, round(x))), max(0, min(HEIGHT-1, round(y)))
         for radius in range(5):
-            for dx in range(-radius, radius+1):
-                for dy in range(-radius, radius+1):
+            for dx in range(-radius, radius + 1):
+                for dy in range(-radius, radius + 1):
                     if abs(dx) + abs(dy) != radius: continue
-                    nx, ny = xx+dx, yy+dy
-                    if self._free(nx, ny) and [nx, ny] not in self.pots and [nx, ny] not in (self.boss, self.player):
-                        self.pots.append([nx, ny]); return
+                    nx, ny = xx + dx, yy + dy
+                    if not self._free(nx, ny) or [nx, ny] in self.pots or [nx, ny] in (self.boss, self.player):
+                        continue
+                    if len(self.pots) >= FIELD_POT_COUNT:
+                        self.pots.pop(self.rng.randrange(len(self.pots)))
+                    self.pots.append([nx, ny])
+                    self._maintain_field_pots()
+                    return
 
     def _aim(self, src, target):
         base = math.atan2(target[1] - src[1], target[0] - src[0])
@@ -321,7 +353,6 @@ class PotBreaker:
         self.player_move_cd -= dt
         self.boss_move_cd -= dt
         self.notice_time = max(0., self.notice_time-dt)
-        self.bell = max(0., self.bell-dt)
         self._move_partitions(dt)
         self._update_crow(dt)
         if self.dash_effect:
@@ -357,9 +388,8 @@ class PotBreaker:
                 angle = base_angle + offset
                 self._fire(self.boss, [math.cos(angle), math.sin(angle)], npc=True)
             self.boss_throw_cd = 1.1
-        if (dx or dy) and distance(self.player, self.boss) <= 5:
-            self.bell = .65
         self._advance_projectiles(dt)
+        self._maintain_field_pots()
         return self.state()
 
     def state(self):
@@ -375,16 +405,15 @@ class PotBreaker:
                            'boss_aim': self._aim(self.boss, self.player),
                            'aim_sweep_degrees': 90,
                            'dash_effect': self.dash_effect,
-                           'bell': self.bell > 0,
                            'notice': self.notice if self.notice_time else '',
-                           'clock': round(self.clock, 2)}, ensure_ascii=False)
+                           'clock': round(self.clock, 2), 'hits': self.hit_events}, ensure_ascii=False)
 
 if __name__ == '__main__':
     g = PotBreaker(42)
     for i in range(2500):
         s = json.loads(g.step(.04, 1 if i % 6 < 3 else -1, 0, False, i % 17 == 0))
-        assert len(s['pots']) >= 3
+        assert len(s['pots']) == FIELD_POT_COUNT
         assert 0 <= s['boss_ammo'] <= 5
-        assert 0 <= s['player_hp'] <= 3 and 0 <= s['boss_hp'] <= 10
+        assert 0 <= s['player_hp'] <= 3 and 0 <= s['boss_hp'] <= 5
         if s['phase'] != 'playing': g.reset()
     print('OK: 2500 deterministic engine ticks')
