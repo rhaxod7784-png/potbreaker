@@ -1,3 +1,20 @@
+## v1.0.45 — 드래그 방향 전환 안정화
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 마지막 감도 조정 이후 잦아진 방향 전환을 줄이도록 전환 거리를 0.21칸, 축 우세도 1.25로 조정.
+- 초기 방향 판정도 작은 손가락 흔들림에 덜 민감하도록 기준을 소폭 높임.
+
+### Preserved
+- 실제 표시 캔버스 축 기반 방향 변환, 기묘 이동 0.18초/칸, 확대된 발사 버튼.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.44 — 화면 축 기준 터치 방향 보정
 
 **Release type:** PATCH  
