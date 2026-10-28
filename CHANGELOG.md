@@ -1,3 +1,20 @@
+## v1.0.44 — 화면 축 기준 터치 방향 보정
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Fixed
+- 손가락 드래그를 실제 표시된 캔버스 축에 투영해 화면 회전 상태에서도 위·아래 방향이 격자와 일치하도록 보정.
+- 방향 감지 거리를 소폭 낮춰 짧은 아래 방향 드래그도 더 잘 인식하고, 드래그 축 판정 완충값도 줄임.
+
+### Preserved
+- 기묘 이동 속도 0.18초/칸, 확대된 휴대폰 발사 버튼.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.43 — 이동 속도·터치 반응·발사 버튼 보정
 
 **Release type:** PATCH  
