@@ -1376,3 +1376,6 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ## v1.0.65
 - Slightly lower the mobile touch direction change threshold again.
+
+## v1.0.66
+- Replace mobile drag steering with a large four-way directional pad.
