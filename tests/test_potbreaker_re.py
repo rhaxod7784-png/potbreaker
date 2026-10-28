@@ -78,18 +78,50 @@ class PotBreakerBalanceTests(unittest.TestCase):
 
         self.assertAlmostEqual(game.projectiles[0]["x"] - 4, .32, places=2)
         self.assertGreater(CROW_RESPAWN_SECONDS, 9.0)
-        self.assertLess(CROW_DROP_SECONDS, 1.05)
+        self.assertEqual(CROW_DROP_SECONDS, 1.2)
 
         game = PotBreaker(2)
         game.crow_spawn_timer = 0
         created = 0
         for _ in range(95):
-            before = game.crow_flight["drop"] if game.crow_flight else None
+            before = len(game.mystery_pots)
             game._update_crow(.05)
-            after = game.crow_flight["drop"] if game.crow_flight else None
-            if before is not None and after is not None and after > before:
-                created += 1
+            created += len(game.mystery_pots) - before
         self.assertGreaterEqual(created, 6)
+        self.assertEqual(created % 2, 0)
+        self.assertTrue(all(item["effect"] in {"damage", "heal"} for item in game.mystery_pots))
+
+    def test_crow_drops_two_question_pots_with_fifty_fifty_effects(self):
+        game = PotBreaker(21)
+        rolls = iter((.499, .5))
+        game.rng.random = lambda: next(rolls)
+        game._spawn_mystery_pots(8, 5)
+        self.assertEqual(len(game.mystery_pots), 2)
+        self.assertEqual({item["effect"] for item in game.mystery_pots}, {"damage", "heal"})
+        self.assertTrue(all(item["ttl"] > 0 for item in game.mystery_pots))
+
+    def test_mystery_pots_apply_same_hp_effects_to_kimyo_and_keuda(self):
+        game = PotBreaker(22)
+        game.player, game.boss = [2, 2], [6, 6]
+        game.player_hp, game.boss_hp = 2, 3
+        game.player_invuln = game.boss_invuln = .5
+        game.mystery_pots = [
+            {"x": 2, "y": 2, "effect": "damage", "ttl": 10},
+            {"x": 6, "y": 6, "effect": "heal", "ttl": 10},
+        ]
+        game._pick_mystery_pots()
+        self.assertEqual(game.player_hp, 1)
+        self.assertEqual(game.boss_hp, 4)
+        self.assertEqual(game.mystery_pots, [])
+
+        game.player_hp, game.boss_hp = 2, 4
+        game.mystery_pots = [
+            {"x": 2, "y": 2, "effect": "heal", "ttl": 10},
+            {"x": 6, "y": 6, "effect": "damage", "ttl": 10},
+        ]
+        game._pick_mystery_pots()
+        self.assertEqual(game.player_hp, 3)
+        self.assertEqual(game.boss_hp, 3)
 
     def test_kimyo_movement_is_slightly_faster(self):
         self.assertAlmostEqual(PLAYER_MOVE_INTERVAL, 0.0955)
@@ -142,6 +174,8 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertIn("fetch('/game.py'", html)
         self.assertNotIn('id="pythonEngine"', html)
         self.assertIn("breakParticles.push", html)
+        self.assertIn("kind==='mystery'", html)
+        self.assertIn("s.mystery_pots||[]", html)
         self.assertIn("life:1.05,label:true", html)
         self.assertIn("function shatterSound()", html)
         self.assertIn("s.pot_breaks||[]", html)
@@ -157,9 +191,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.22", html)
+        self.assertIn("POT BREAKER RE v1.0.23", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.22"', build)
+        self.assertIn('version:"1.0.23"', build)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn("transform:rotate(90deg)", html)
         self.assertIn("width:min(100dvh,177.778vw)", html)

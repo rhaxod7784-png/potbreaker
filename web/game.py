@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.22 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.23 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -26,7 +26,9 @@ PLAYER_POT_CAP = 3
 BOSS_HP = 5
 HIT_INVULNERABILITY = 0.72
 CROW_FLIGHT_SECONDS = 4.2
-CROW_DROP_SECONDS = 0.6  # ±30° gives a full 60° arc.
+CROW_DROP_SECONDS = 1.2  # Double the previous 0.6s interval.
+MYSTERY_POTS_PER_DROP = 2
+MYSTERY_POT_LIFETIME = 14.0
 
 
 def distance(a, b):
@@ -66,7 +68,7 @@ class PotBreaker:
         self.throw_cd, self.boss_throw_cd = 0.0, 1.2
         self.player_move_cd, self.boss_move_cd = 0.0, .5
         self.projectiles, self.pots = [], []
-        self.crow_flight, self.crow_bombs = None, []
+        self.crow_flight, self.crow_bombs, self.mystery_pots = None, [], []
         self.hit_events = []
         self.hit_seq = 0
         self.pot_break_events = []
@@ -142,20 +144,39 @@ class PotBreaker:
         path = self._path(start, goal)
         return path[1] if len(path) >= 2 else tuple(start)
 
+    def _spawn_mystery_pots(self, x, y):
+        cx, cy = round(x), round(y)
+        for _ in range(MYSTERY_POTS_PER_DROP):
+            occupied = {tuple((item['x'], item['y'])) for item in self.mystery_pots}
+            candidates = [(cx + dx, cy + dy) for radius in range(3)
+                          for dx in range(-radius, radius + 1)
+                          for dy in range(-radius, radius + 1)
+                          if abs(dx) + abs(dy) == radius]
+            candidates = [(px, py) for px, py in candidates
+                          if self._free(px, py) and [px, py] not in (self.player, self.boss)
+                          and [px, py] not in self.pots and (px, py) not in occupied]
+            if not candidates:
+                continue
+            px, py = self.rng.choice(candidates)
+            effect = 'damage' if self.rng.random() < .5 else 'heal'
+            self.mystery_pots.append({'x': px, 'y': py, 'effect': effect,
+                                      'ttl': MYSTERY_POT_LIFETIME})
+
     def _update_crow(self, dt):
         self.crow_spawn_timer -= dt
         if self.crow_spawn_timer <= 0 and self.crow_flight is None:
             self.crow_flight = {'x': 1.0, 'y': float(self.rng.randint(1, HEIGHT-2)),
-                                'ttl': CROW_FLIGHT_SECONDS, 'drop': .3}
+                                'ttl': CROW_FLIGHT_SECONDS, 'drop': CROW_DROP_SECONDS}
             self.crow_spawn_timer = CROW_RESPAWN_SECONDS
-            self.notice, self.notice_time = '감 과장 출동! 랜덤 화분 폭격!', 1.0
+            self.notice, self.notice_time = '감 과장 출동! ? 화분 투하!', 1.0
+        for item in self.mystery_pots:
+            item['ttl'] -= dt
+        self.mystery_pots[:] = [item for item in self.mystery_pots if item['ttl'] > 0]
         for bomb in list(self.crow_bombs):
             bomb['ttl'] -= dt
             if bomb['ttl'] <= 0:
                 self.crow_bombs.remove(bomb)
-                if distance(self.player, (bomb['x'],bomb['y'])) < .86: self._damage(False)
-                if distance(self.boss, (bomb['x'],bomb['y'])) < .86: self._damage(True)
-                # Damage-only. Crow bombs never become field ammunition.
+                self._spawn_mystery_pots(bomb['x'], bomb['y'])
         bird = self.crow_flight
         if bird is None: return
         bird['ttl'] -= dt
@@ -176,16 +197,16 @@ class PotBreaker:
                                         'from_x':round(bird['x'],2),'from_y':round(bird['y'],2)})
         if bird['ttl'] <= 0: self.crow_flight=None
 
-    def _damage(self, npc):
+    def _damage(self, npc, bypass_invulnerability=False):
         if self.phase != 'playing': return False
         if npc:
-            if self.boss_invuln > 0: return False
+            if self.boss_invuln > 0 and not bypass_invulnerability: return False
             self.boss_hp=max(0,self.boss_hp-1)
             self.boss_invuln=HIT_INVULNERABILITY
             pos=self.boss
             if self.boss_hp == 0: self.phase='win'
         else:
-            if self.player_invuln > 0: return False
+            if self.player_invuln > 0 and not bypass_invulnerability: return False
             self.player_hp=max(0,self.player_hp-1)
             self.player_invuln=HIT_INVULNERABILITY
             pos=self.player
@@ -252,6 +273,21 @@ class PotBreaker:
                     self.pots.remove(pot)
                     self._maintain_field_pots()  # Field count stays exactly six.
                     break
+
+    def _pick_mystery_pots(self):
+        for item in list(self.mystery_pots):
+            for npc, who in ((False, self.player), (True, self.boss)):
+                if distance(who, (item['x'], item['y'])) >= .65:
+                    continue
+                self.mystery_pots.remove(item)
+                attr, cap, name = ('boss_hp', BOSS_HP, '크다') if npc else ('player_hp', PLAYER_HP, '기묘')
+                if item['effect'] == 'damage':
+                    self._damage(npc, bypass_invulnerability=True)
+                    self.notice, self.notice_time = f"? 화분 폭발! {name} HP -1", 1.3
+                else:
+                    setattr(self, attr, min(cap, getattr(self, attr) + 1))
+                    self.notice, self.notice_time = f"? 화분 회복! {name} HP +1", 1.3
+                break
 
     def _drop_pot(self, x, y):
         # Relocate an existing ordinary floor pot rather than creating extra items.
@@ -406,6 +442,8 @@ class PotBreaker:
             self.boss_move_cd = .225
         if self.phase != 'playing': return self.state()
         self._pickups()
+        self._pick_mystery_pots()
+        if self.phase != 'playing': return self.state()
         # Boss projectile decision depends on ammo but no field-of-view angle.
         if self.boss_throw_cd <= 0 and self.boss_ammo > 0 and distance(self.player, self.boss) < 7.3:
             aim = self._aim(self.boss, self.player)
@@ -425,6 +463,7 @@ class PotBreaker:
                            'walls': sorted(self.walls), 'moving_walls': sorted(self.moving_walls),
                            'pots': self.pots, 'projectiles': self.projectiles,
                            'crow_flight': self.crow_flight, 'crow_bombs': self.crow_bombs,
+                           'mystery_pots': self.mystery_pots,
                            'player_hp': self.player_hp, 'boss_hp': self.boss_hp,
                            'player_dash_cd': round(self.player_dash_cd,2), 'boss_dash_cd': round(self.boss_dash_cd,2),
                            'ammo': self.ammo, 'ammo_cap': PLAYER_POT_CAP, 'boss_ammo': self.boss_ammo,

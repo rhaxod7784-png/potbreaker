@@ -1,4 +1,4 @@
-# POT BREAKER RE v1.0.22
+# POT BREAKER RE v1.0.23
 
 POT BREAKER RE is a single-player browser maze game. The browser runs the Python game engine with Pyodide; the Cloudflare Worker serves the page and engine source.
 
@@ -14,6 +14,7 @@ POT BREAKER RE is a single-player browser maze game. The browser runs the Python
 
 - The player pot is blue, Keuda's pot is red, collectible pots are yellow, and Gamgwajang's pots are green.
 - Pot breaks add a short screen shake and a glassy shatter sound.
+- Gamgwajang drops mystery pots; Kimyo and Keuda each have a 50/50 chance of losing or restoring one HP when they collect one. Each drop releases two pots at 1.2-second intervals.
 - Hitting Gamgwajang with the player's pot restores one player HP, up to the three-HP limit. Keuda does not receive that healing.
 
 ## Development and release
