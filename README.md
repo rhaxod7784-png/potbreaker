@@ -1,3 +1,16 @@
+# Current browser release — POT BREAKER RE v1.0.89
+
+The current web game is the Korean-language Cloudflare Worker release at [potbreaker.com](https://potbreaker.com/). It runs the Python game engine in the browser with Pyodide and Canvas rendering.
+
+- Search discovery: `/robots.txt`, `/sitemap.xml`, canonical page metadata, and accessible game guidance.
+- Indexable pages: `/`, `/about`, and `/privacy`; `/game.py` is marked `noindex`.
+- AdSense: publisher verification and `/ads.txt` are generated only when a valid `ADSENSE_PUBLISHER_ID` is configured. Ad script loading is gated by explicit flags and limited to `/about`; the game screen has no ad script.
+- Setup requirements: [docs/SEO_ADSENSE.md](docs/SEO_ADSENSE.md).
+- Release notes: [POT_BREAKER_RE_v1.0.89_CHANGELOG.md](POT_BREAKER_RE_v1.0.89_CHANGELOG.md).
+- The Android WebView v0.16.0 package below is a separate legacy app and does not automatically receive web release updates.
+
+---
+
 # POT BREAKER Android v0.16.0
 
 POT BREAKER 브라우저 게임을 **안드로이드 앱으로 설치할 수 있도록 WebView로 패키징한 프로젝트**입니다.
