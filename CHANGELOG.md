@@ -1370,3 +1370,6 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ## v1.0.63
 - Lower the mobile touch turn confirmation slightly to make direction changes more responsive.
+
+## v1.0.64
+- Make mobile touch direction changes slightly easier to register.
