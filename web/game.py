@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.26 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.28 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -13,7 +13,8 @@ PAD_SPAWN_SECONDS = 1.15
 PAD_LIFETIME_SECONDS = 8.0
 PAD_LIMIT = 8
 PARTITION_MOVE_SECONDS = 1.7
-FIELD_POT_COUNT = 6  # Exactly six collectible pots; throws relocate rather than add.
+FIELD_POT_COUNT = 4  # Four ammo pots plus one healing and one bomb pot.
+SPECIAL_POT_EFFECTS = ('heal', 'bomb')
 CROW_FIRST_APPEAR_SECONDS = 2.5
 CROW_RESPAWN_SECONDS = 14.0
 VISION_RANGE = None    # Boss can locate both player and pickup positions across entire map.
@@ -23,7 +24,7 @@ PLAYER_MOVE_INTERVAL = 0.0955
 PLAYER_DASH_MOVE_INTERVAL = 0.09
 PLAYER_HP = 3
 PLAYER_POT_CAP = 3
-BOSS_HP = 5
+BOSS_POT_CAP = 5
 HIT_INVULNERABILITY = 0.72
 CROW_FLIGHT_SECONDS = 4.2
 CROW_DROP_SECONDS = 1.2  # Double the previous 0.6s interval.
@@ -39,8 +40,8 @@ class PotBreaker:
     def __init__(self, seed=None, difficulty='normal'):
         self.rng = random.Random(seed)
         self.difficulty = difficulty if difficulty in ('normal', 'hard', 'very_hard') else 'normal'
-        self.player_pot_cap = 3 if self.difficulty == 'normal' else 1
-        self.boss_hp_cap = 10 if self.difficulty == 'very_hard' else BOSS_HP
+        self.player_pot_cap = 3 if self.difficulty == 'normal' else 2
+        self.boss_hp_cap = {'normal': 3, 'hard': 5, 'very_hard': 7}[self.difficulty]
         self.reset()
 
     def reset(self):
@@ -67,10 +68,11 @@ class PotBreaker:
                 self.moving_walls.remove(self.rng.choice(tuple(self.moving_walls)))
             else:
                 break
-        self.ammo, self.boss_ammo, self.max_boss_ammo = self.player_pot_cap, 5, 5
+        self.ammo, self.boss_ammo, self.max_boss_ammo = 0, 0, BOSS_POT_CAP
+        self.boss_pot_cap = BOSS_POT_CAP
         self.throw_cd, self.boss_throw_cd = 0.0, 1.2
         self.player_move_cd, self.boss_move_cd = 0.0, .5
-        self.projectiles, self.pots = [], []
+        self.projectiles, self.pots, self.special_pots = [], [], []
         self.crow_flight, self.crow_bombs, self.mystery_pots = None, [], []
         self.hit_events = []
         self.hit_seq = 0
@@ -85,6 +87,7 @@ class PotBreaker:
         self.dash_effect = None
         self.boss_target = None
         for _ in range(FIELD_POT_COUNT): self._add_pot()
+        for effect in SPECIAL_POT_EFFECTS: self._add_special_pot(effect)
         
         return self.state()
 
@@ -102,24 +105,38 @@ class PotBreaker:
         if len(self.pots) >= FIELD_POT_COUNT: return
         choices = [(x, y) for y in range(HEIGHT) for x in range(WIDTH)
                    if self._free(x, y) and [x, y] not in (self.player, self.boss)
-                   and [x, y] not in self.pots]
+                   and [x, y] not in self.pots
+                   and all((x, y) != (item['x'], item['y']) for item in self.special_pots)]
         if choices:
             self.pots.append(list(self.rng.choice(choices)))
 
+    def _add_special_pot(self, effect):
+        if any(item['effect'] == effect for item in self.special_pots): return
+        choices = [(x, y) for y in range(HEIGHT) for x in range(WIDTH)
+                   if self._free(x, y) and [x, y] not in (self.player, self.boss)
+                   and [x, y] not in self.pots
+                   and all((x, y) != (item['x'], item['y']) for item in self.special_pots)]
+        if choices:
+            x, y = self.rng.choice(choices)
+            self.special_pots.append({'x': x, 'y': y, 'effect': effect})
+
     def _maintain_field_pots(self):
-        # All six floor items remain collectible. A thrown pot does not create a seventh.
+        # Keep four ammo pots and exactly one healing/bomb pot available.
         while len(self.pots) < FIELD_POT_COUNT:
             before = len(self.pots)
             self._add_pot()
             if len(self.pots) == before: break
-        if len(self.pots) > FIELD_POT_COUNT:
-            self.pots[:] = self.pots[:FIELD_POT_COUNT]
+        self.pots[:] = self.pots[:FIELD_POT_COUNT]
+        for effect in SPECIAL_POT_EFFECTS:
+            self._add_special_pot(effect)
 
     def _nearest_pot(self, who):
         # Use walkable path distance, not straight-line distance, to avoid NPC freezing at a partition.
         best = None
         bestlen = float('inf')
-        for pot in self.pots:
+        targets = [list(pot) for pot in self.pots]
+        targets.extend([[item['x'], item['y']] for item in self.special_pots])
+        for pot in targets:
             path = self._path(who, pot)
             if not path:
                 continue  # Ignore temporarily sealed-off pickups; do not stand still.
@@ -151,6 +168,7 @@ class PotBreaker:
         cx, cy = round(x), round(y)
         for _ in range(MYSTERY_POTS_PER_DROP):
             occupied = {tuple((item['x'], item['y'])) for item in self.mystery_pots}
+            occupied.update((item['x'], item['y']) for item in self.special_pots)
             candidates = [(cx + dx, cy + dy) for radius in range(3)
                           for dx in range(-radius, radius + 1)
                           for dy in range(-radius, radius + 1)
@@ -223,7 +241,8 @@ class PotBreaker:
         self.partition_timer -= dt
         if self.partition_timer > 0: return
         self.partition_timer = PARTITION_MOVE_SECONDS
-        occupied = {tuple(self.player), tuple(self.boss), *[tuple(p) for p in self.pots]}
+        occupied = {tuple(self.player), tuple(self.boss), *[tuple(p) for p in self.pots],
+                    *[(item['x'], item['y']) for item in self.special_pots]}
         # Every partition is movable: no static decorative blocking partitions.
         # Shuffle movement order, and allow entering already-vacated cells.
         pending = list(self.moving_walls)
@@ -268,14 +287,33 @@ class PotBreaker:
         if self.player == self.boss: self._damage(False)
 
     def _pickups(self):
-        for who, cap, attr in ((self.player, self.player_pot_cap, 'ammo'), (self.boss, 5, 'boss_ammo')):
+        for who, cap, attr in ((self.player, self.player_pot_cap, 'ammo'), (self.boss, self.boss_pot_cap, 'boss_ammo')):
             if getattr(self, attr) >= cap: continue
             for pot in list(self.pots):
                 if who == pot:
                     setattr(self, attr, getattr(self, attr) + 1)
                     self.pots.remove(pot)
-                    self._maintain_field_pots()  # Field count stays exactly six.
+                    self._maintain_field_pots()  # Keep four ammo pots and two special pots.
                     break
+
+    def _pick_special_pots(self):
+        for item in list(self.special_pots):
+            for npc, who in ((False, self.player), (True, self.boss)):
+                if distance(who, (item['x'], item['y'])) >= .65:
+                    continue
+                self.special_pots.remove(item)
+                if item['effect'] == 'bomb':
+                    self._damage(npc, bypass_invulnerability=True)
+                    self.notice, self.notice_time = ('크다' if npc else '기묘') + ' 폭탄 화분! HP -1', 1.3
+                else:
+                    attr, cap = ('boss_hp', self.boss_hp_cap) if npc else ('player_hp', PLAYER_HP)
+                    if getattr(self, attr) < cap:
+                        setattr(self, attr, getattr(self, attr) + 1)
+                        self.notice, self.notice_time = ('크다' if npc else '기묘') + ' 회복 화분! HP +1', 1.3
+                    else:
+                        self.notice, self.notice_time = '회복 화분을 찾았지만 HP가 가득 찼습니다.', 1.3
+                self._maintain_field_pots()
+                break
 
     def _pick_mystery_pots(self):
         for item in list(self.mystery_pots):
@@ -301,7 +339,9 @@ class PotBreaker:
                 for dy in range(-radius, radius + 1):
                     if abs(dx) + abs(dy) != radius: continue
                     nx, ny = xx + dx, yy + dy
-                    if not self._free(nx, ny) or [nx, ny] in self.pots or [nx, ny] in (self.boss, self.player):
+                    if (not self._free(nx, ny) or [nx, ny] in self.pots
+                            or [nx, ny] in (self.boss, self.player)
+                            or any((nx, ny) == (item['x'], item['y']) for item in self.special_pots)):
                         continue
                     if len(self.pots) >= FIELD_POT_COUNT:
                         self.pots.pop(self.rng.randrange(len(self.pots)))
@@ -458,6 +498,7 @@ class PotBreaker:
             self.boss_move_cd = .225
         if self.phase != 'playing': return self.state()
         self._pickups()
+        self._pick_special_pots()
         self._pick_mystery_pots()
         if self.phase != 'playing': return self.state()
         # Boss projectile decision depends on ammo but no field-of-view angle.
@@ -479,7 +520,7 @@ class PotBreaker:
                            'walls': sorted(self.walls), 'moving_walls': sorted(self.moving_walls),
                            'pots': self.pots, 'projectiles': self.projectiles,
                            'crow_flight': self.crow_flight, 'crow_bombs': self.crow_bombs,
-                           'mystery_pots': self.mystery_pots,
+                           'mystery_pots': self.mystery_pots, 'special_pots': self.special_pots,
                            'player_hp': self.player_hp, 'boss_hp': self.boss_hp,
                            'player_dash_cd': round(self.player_dash_cd,2), 'boss_dash_cd': round(self.boss_dash_cd,2),
                            'ammo': self.ammo, 'ammo_cap': self.player_pot_cap, 'boss_ammo': self.boss_ammo,
@@ -494,7 +535,7 @@ if __name__ == '__main__':
     for i in range(2500):
         s = json.loads(g.step(.04, 1 if i % 6 < 3 else -1, 0, False, i % 17 == 0))
         assert len(s['pots']) == FIELD_POT_COUNT
-        assert 0 <= s['boss_ammo'] <= 5
-        assert 0 <= s['player_hp'] <= 3 and 0 <= s['boss_hp'] <= 5
+        assert 0 <= s['boss_ammo'] <= BOSS_POT_CAP
+        assert 0 <= s['player_hp'] <= PLAYER_HP and 0 <= s['boss_hp'] <= 7
         if s['phase'] != 'playing': g.reset()
     print('OK: 2500 deterministic engine ticks')

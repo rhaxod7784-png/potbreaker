@@ -19,9 +19,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         game = PotBreaker(42)
         for i in range(2500):
             state = json.loads(game.step(.04, 1 if i % 6 < 3 else -1, 0, False, i % 17 == 0))
-            self.assertEqual(len(state["pots"]), 6)
+            self.assertEqual(len(state["pots"]) + len(state["special_pots"]), 6)
             self.assertTrue(0 <= state["boss_ammo"] <= 5)
-            self.assertTrue(0 <= state["player_hp"] <= 3 and 0 <= state["boss_hp"] <= 5)
+            self.assertTrue(0 <= state["player_hp"] <= 3 and 0 <= state["boss_hp"] <= 7)
             if state["phase"] != "playing":
                 game.reset()
 
@@ -48,13 +48,14 @@ class PotBreakerBalanceTests(unittest.TestCase):
         game.player = [15, 5]
         game.boss = [9, 5]
         game.walls = {(10, 5)}
+        game.boss_ammo = 1
         game._fire(game.boss, [1, 0], npc=True)
 
         game._advance_projectiles(.085)
 
         self.assertEqual(game.projectiles, [])
         self.assertEqual(game.pot_break_events, [])
-        self.assertEqual(len(game.pots), 6)
+        self.assertEqual(len(game.pots) + len(game.special_pots), 6)
 
     def test_character_hit_emits_pot_break_event(self):
         game = PotBreaker(4)
@@ -66,13 +67,14 @@ class PotBreakerBalanceTests(unittest.TestCase):
         game._advance_projectiles(.01)
 
         state = json.loads(game.state())
-        self.assertEqual(game.boss_hp, 4)
+        self.assertEqual(game.boss_hp, 2)
         self.assertEqual(len(state["pot_breaks"]), 1)
 
     def test_boss_pots_are_slower_and_crow_events_are_rebalanced(self):
         game = PotBreaker(1)
         game.boss = [4, 5]
         game.player = [15, 5]
+        game.boss_ammo = 1
         game._fire(game.boss, [1, 0], npc=True)
         game._advance_projectiles(.05)
 
@@ -103,7 +105,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
     def test_mystery_pots_apply_same_hp_effects_to_kimyo_and_keuda(self):
         game = PotBreaker(22)
         game.player, game.boss = [2, 2], [6, 6]
-        game.player_hp, game.boss_hp = 2, 3
+        game.player_hp, game.boss_hp = 2, 2
         game.player_invuln = game.boss_invuln = .5
         game.mystery_pots = [
             {"x": 2, "y": 2, "effect": "damage", "ttl": 10},
@@ -111,7 +113,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         ]
         game._pick_mystery_pots()
         self.assertEqual(game.player_hp, 1)
-        self.assertEqual(game.boss_hp, 4)
+        self.assertEqual(game.boss_hp, 3)
         self.assertEqual(game.mystery_pots, [])
 
         game.player_hp, game.boss_hp = 2, 4
@@ -131,8 +133,8 @@ class PotBreakerBalanceTests(unittest.TestCase):
 
     def test_player_pot_capacity_is_three_and_start_is_inset(self):
         game = PotBreaker(3)
-        self.assertEqual(game.ammo, PLAYER_POT_CAP)
-        self.assertEqual(json.loads(game.state())["ammo"], 3)
+        self.assertEqual(game.ammo, 0)
+        self.assertEqual(json.loads(game.state())["ammo"], 0)
         game.ammo = 2
         game.player = game.pots[0][:]
         game._pickups()
@@ -148,15 +150,24 @@ class PotBreakerBalanceTests(unittest.TestCase):
             self.assertIn(player[0], (3, 15))
             self.assertIn(player[1], (3, 7))
 
+        self.assertEqual(len(game.special_pots), 2)
+        self.assertEqual({item["effect"] for item in game.special_pots}, {"heal", "bomb"})
+        self.assertEqual(game.boss_ammo, 0)
+        self.assertEqual(PotBreaker(1, "normal").boss_hp_cap, 3)
+        self.assertEqual(PotBreaker(1, "hard").boss_hp_cap, 5)
+        self.assertEqual(PotBreaker(1, "very_hard").boss_hp_cap, 7)
+        self.assertEqual(PotBreaker(1, "hard").player_pot_cap, 2)
+        self.assertEqual(PotBreaker(1, "very_hard").player_pot_cap, 2)
+
     def test_mobile_controls_use_large_dpad_and_transparent_buttons(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
         self.assertIn('id="dpad"', html)
-        self.assertIn('data-dir="up"', html)
-        self.assertNotIn('class="joystick"', html)
+        self.assertIn('id="dpadKnob"', html)
+        self.assertIn('class="dpad-ring"', html)
         self.assertIn("dpadDirection", html)
         self.assertIn("@media (pointer:coarse),(max-height:520px)", html)
-        self.assertIn("clamp(216px,23cqw,264px)", html)
-        self.assertIn("opacity:.9", html)
+        self.assertIn("clamp(126px,16cqw,164px)", html)
+        self.assertIn("function getMove()", html)
         self.assertIn(".action.fire{width:clamp(64px,6.2cqw,88px)", html)
 
     def test_fire_button_fires_while_held_and_stops_on_release(self):
@@ -168,9 +179,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
 
     def test_mobile_dpad_and_shatter_feedback_are_wired(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
-        self.assertIn("button.setPointerCapture(e.pointerId)", html)
-        self.assertIn("button.addEventListener('pointerup',release)", html)
-        self.assertIn("button.addEventListener('pointercancel',release)", html)
+        self.assertIn("dpad.setPointerCapture(e.pointerId)", html)
+        self.assertIn("dpad.addEventListener('pointermove'", html)
+        self.assertIn("function getMove()", html)
         self.assertIn("fetch('/game.py'", html)
         self.assertNotIn('id="pythonEngine"', html)
         self.assertIn("breakParticles.push", html)
@@ -191,9 +202,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.26", html)
+        self.assertIn("POT BREAKER RE v1.0.28", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.26"', build)
+        self.assertIn('version:"1.0.28"', build)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn("position:fixed;inset:0;width:100vw;height:100dvh;display:block;overflow:hidden", html)
         self.assertIn("transform:translate(-50%,-50%) rotate(90deg)", html)

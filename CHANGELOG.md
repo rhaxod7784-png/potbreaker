@@ -877,6 +877,19 @@ POT BREAKER의 정규 버전 기록입니다.
 - 랭킹은 베리 하드, 하드, 노멀 순으로 묶고 각 난이도 안에서 빠른 기록을 우선 표시.
 - Cloudflare D1 `POTBREAKER_DB` 바인딩 및 초기 마이그레이션 추가.
 
+## v1.0.28
+
+- Fix the missing mobile direction reader that stopped the game loop after the intro.
+- Start Kimyo and Keuda with no loaded pots; set Kimyo capacity to 3 on Normal and 2 on Hard/Very Hard.
+- Set Keuda HP to 3/5/7 for Normal/Hard/Very Hard.
+- Keep one clearly marked healing pot and one bomb pot in the arena, distinct from Gamgwajang’s purple mystery pots.
+
+## v1.0.27
+
+- Restore `getMove()` after replacing the mobile direction pad with the round joystick. The missing function caused the first animation frame to throw and stop the game.
+- Keep keyboard movement and 8-way joystick movement routed through the same game loop.
+- Version the Worker as v1.0.27.
+
 ## v1.0.26
 
 - 휴대폰 이동 패드를 원형 조이스틱으로 복구하고 8방향 입력으로 대각선 이동을 지원.
