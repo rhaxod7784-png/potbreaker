@@ -1,3 +1,17 @@
+## v1.0.38 — 터치 드래그 방향 계산 통일
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 초기 터치 위치와 드래그 입력을 섞던 처리를 제거하고, 손가락 드래그 벡터만으로 방향을 결정하도록 통일.
+- CSS 회전 행렬을 역변환해 화면상 손가락 움직임을 게임 격자 방향에 맞춤. 누르는 동안 반복 이동하고, 손가락을 떼면 즉시 정지.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.37 — 드래그 방향 전환 반응 개선
 
 **Release type:** PATCH  
