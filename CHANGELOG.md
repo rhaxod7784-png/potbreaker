@@ -1373,3 +1373,6 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ## v1.0.64
 - Make mobile touch direction changes slightly easier to register.
+
+## v1.0.65
+- Slightly lower the mobile touch direction change threshold again.
