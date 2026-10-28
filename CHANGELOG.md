@@ -1388,3 +1388,6 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ## v1.0.69
 - Use the outer blue margin for mobile portrait arrow controls and align the game board to the top.
+
+## v1.0.70
+- Move the external touch pad to the game's left side and reserve that side margin.
