@@ -125,3 +125,10 @@ Android 앱에서 생성된 승리 기록은 WebView의 `localStorage`에 저장
 
 
 Worker build status is generated from `scripts/build_worker.py` on each push to this branch.
+
+
+## Web release v1.0.91
+
+- Added a Korean / English / Simplified Chinese / Japanese language selector in the in-game footer. The selection persists between visits and translates the game UI, accessible labels, and canvas messages.
+- Moved the game description and controls guidance out of the playfield overlay into a collapsible section in the bottom footer.
+- AdSense remains gated behind a real publisher ID and privacy/consent readiness settings.
