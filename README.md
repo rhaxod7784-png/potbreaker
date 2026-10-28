@@ -122,3 +122,6 @@ Android 앱에서 생성된 승리 기록은 WebView의 `localStorage`에 저장
 - D1 바인딩 이름: `POTBREAKER_DB`
 
 노멀은 기존 밸런스, 하드는 기묘의 화분 1개, 베리 하드는 기묘의 화분 1개와 크다 체력 10으로 플레이합니다. 익명 방문 및 게임 결과 이벤트를 D1에 기록하며, 승리로 끝난 게임만 닉네임·난이도·클리어 시간을 랭킹에 등록합니다. 랭킹은 베리 하드, 하드, 노멀 순으로 표시하고 난이도 안에서는 빠른 기록이 먼저 나옵니다.
+
+
+Worker build status is generated from `scripts/build_worker.py` on each push to this branch.
