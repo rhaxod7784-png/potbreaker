@@ -75,6 +75,8 @@ body{min-height:100dvh!important}
 .site-guide-copy h1{margin:0 0 3px;font-size:clamp(11px,1.15vw,16px);line-height:1.2}.site-guide-copy p{margin:0;font-size:clamp(9px,.9vw,12px);line-height:1.35}
 .site-guide-howto{position:relative;font-size:clamp(9px,.9vw,12px)}.site-guide-howto summary{cursor:pointer;font-weight:800;white-space:nowrap}.site-guide-howto p{max-width:min(55vw,520px);margin:6px 0 0}
 .site-guide nav{display:flex;gap:clamp(6px,1vw,14px);flex-wrap:wrap;justify-content:flex-end;font-size:clamp(9px,.9vw,12px)}.site-guide a{color:#244e70;text-underline-offset:2px}
+#title .start-art-button{display:grid!important;place-items:center!important;box-sizing:border-box;background:linear-gradient(180deg,#ffe475,#ffc83f)!important;border:3px solid #5c4222!important;color:#24324c!important;font-size:clamp(15px,2cqw,25px)!important;font-weight:1000;line-height:1;box-shadow:0 4px 0 #8e5d24!important;text-shadow:0 1px 0 #fff8}
+
 .comic-cover-wrap{position:relative;width:100%;height:100%;min-width:0;min-height:0;max-height:100%;overflow:hidden}
 .comic-cover-wrap>.comic-cover{display:block;width:100%;height:100%;min-width:0;min-height:0;max-height:100%;object-fit:contain}
 .comic-translation-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
