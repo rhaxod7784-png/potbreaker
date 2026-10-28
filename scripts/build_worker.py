@@ -1,4 +1,4 @@
-"""Build illustrated POT BREAKER RE v1.0.88 for Cloudflare Workers.
+"""Build illustrated POT BREAKER RE v1.0.91 for Cloudflare Workers.
 
 Inputs: web/index.html (images + UI bundled) and web/game.py (Python core).
 Unlike the original v1.0.0 builder, this does not expect an inline Python script
@@ -72,14 +72,14 @@ html = html.replace("</style>", seo_css + "\\n</style>", 1)
 
 
 language_css = """
-.legend{pointer-events:auto!important;display:flex;align-items:center;justify-content:center;gap:8px;max-width:96%;white-space:nowrap}
+.legend{pointer-events:auto!important;display:flex;align-items:center;justify-content:center;gap:8px;width:min(94%,900px);max-width:94%;box-sizing:border-box;white-space:normal;flex-wrap:wrap}
 .locale-control{display:inline-flex;align-items:center;pointer-events:auto;position:relative;z-index:20}
 .locale-control select{pointer-events:auto;appearance:auto;max-width:104px;padding:4px 20px 4px 9px;border:1px solid #ffffffed;border-radius:999px;background:#fffef4;color:#293b60;font:700 clamp(9px,1cqw,12px)/1.2 system-ui,sans-serif;box-shadow:0 2px 7px #34486b36;touch-action:manipulation}
 .locale-control select:focus-visible{outline:3px solid #f0bd48;outline-offset:2px}
 .locale-control .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-@media(max-width:700px){.legend{max-width:98%;gap:5px}.locale-control select{max-width:90px;padding:4px 16px 4px 7px}}
+@media(max-width:700px){.legend{width:96%;max-width:96%;gap:5px}.locale-control select{max-width:90px;padding:4px 16px 4px 7px}}
 """
-html = html.replace("</style>", language_css + "\\n</style>", 1)
+html = html.replace("</style>", language_css + "\n</style>", 1)
 footer_tail = "누르고 있으면 계속 이동</span></div></section>"
 language_picker = """누르고 있으면 계속 이동</span>""" + site_info + """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label></div></section>"""
 if footer_tail not in html:
@@ -237,7 +237,7 @@ const validDifficulty=value=>["normal","hard","very_hard"].includes(value);
 export default {async fetch(request,env){
 const path=new URL(request.url).pathname;
 if(path==="/health")
-  return json({ok:true,version:"1.0.89",visual:"illustrated",engine:"Python/Pyodide",database:!!env.POTBREAKER_DB});
+  return json({ok:true,version:"1.0.91",visual:"illustrated",engine:"Python/Pyodide",database:!!env.POTBREAKER_DB});
 if(path.startsWith("/api/")){
   if(!env.POTBREAKER_DB)return json({error:"랭킹 데이터베이스가 연결되지 않았습니다."},503);
   try{
