@@ -1,3 +1,17 @@
+## v1.0.42 — 방향 전환 완충값 조정
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 방향 전환 거리를 0.286칸에서 0.235칸으로 낮춰 방향 변경 반응을 부드럽게 조정.
+- 첫 방향 입력과 축 판정 기준은 유지.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.41 — 방향 흔들림 억제 30% 추가
 
 **Release type:** PATCH  
