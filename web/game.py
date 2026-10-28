@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.33 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.34 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -30,6 +30,7 @@ CROW_FLIGHT_SECONDS = 4.2
 CROW_DROP_SECONDS = 1.2  # Double the previous 0.6s interval.
 MYSTERY_POTS_PER_DROP = 2
 MYSTERY_POT_LIFETIME = 14.0
+MYSTERY_POT_EFFECTS = ('heal', 'damage', 'refill', 'field_reset')
 
 
 def distance(a, b):
@@ -129,6 +130,11 @@ class PotBreaker:
         self.pots[:] = self.pots[:FIELD_POT_COUNT]
         self._add_special_pot('heal')
 
+    def _reset_field_pots(self):
+        self.pots.clear()
+        self.special_pots.clear()
+        self._maintain_field_pots()
+
     def _nearest_pot(self, who):
         # Use walkable path distance, not straight-line distance, to avoid NPC freezing at a partition.
         best = None
@@ -195,7 +201,7 @@ class PotBreaker:
             if not candidates:
                 continue
             px, py = self.rng.choice(candidates)
-            effect = 'damage' if self.rng.random() < .5 else 'heal'
+            effect = self.rng.choice(MYSTERY_POT_EFFECTS)
             self.mystery_pots.append({'x': px, 'y': py, 'effect': effect,
                                       'ttl': MYSTERY_POT_LIFETIME})
 
@@ -336,12 +342,21 @@ class PotBreaker:
                     continue
                 self.mystery_pots.remove(item)
                 attr, cap, name = ('boss_hp', self.boss_hp_cap, '크다') if npc else ('player_hp', PLAYER_HP, '기묘')
-                if item['effect'] == 'damage':
+                effect = item['effect']
+                if effect == 'damage':
                     self._damage(npc, bypass_invulnerability=True)
                     self.notice, self.notice_time = f"? 화분 폭발! {name} HP -1", 1.3
-                else:
+                elif effect == 'heal':
                     setattr(self, attr, min(cap, getattr(self, attr) + 1))
                     self.notice, self.notice_time = f"? 화분 회복! {name} HP +1", 1.3
+                elif effect == 'refill':
+                    ammo_attr = 'boss_ammo' if npc else 'ammo'
+                    ammo_cap = self.boss_pot_cap if npc else self.player_pot_cap
+                    setattr(self, ammo_attr, ammo_cap)
+                    self.notice, self.notice_time = f"? 화분 풀충전! {name} 화분 {ammo_cap}/{ammo_cap}", 1.3
+                else:
+                    self._reset_field_pots()
+                    self.notice, self.notice_time = '? 필드 화분 리셋!', 1.3
                 break
 
     def _drop_pot(self, x, y):
