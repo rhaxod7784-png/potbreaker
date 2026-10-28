@@ -24,6 +24,7 @@ BOSS_DASH_COOLDOWN = 5.0
 PLAYER_MOVE_INTERVAL = 0.0955
 PLAYER_DASH_MOVE_INTERVAL = 0.09
 PLAYER_HP = 3
+PLAYER_POT_CAP = 3
 BOSS_HP = 5
 HIT_INVULNERABILITY = 0.72
 CROW_FLIGHT_SECONDS = 4.2
@@ -41,8 +42,9 @@ class PotBreaker:
 
     def reset(self):
         self.phase, self.clock = 'playing', 0.0
-        self.player = list(self.rng.choice([(2, 2), (2, HEIGHT - 3),
-                                            (WIDTH - 3, 2), (WIDTH - 3, HEIGHT - 3)]))
+        # Keep the player clear of the touch controls at the lower screen corners.
+        self.player = list(self.rng.choice([(3, 3), (3, HEIGHT - 4),
+                                            (WIDTH - 4, 3), (WIDTH - 4, HEIGHT - 4)]))
         self.boss = [WIDTH // 2, HEIGHT // 2]
         self.face, self.boss_face = [1, 0], [-1, 0]
         self.walls, self.moving_walls = set(), set()  # All partition tiles are dynamic.
@@ -244,7 +246,7 @@ class PotBreaker:
         if self.player == self.boss: self._damage(False)
 
     def _pickups(self):
-        for who, cap, attr in ((self.player, 1, 'ammo'), (self.boss, 5, 'boss_ammo')):
+        for who, cap, attr in ((self.player, PLAYER_POT_CAP, 'ammo'), (self.boss, 5, 'boss_ammo')):
             if getattr(self, attr) >= cap: continue
             for pot in list(self.pots):
                 if who == pot:
@@ -439,7 +441,7 @@ class PotBreaker:
                            'crow_flight': self.crow_flight, 'crow_bombs': self.crow_bombs,
                            'player_hp': self.player_hp, 'boss_hp': self.boss_hp,
                            'player_dash_cd': round(self.player_dash_cd,2), 'boss_dash_cd': round(self.boss_dash_cd,2),
-                           'ammo': self.ammo, 'boss_ammo': self.boss_ammo,
+                           'ammo': self.ammo, 'ammo_cap': PLAYER_POT_CAP, 'boss_ammo': self.boss_ammo,
                            'aim': self._aim(self.player, self.boss),
                            'boss_aim': self._aim(self.boss, self.player),
                            'aim_sweep_degrees': 90,

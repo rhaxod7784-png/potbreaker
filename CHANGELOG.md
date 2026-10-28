@@ -1,4 +1,26 @@
 # POT BREAKER CHANGELOG
+## v1.0.17 — 휴대폰 조작 및 화면 QA 보완
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 기묘의 화분 보유 한도를 1개에서 3개로 늘리고 HUD에 현재 보유량과 한도를 표시.
+- 화면 모서리의 터치 조작 버튼을 작게 조정하고 투명도를 높임.
+- 시작 위치를 안쪽으로 옮겨 버튼이 기묘를 가리는 상황을 줄임.
+- 세로 화면 안내를 명확히 하고, 휴대폰에서 가로 플레이 화면을 우선하도록 정리.
+- 화면·Worker·문서 버전을 v1.0.17로 통일.
+
+### Verified
+- 십자패드 이동, 캐릭터별 화분 색 구분, 화분 파손 시 화면 흔들림과 파손음.
+- 플레이어 화분으로 감 과장을 맞히면 기묘 HP가 1 회복되며 크다 부장은 회복되지 않음.
+- 기묘의 이동 속도는 기존 v1.0.15 값 대비 약 10% 높음.
+
+### Code
+- `web/game.py`, `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.14 — 모바일 조이스틱 터치 입력 보강
 
 **Release type:** PATCH  

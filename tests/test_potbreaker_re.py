@@ -8,6 +8,7 @@ from web.game import (
     CROW_RESPAWN_SECONDS,
     PLAYER_DASH_MOVE_INTERVAL,
     PLAYER_MOVE_INTERVAL,
+    PLAYER_POT_CAP,
     PotBreaker,
 )
 
@@ -68,54 +69,49 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertGreaterEqual(created, 6)
 
     def test_kimyo_movement_is_slightly_faster(self):
-        self.assertAlmostEqual(PLAYER_MOVE_INTERVAL, 0.105)
+        self.assertAlmostEqual(PLAYER_MOVE_INTERVAL, 0.0955)
+        self.assertAlmostEqual(.105 / PLAYER_MOVE_INTERVAL - 1, .10, places=2)
         self.assertAlmostEqual(PLAYER_DASH_MOVE_INTERVAL, 0.09)
-        self.assertLess(PLAYER_MOVE_INTERVAL, 0.115)
         self.assertLess(PLAYER_DASH_MOVE_INTERVAL, 0.095)
 
-    def test_diagonal_player_movement_and_corner_collision(self):
+    def test_player_pot_capacity_is_three_and_start_is_inset(self):
         game = PotBreaker(3)
-        game.player = [5, 5]
-        game.walls = {(6, 5)}
-        game.player_move_cd = 0
-        game.step(.04, 1, 1)
-        self.assertEqual(game.player, [5, 5])
+        game.ammo = 2
+        game.player = game.pots[0][:]
+        game._pickups()
+        self.assertEqual(game.ammo, 3)
+        self.assertEqual(json.loads(game.state())["ammo_cap"], PLAYER_POT_CAP)
 
-        game.walls.clear()
-        game.player_move_cd = 0
-        game.step(.04, 1, 1)
-        self.assertEqual(game.player, [6, 6])
-        self.assertAlmostEqual(game.player_move_cd, PLAYER_MOVE_INTERVAL * 2**0.5)
+        game.player = game.pots[0][:]
+        game._pickups()
+        self.assertEqual(game.ammo, 3)
 
-    def test_partial_stick_pressure_moves_and_scales_speed(self):
-        game = PotBreaker(7)
-        game.player = [5, 5]
-        game.player_move_cd = 0
-        game.walls.clear()
-        game.moving_walls.clear()
-        game.step(.04, .15, 0)
-        self.assertEqual(game.player, [6, 5])
-        self.assertAlmostEqual(game.player_move_cd, PLAYER_MOVE_INTERVAL / .7)
+        for seed in range(30):
+            player = PotBreaker(seed).player
+            self.assertIn(player[0], (3, 15))
+            self.assertIn(player[1], (3, 7))
 
-    def test_mobile_controls_allow_diagonal_and_large_throw_target(self):
+    def test_mobile_controls_use_compact_dpad_and_transparent_buttons(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
-        self.assertIn("magnitude<.12", html)
-        self.assertIn("Math.round(Math.atan2(y,x)/(Math.PI/4))", html)
+        self.assertIn('id="dpad"', html)
+        self.assertIn('data-dir="up"', html)
+        self.assertNotIn('class="joystick"', html)
+        self.assertIn("dpadDirection", html)
         self.assertIn("@media (pointer:coarse),(max-height:520px)", html)
-        self.assertIn(".action.fire{width:clamp(112px,17cqw,152px);min-width:112px;min-height:112px}", html)
+        self.assertIn("opacity:.62", html)
+        self.assertIn(".action.fire{width:clamp(64px,6.2cqw,88px)", html)
 
-    def test_mobile_stick_capture_and_shatter_audio_are_wired(self):
+    def test_mobile_dpad_and_shatter_feedback_are_wired(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
-        self.assertIn("window.addEventListener('pointermove'", html)
-        self.assertIn("joy.addEventListener('touchstart'", html)
-        self.assertIn("window.addEventListener('touchmove'", html)
-        self.assertIn("new DOMMatrix(transform).inverse()", html)
-        self.assertIn("window.addEventListener(event,releasePointer)", html)
-        self.assertIn("window.addEventListener(event,releaseTouch", html)
+        self.assertIn("button.setPointerCapture(e.pointerId)", html)
+        self.assertIn("button.addEventListener('pointerup',release)", html)
+        self.assertIn("button.addEventListener('pointercancel',release)", html)
         self.assertIn("function shatterSound()", html)
-        self.assertIn("unlockGameAudio();requestLandscapeMode();show('intro')", html)
-        self.assertIn("unlockGameAudio();requestLandscapeMode();stop()", html)
         self.assertIn("s.pot_breaks||[]", html)
+        self.assertIn("shakeTimer=.22", html)
+        self.assertIn("ctx.translate((Math.random()-.5)*.32", html)
+        for color in ("#e65b58", "#5b91e8", "#f0c44e", "#62bd78"):
+            self.assertIn(color, html)
 
     def test_opening_comic_has_four_equal_sized_panels(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
@@ -124,13 +120,13 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.14", html)
+        self.assertIn("POT BREAKER RE v1.0.17", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.14"', build)
-        self.assertIn('transform:rotate(90deg)', html)
+        self.assertIn('version:"1.0.17"', build)
         self.assertIn('id="rotateStart"', html)
-        self.assertIn("(orientation:portrait) and (max-width:900px)", html)
-        self.assertIn("position:fixed;z-index:100", html)
+        self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
+        self.assertIn('휴대폰을 가로로 돌려 주세요', html)
+        self.assertIn("screen.orientation.lock('landscape')", html)
         self.assertIn("requestLandscapeMode();show('intro')", html)
 
     def test_mobile_intro_uses_stage_height_and_scaled_copy(self):
@@ -138,8 +134,8 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertIn(".intro{grid-template-rows:minmax(0,1fr);min-height:0}", html)
         self.assertIn("font-size:clamp(15px,3.15cqw,45px)", html)
         self.assertIn("min-height:0;max-height:100%", html)
-        self.assertIn('stage.requestFullscreen', html)
-        self.assertIn('11cqw', html)
+        self.assertIn('document.documentElement', html)
+        self.assertIn('fullscreen', html)
         self.assertIn('.legend{display:none}', html)
 
 
