@@ -485,7 +485,6 @@ class PotBreaker:
         dt = min(.085, max(.01, float(dt)))
         self.clock += dt
         self.player_dash_cd=max(0.,self.player_dash_cd-dt)
-        self.player_move_cd=max(0.,self.player_move_cd-dt)
         self.boss_dash_cd=max(0.,self.boss_dash_cd-dt)
         self.player_invuln=max(0.,self.player_invuln-dt)
         self.boss_invuln=max(0.,self.boss_invuln-dt)
@@ -511,6 +510,8 @@ class PotBreaker:
         if jump and self.player_dash_cd <= 0:
             dash_dx, dash_dy = (dx, dy) if (dx or dy) else tuple(self.face)
             just_dashed = self._dash(self.player, dash_dx, dash_dy, False)
+            if just_dashed:
+                self.player_move_cd = PLAYER_DASH_MOVE_INTERVAL
         if not just_dashed:
             if strength <= .001:
                 self.player_move_cd = 0.0
