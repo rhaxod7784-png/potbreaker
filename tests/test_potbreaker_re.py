@@ -21,7 +21,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
             state = json.loads(game.step(.04, 1 if i % 6 < 3 else -1, 0, False, i % 17 == 0))
             self.assertEqual(len(state["pots"]) + len(state["special_pots"]), 5)
             self.assertTrue(0 <= state["boss_ammo"] <= 5)
-            self.assertTrue(0 <= state["player_hp"] <= 3 and 0 <= state["boss_hp"] <= 7)
+            self.assertTrue(0 <= state["player_hp"] <= 3 and 0 <= state["boss_hp"] <= 10)
             if state["phase"] != "playing":
                 game.reset()
 
@@ -158,19 +158,19 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertEqual(len(game.special_pots), 1)
         self.assertEqual({item["effect"] for item in game.special_pots}, {"heal"})
         self.assertEqual(game.boss_ammo, 0)
-        self.assertEqual(PotBreaker(1, "normal").boss_hp_cap, 3)
-        self.assertEqual(PotBreaker(1, "hard").boss_hp_cap, 5)
-        self.assertEqual(PotBreaker(1, "very_hard").boss_hp_cap, 7)
+        self.assertEqual(PotBreaker(1, "normal").boss_hp_cap, 5)
+        self.assertEqual(PotBreaker(1, "hard").boss_hp_cap, 7)
+        self.assertEqual(PotBreaker(1, "very_hard").boss_hp_cap, 10)
         self.assertEqual(PotBreaker(1, "hard").player_pot_cap, 2)
         self.assertEqual(PotBreaker(1, "very_hard").player_pot_cap, 2)
 
     def test_mobile_controls_use_large_dpad_and_transparent_buttons(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
         self.assertIn('id="dpad"', html)
-        self.assertIn('id="dpadKnob"', html)
-        self.assertIn('class="dpad-ring"', html)
-        self.assertIn("dpadDirection", html)
-        self.assertIn("rawX=rotated?screenY:screenX,rawY=rotated?-screenX:screenY", html)
+        self.assertIn('data-direction="up"', html)
+        self.assertIn('class="dpad-button up"', html)
+        self.assertIn("touchDirection", html)
+        self.assertIn("keyDirections[code]", html)
         self.assertIn("@media (pointer:coarse),(max-height:520px)", html)
         self.assertIn("clamp(126px,16cqw,164px)", html)
         self.assertIn("function getMove()", html)
@@ -187,8 +187,8 @@ class PotBreakerBalanceTests(unittest.TestCase):
 
     def test_mobile_dpad_and_shatter_feedback_are_wired(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
-        self.assertIn("dpad.setPointerCapture(e.pointerId)", html)
-        self.assertIn("dpad.addEventListener('pointermove'", html)
+        self.assertIn("button.setPointerCapture(e.pointerId)", html)
+        self.assertIn("dpad.querySelectorAll('[data-direction]')", html)
         self.assertIn("function getMove()", html)
         self.assertIn("fetch('/game.py'", html)
         self.assertNotIn('id="pythonEngine"', html)
@@ -210,9 +210,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.31", html)
+        self.assertIn("POT BREAKER RE v1.0.32", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.31"', build)
+        self.assertIn('version:"1.0.32"', build)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn("position:fixed;inset:0;width:100vw;height:100dvh;display:block;overflow:hidden", html)
         self.assertIn("transform:translate(-50%,-50%) rotate(90deg)", html)
