@@ -1391,3 +1391,6 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ## v1.0.70
 - Move the external touch pad to the game's left side and reserve that side margin.
+
+## v1.0.71
+- Restore full-size mobile portrait game display and overlay the arrow pad at the left edge.
