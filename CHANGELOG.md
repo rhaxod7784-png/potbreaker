@@ -1379,3 +1379,6 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ## v1.0.66
 - Replace mobile drag steering with a large four-way directional pad.
+
+## v1.0.67
+- Move the directional pad to the far left and restyle it as translucent keyboard arrow keys.
