@@ -1,4 +1,4 @@
-# POT BREAKER RE v1.0.17
+# POT BREAKER RE v1.0.18
 
 POT BREAKER RE is a single-player browser maze game. The browser runs the Python game engine with Pyodide; the Cloudflare Worker serves the page and engine source.
 
@@ -6,7 +6,7 @@ POT BREAKER RE is a single-player browser maze game. The browser runs the Python
 
 - Use the four-button D-pad to move one direction at a time.
 - Tap **대시** to dash and **던지기** to throw a pot.
-- The player starts with one pot and can carry up to three.
+- The player starts with three pots and can carry up to three.
 - Turn the phone sideways before starting. Supported browsers request landscape orientation automatically.
 - The touch controls are translucent and kept near the lower corners; the player starts farther inside the field so the controls do not cover them.
 

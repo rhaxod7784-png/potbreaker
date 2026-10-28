@@ -1,4 +1,18 @@
 # POT BREAKER CHANGELOG
+
+
+## v1.0.18 — 기묘 시작 화분 3개 지급
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 기묘가 게임 시작 시 화분 3개를 들고 시작하도록 수정.
+- 화면과 Worker 버전을 v1.0.18로 통일.
+
+### Verified
+- 초기 보유량 3개, 최대 보유량 3개 테스트 통과.
+
 ## v1.0.17 — 휴대폰 조작 및 화면 QA 보완
 
 **Release type:** PATCH  

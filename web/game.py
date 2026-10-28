@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.16 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.18 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -64,7 +64,7 @@ class PotBreaker:
                 self.moving_walls.remove(self.rng.choice(tuple(self.moving_walls)))
             else:
                 break
-        self.ammo, self.boss_ammo, self.max_boss_ammo = 1, 5, 5
+        self.ammo, self.boss_ammo, self.max_boss_ammo = PLAYER_POT_CAP, 5, 5
         self.throw_cd, self.boss_throw_cd = 0.0, 1.2
         self.player_move_cd, self.boss_move_cd = 0.0, .5
         self.projectiles, self.pots = [], []

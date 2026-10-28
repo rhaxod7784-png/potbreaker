@@ -76,6 +76,8 @@ class PotBreakerBalanceTests(unittest.TestCase):
 
     def test_player_pot_capacity_is_three_and_start_is_inset(self):
         game = PotBreaker(3)
+        self.assertEqual(game.ammo, PLAYER_POT_CAP)
+        self.assertEqual(json.loads(game.state())["ammo"], 3)
         game.ammo = 2
         game.player = game.pots[0][:]
         game._pickups()
@@ -120,7 +122,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.17", html)
+        self.assertIn("POT BREAKER RE v1.0.18", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
         self.assertIn('version:"1.0.17"', build)
         self.assertIn('id="rotateStart"', html)
