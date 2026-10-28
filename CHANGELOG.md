@@ -1,3 +1,16 @@
+## v1.0.37 — 드래그 방향 전환 반응 개선
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 드래그 중 방향 전환 감지 임계값을 낮춰 손가락 이동에 더 빠르게 반응하도록 조정.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.36 — 누르는 동안 연속 이동·해제 즉시 정지
 
 **Release type:** PATCH  
