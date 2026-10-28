@@ -43,6 +43,10 @@ html = html.replace("POT BREAKER RE v1.0.91 · CBZP", "폿브레이커 RE | 기�
 seo_head = """
 <meta name="description" content="기묘를 조작해 CBZP 사무실 미로에서 크다 부장과 대결하는 무료 브라우저 게임. 게임 소개, 조작법, 개인정보 및 광고 안내를 확인하세요.">
 <link rel="canonical" href="https://potbreaker.com/">
+<link rel="alternate" hreflang="ko" href="https://potbreaker.com/">
+<link rel="alternate" hreflang="en" href="https://potbreaker.com/en">
+<link rel="alternate" hreflang="zh" href="https://potbreaker.com/zh">
+<link rel="alternate" hreflang="ja" href="https://potbreaker.com/ja">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ko_KR">
 <meta property="og:site_name" content="POT BREAKER RE">
@@ -91,6 +95,7 @@ body{min-height:100dvh!important}
 """
 html = html.replace("</style>", seo_css + "\n</style>", 1)
 html = html.replace("POT BREAKER RE v1.0.89", "POT BREAKER RE v1.0.91")
+html = html.replace("POT BREAKER RE v1.0.54", "POT BREAKER RE v1.0.91")
 html = html.replace("</body>", site_info + "\n</body>", 1)
 
 
@@ -235,8 +240,9 @@ ja: {
 const selectors=[...document.querySelectorAll(".locale-control select")];
 if(!selectors.length)return;
 const textOriginal=new WeakMap(),textRendered=new WeakMap(),attrOriginal=new WeakMap(),attrRendered=new WeakMap();
-let locale="ko",busy=false;
-try{const saved=localStorage.getItem("potbreaker-locale");if(["ko","en","zh","ja"].includes(saved))locale=saved}catch{}
+const routeLocale=location.pathname.match(/^\/(en|zh|ja)\/?$/)?.[1];
+let locale=routeLocale||"ko",busy=false;
+if(!routeLocale){try{const saved=localStorage.getItem("potbreaker-locale");if(["ko","en","zh","ja"].includes(saved))locale=saved}catch{}}
 const translate=value=>{
  if(locale==="ko")return value;
  const dictionary=dictionaries[locale]||{};
@@ -311,9 +317,14 @@ function apply(next){
  locale=["ko","en","zh","ja"].includes(next)?next:"ko";
  try{localStorage.setItem("potbreaker-locale",locale)}catch{}
  document.documentElement.lang=locale;
+ const localePath=locale==="ko"?"/":"/"+locale;
+ if(location.pathname!==localePath)history.replaceState(null,"",localePath+location.search+location.hash);
+ const canonical=document.querySelector('link[rel="canonical"]');if(canonical)canonical.href=location.origin+localePath;
+ const ogLocale=document.querySelector('meta[property="og:locale"]');if(ogLocale)ogLocale.content=locale==="ko"?"ko_KR":locale==="en"?"en_US":locale==="zh"?"zh_CN":"ja_JP";
  busy=true;selectors.forEach(selector=>selector.value=locale);visit();drawComicTranslations();busy=false;
 }
 selectors.forEach(selector=>selector.addEventListener("change",()=>apply(selector.value)));
+window.addEventListener("popstate",()=>apply(location.pathname.match(/^\/(en|zh|ja)\/?$/)?.[1]||"ko"));
 if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.__pbTranslated){
  for(const method of ["fillText","strokeText"]){
   const original=CanvasRenderingContext2D.prototype[method];
@@ -402,7 +413,15 @@ const headers={"cache-control":"public, max-age=300","x-content-type-options":"n
 const publisherId=typeof env.ADSENSE_PUBLISHER_ID==="string"&&/^ca-pub-\d{16}$/.test(env.ADSENSE_PUBLISHER_ID)?env.ADSENSE_PUBLISHER_ID:"";
 const text=(body,type="text/plain; charset=utf-8",status=200,extra={})=>new Response(request.method==="HEAD"?null:body,{status,headers:{"content-type":type,...headers,...extra}});
 if(path==="/robots.txt")return text("User-agent: *\nAllow: /\nSitemap: https://potbreaker.com/sitemap.xml\n");
-if(path==="/sitemap.xml")return text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://potbreaker.com/</loc></url><url><loc>https://potbreaker.com/about</loc></url><url><loc>https://potbreaker.com/privacy</loc></url></urlset>',"application/xml; charset=utf-8");
+if(path==="/sitemap.xml"){
+ const variants=[["ko","/"],["en","/en"],["zh","/zh"],["ja","/ja"]];
+ const alternates=variants.map(([lang,url])=>`<xhtml:link rel="alternate" hreflang="${lang}" href="https://potbreaker.com${url}"/>`).join("");
+ const urls=variants.map(([lang,url])=>`<url><loc>https://potbreaker.com${url}</loc>${alternates}</url>`).join("");
+ return text('<?xml version="1.0" encoding="UTF-8"?>'+
+  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">'+urls+
+  '<url><loc>https://potbreaker.com/about</loc></url><url><loc>https://potbreaker.com/privacy</loc></url></urlset>',
+  "application/xml; charset=utf-8");
+}
 if(path==="/ads.txt"){
  if(!publisherId)return text("AdSense publisher ID is not configured.\n","text/plain; charset=utf-8",404);
  return text("google.com, "+publisherId.replace("ca-pub-","pub-")+", DIRECT, f08c47fec0942fa0\n");
@@ -415,14 +434,21 @@ if(path==="/about"||path==="/privacy"){
  const html=doc.replace("</head>",verification+adLoader+"</head>");
  return text(html,"text/html; charset=utf-8",200,{"cache-control":"public, max-age=300"});
 }
-const page=path==="/"||path==="/index.html";
+const localeMatch=path.match(/^\/(en|zh|ja)\/?$/);
+const page=path==="/"||path==="/index.html"||!!localeMatch;
 if(!page&&path!=="/game.py")return new Response("Not Found",{status:404});
 const responseHeaders={"content-type":page?"text/html; charset=utf-8":"text/plain; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"};
 if(path==="/game.py")responseHeaders["x-robots-tag"]="noindex";
 const verification=publisherId?'<meta name="google-adsense-account" content="'+publisherId+'">':"";
 const adsReady=path==="/about"&&publisherId&&env.ADSENSE_ENABLED==="true"&&env.ADSENSE_PRIVACY_READY==="true"&&env.ADSENSE_CONSENT_READY==="true";
 const adLoader=adsReady?'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+publisherId+'" crossorigin="anonymous"></script>':"";
-const body=page?PAGE.replace("</head>",verification+"</head>"):GAME;
+const pageLocale=localeMatch?.[1]||"ko";
+const localePath=pageLocale==="ko"?"/":"/"+pageLocale;
+const ogLocale=pageLocale==="ko"?"ko_KR":pageLocale==="en"?"en_US":pageLocale==="zh"?"zh_CN":"ja_JP";
+const localizedPage=PAGE.replace('<html lang="ko">',`<html lang="${pageLocale}">`)
+ .replace('<link rel="canonical" href="https://potbreaker.com/">',`<link rel="canonical" href="https://potbreaker.com${localePath}">`)
+ .replace('<meta property="og:locale" content="ko_KR">',`<meta property="og:locale" content="${ogLocale}">`);
+const body=page?localizedPage.replace("</head>",verification+"</head>"):GAME;
 return new Response(request.method==="HEAD"?null:body,{status:200,headers:responseHeaders});
 }};"""
 )
