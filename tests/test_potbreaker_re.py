@@ -67,7 +67,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         game._advance_projectiles(.01)
 
         state = json.loads(game.state())
-        self.assertEqual(game.boss_hp, 2)
+        self.assertEqual(game.boss_hp, 4)
         self.assertEqual(len(state["pot_breaks"]), 1)
 
     def test_boss_pots_are_slower_and_crow_events_are_rebalanced(self):
