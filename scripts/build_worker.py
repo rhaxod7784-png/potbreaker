@@ -224,11 +224,50 @@ function visit(root=document.documentElement){
   }
  }
 }
+const comicCaptions={
+en:["Gimyo starts as a CBZP intern!","But… something feels strange about the office.","Flowerpots suddenly come flying from somewhere!","Manager Keuda throws another pot at Gimyo!"],
+zh:["奇妙来到 CBZP，开始实习了！","但是……公司的气氛有点奇怪。","突然，不知从哪儿飞来了花盆！","克达部长又朝奇妙扔花盆了！"],
+ja:["キミョ、CBZPでインターン開始！","でも…会社の雰囲気がなんだか変。","突然どこからか植木鉢が飛んできた！","クダ部長がキミョにまた植木鉢を投げた！"]
+};
+function drawComicTranslations(){
+ const img=document.querySelector(".comic-cover");if(!img)return;
+ let wrap=img.parentElement;
+ if(!wrap?.classList.contains("comic-cover-wrap")){
+  wrap=document.createElement("div");wrap.className="comic-cover-wrap";
+  img.parentNode.insertBefore(wrap,img);wrap.appendChild(img);
+ }
+ let canvas=wrap.querySelector(".comic-translation-layer");
+ if(!canvas){canvas=document.createElement("canvas");canvas.className="comic-translation-layer";canvas.setAttribute("aria-hidden","true");wrap.appendChild(canvas)}
+ const draw=()=>{
+  const wr=wrap.getBoundingClientRect(),ir=img.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+  if(!wr.width||!wr.height||!ir.width||!ir.height)return;
+  canvas.width=Math.round(wr.width*dpr);canvas.height=Math.round(wr.height*dpr);
+  const ctx=canvas.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,wr.width,wr.height);
+  if(locale==="ko")return;
+  const captions=comicCaptions[locale];if(!captions)return;
+  const boxes=[
+   {x:.09,y:.155,w:.397,h:.073},{x:.585,y:.155,w:.385,h:.073},
+   {x:.09,y:.545,w:.397,h:.073},{x:.585,y:.545,w:.385,h:.073}
+  ];
+  const ox=ir.left-wr.left,oy=ir.top-wr.top;
+  boxes.forEach((box,index)=>{
+   const x=ox+ir.width*box.x,y=oy+ir.height*box.y,w=ir.width*box.w,h=ir.height*box.h,r=Math.min(5,h*.16);
+   ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h);
+   ctx.fillStyle="#fffdf5";ctx.fill();ctx.strokeStyle="#d4d0c8";ctx.lineWidth=Math.max(1,h*.025);ctx.stroke();
+   let size=h*.48;ctx.font="800 "+size+"px system-ui,'Noto Sans CJK KR',sans-serif";
+   while(ctx.measureText(captions[index]).width>w-10&&size>h*.25){size-=.5;ctx.font="800 "+size+"px system-ui,'Noto Sans CJK KR',sans-serif"}
+   ctx.fillStyle="#203451";ctx.textAlign="left";ctx.textBaseline="middle";
+   ctx.fillText(captions[index],x+5,y+h*.52,w-10);
+  });
+ };
+ if(img.complete)draw();else img.addEventListener("load",draw,{once:true});
+ if(!canvas.__pbResizeObserver){canvas.__pbResizeObserver=new ResizeObserver(draw);canvas.__pbResizeObserver.observe(wrap)}
+}
 function apply(next){
  locale=["ko","en","zh","ja"].includes(next)?next:"ko";
  try{localStorage.setItem("potbreaker-locale",locale)}catch{}
  document.documentElement.lang=locale;
- busy=true;selector.value=locale;visit();busy=false;
+ busy=true;selector.value=locale;visit();drawComicTranslations();busy=false;
 }
 selector.addEventListener("change",()=>apply(selector.value));
 if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.__pbTranslated){
