@@ -1394,3 +1394,6 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ## v1.0.71
 - Restore full-size mobile portrait game display and overlay the arrow pad at the left edge.
+
+## v1.0.72
+- Fill the mobile portrait viewport and move the arrow pad to the lower-left corner.
