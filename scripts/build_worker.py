@@ -66,6 +66,8 @@ site_info = """<footer class="site-footer" id="site-footer">
 </footer>"""
 seo_css = """
 :root{--pb-footer-h:clamp(72px,9vh,104px)}
+.viewport{display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;background:linear-gradient(135deg,#c8e8ff,#9acaf6)!important}
+.stage{flex:0 0 auto!important}
 html,body{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important}
 body{min-height:100dvh!important}
 .viewport{height:calc(100dvh - var(--pb-footer-h))!important;min-height:280px;box-sizing:border-box}
@@ -107,11 +109,6 @@ menu_anchor = '<button class="menu-ranking" id="openRanking">🏆 랭킹</button
 if menu_anchor not in html:
     raise SystemExit("Menu insertion point for language selector not found")
 html = html.replace(menu_anchor, menu_anchor + language_picker, 1)
-language_picker = """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label>"""
-menu_anchor = '<button class="menu-ranking" id="openRanking">🏆 랭킹</button>'
-if menu_anchor not in html:
-    raise SystemExit("Menu insertion point for language selector not found")
-html = html.replace(menu_anchor, menu_anchor + language_picker, 1)
 
 language_script = r"""<script>
 (()=> {
@@ -145,6 +142,18 @@ en: {
 "화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"Pots: attack · Dash: 3 tiles (3s cooldown)",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"PC: Arrows / WASD · Space (throw) · Shift (dash)",
 "언어 변경":"Change language","언어 선택":"Select language","게임 안내":"Game Guide"
+"대시 버튼: 3칸 돌진 · 3초 재사용 대기":"Dash: move 3 tiles · 3-second cooldown",
+"감 과장 출동!":"Manager Gam is here!",
+"화분 투하!":"Pots incoming!",
+"크다":"Keuda",
+"기묘":"Gimyo",
+"회복 화분! HP +1":"Healing pot! HP +1",
+"회복 화분을 찾았지만 HP가 가득 찼습니다.":"You found a healing pot, but your HP is already full.",
+"화분 폭발!":"Pot exploded!",
+"화분 회복!":"Healing pot!",
+"화분 풀충전!":"Pots refilled!",
+"필드 화분 리셋!":"Field pots reset!",
+"감 과장 명중!":"Manager Gam hit!"
 },
 zh: {
 "폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE｜奇妙与克达部长",
@@ -171,6 +180,18 @@ zh: {
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"使用圆形方向键移动 · 按住可持续移动","화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"花盆：攻击 · 冲刺：移动3格（冷却3秒）",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"电脑：方向键 / WASD · 空格（投掷）· Shift（冲刺）",
 "언어 변경":"切换语言","언어 선택":"选择语言","게임 안내":"游戏说明","기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"四格漫画：奇妙来到 CBZP 实习，在办公室躲避花盆并被克达部长追赶。"
+"대시 버튼: 3칸 돌진 · 3초 재사용 대기":"冲刺：移动3格 · 冷却3秒",
+"감 과장 출동!":"甘科长登场！",
+"화분 투하!":"花盆来袭！",
+"크다":"克达",
+"기묘":"奇妙",
+"회복 화분! HP +1":"恢复花盆！HP +1",
+"회복 화분을 찾았지만 HP가 가득 찼습니다.":"找到了恢复花盆，但生命值已满。",
+"화분 폭발!":"花盆爆炸！",
+"화분 회복!":"花盆恢复！",
+"화분 풀충전!":"花盆补满！",
+"필드 화분 리셋!":"场地花盆已重置！",
+"감 과장 명중!":"甘科长命中！"
 },
 ja: {
 "폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE｜キミョとクダ部長",
@@ -197,14 +218,35 @@ ja: {
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"円形パッドで移動 · 長押しで連続移動","화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"植木鉢：攻撃 · ダッシュ：3マス移動（クールダウン3秒）",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"PC：矢印キー / WASD · Space（投げる）· Shift（ダッシュ）",
 "언어 변경":"言語を変更","언어 선택":"言語を選択","게임 안내":"ゲームガイド","기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"4コマ漫画：キミョがCBZPに出勤し、植木鉢を避けながらクダ部長に追われます。"
+"대시 버튼: 3칸 돌진 · 3초 재사용 대기":"ダッシュ：3マス移動 · クールダウン3秒",
+"감 과장 출동!":"カム課長が登場！",
+"화분 투하!":"植木鉢が降ってくる！",
+"크다":"クダ",
+"기묘":"キミョ",
+"회복 화분! HP +1":"回復の植木鉢！HP +1",
+"회복 화분을 찾았지만 HP가 가득 찼습니다.":"回復の植木鉢を見つけましたが、HPは満タンです。",
+"화분 폭발!":"植木鉢が爆発！",
+"화분 회복!":"植木鉢で回復！",
+"화분 풀충전!":"植木鉢を補充！",
+"필드 화분 리셋!":"フィールドの植木鉢をリセット！",
+"감 과장 명중!":"カム課長に命中！"
 }
 };
-const selector=document.getElementById("pb-locale");
-if(!selector)return;
+const selectors=[...document.querySelectorAll(".locale-control select")];
+if(!selectors.length)return;
 const textOriginal=new WeakMap(),textRendered=new WeakMap(),attrOriginal=new WeakMap(),attrRendered=new WeakMap();
 let locale="ko",busy=false;
 try{const saved=localStorage.getItem("potbreaker-locale");if(["ko","en","zh","ja"].includes(saved))locale=saved}catch{}
-const translate=value=>locale==="ko"?value:(dictionaries[locale]?.[value]||value);
+const translate=value=>{
+ if(locale==="ko")return value;
+ const dictionary=dictionaries[locale]||{};
+ if(Object.prototype.hasOwnProperty.call(dictionary,value))return dictionary[value];
+ let result=value;
+ for(const key of Object.keys(dictionary).sort((a,b)=>b.length-a.length)){
+  if(result.includes(key))result=result.split(key).join(dictionary[key]);
+ }
+ return result;
+};
 function visit(root=document.documentElement){
  if(!root)return;
  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement?.closest("script,style,select,option,textarea")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
@@ -269,9 +311,9 @@ function apply(next){
  locale=["ko","en","zh","ja"].includes(next)?next:"ko";
  try{localStorage.setItem("potbreaker-locale",locale)}catch{}
  document.documentElement.lang=locale;
- busy=true;selector.value=locale;visit();drawComicTranslations();busy=false;
+ busy=true;selectors.forEach(selector=>selector.value=locale);visit();drawComicTranslations();busy=false;
 }
-selector.addEventListener("change",()=>apply(selector.value));
+selectors.forEach(selector=>selector.addEventListener("change",()=>apply(selector.value)));
 if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.__pbTranslated){
  for(const method of ["fillText","strokeText"]){
   const original=CanvasRenderingContext2D.prototype[method];
