@@ -91,15 +91,21 @@ class PotBreakerBalanceTests(unittest.TestCase):
             created += len(game.mystery_pots) - before
         self.assertGreaterEqual(created, 6)
         self.assertEqual(created % 2, 0)
-        self.assertTrue(all(item["effect"] in {"damage", "heal"} for item in game.mystery_pots))
+        self.assertTrue(all(item["effect"] in {"damage", "heal", "refill", "field_reset"} for item in game.mystery_pots))
 
-    def test_crow_drops_two_question_pots_with_fifty_fifty_effects(self):
+    def test_crow_drops_two_question_pots_with_four_equal_effects(self):
         game = PotBreaker(21)
-        rolls = iter((.499, .5))
-        game.rng.random = lambda: next(rolls)
+        seen = []
+        def choose(options):
+            if options and isinstance(options[0], str):
+                seen.append(tuple(options))
+                return "field_reset" if len(seen) == 1 else "refill"
+            return options[0]
+        game.rng.choice = choose
         game._spawn_mystery_pots(8, 5)
         self.assertEqual(len(game.mystery_pots), 2)
-        self.assertEqual({item["effect"] for item in game.mystery_pots}, {"damage", "heal"})
+        self.assertEqual(seen, [("heal", "damage", "refill", "field_reset")] * 2)
+        self.assertEqual({item["effect"] for item in game.mystery_pots}, {"field_reset", "refill"})
         self.assertTrue(all(item["ttl"] > 0 for item in game.mystery_pots))
 
     def test_mystery_pots_apply_same_hp_effects_to_kimyo_and_keuda(self):
@@ -212,9 +218,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.33", html)
+        self.assertIn("POT BREAKER RE v1.0.34", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.33"', build)
+        self.assertIn('version:"1.0.34"', build)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn("position:fixed;inset:0;width:100vw;height:100dvh;display:block;overflow:hidden", html)
         self.assertIn("transform:translate(-50%,-50%) rotate(90deg)", html)
