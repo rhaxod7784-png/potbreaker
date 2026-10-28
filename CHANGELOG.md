@@ -877,6 +877,12 @@ POT BREAKER의 정규 버전 기록입니다.
 - 랭킹은 베리 하드, 하드, 노멀 순으로 묶고 각 난이도 안에서 빠른 기록을 우선 표시.
 - Cloudflare D1 `POTBREAKER_DB` 바인딩 및 초기 마이그레이션 추가.
 
+## v1.0.30
+
+- Replace eight-way joystick snapping with continuous analog direction and radial speed.
+- Move Kimyo continuously between grid cells with wall sliding and diagonal normalization.
+- Keep the joystick direction aligned with the finger to prevent unexpected directional jumps.
+
 ## v1.0.29
 
 - Remove the special bomb pot while keeping the healing pot and Gamgwajang’s random mystery pots.

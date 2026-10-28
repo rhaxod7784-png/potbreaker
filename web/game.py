@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.29 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.30 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -22,6 +22,7 @@ PLAYER_DASH_COOLDOWN = 3.0
 BOSS_DASH_COOLDOWN = 5.0
 PLAYER_MOVE_INTERVAL = 0.0955
 PLAYER_DASH_MOVE_INTERVAL = 0.09
+PLAYER_SPEED = 1.0 / PLAYER_MOVE_INTERVAL
 PLAYER_HP = 3
 PLAYER_POT_CAP = 3
 BOSS_POT_CAP = 5
@@ -145,7 +146,8 @@ class PotBreaker:
         return best
 
     def _path(self, start, goal):
-        start, goal = tuple(start), tuple(goal)
+        start = tuple(int(math.floor(value + .5)) for value in start)
+        goal = tuple(int(math.floor(value + .5)) for value in goal)
         q = deque([start]); came = {start: None}
         while q:
             x, y = q.popleft()
@@ -158,6 +160,27 @@ class PotBreaker:
         result = [goal]
         while came[result[-1]] is not None: result.append(came[result[-1]])
         return list(reversed(result))
+
+    def _move_player(self, mx, my, dt):
+        magnitude = math.hypot(mx, my)
+        if magnitude < .001: return
+        dx, dy = mx * PLAYER_SPEED * dt, my * PLAYER_SPEED * dt
+        steps = max(1, math.ceil(max(abs(dx), abs(dy)) / .06))
+        start_x, start_y = self.player
+        for index in range(1, steps + 1):
+            nx = start_x + dx * index / steps
+            ny = start_y + dy * index / steps
+            cell = (int(math.floor(nx + .5)), int(math.floor(ny + .5)))
+            if self._free(*cell):
+                self.player = [nx, ny]
+            else:
+                # Slide along a wall when only one component is blocked.
+                if self._free(int(math.floor(nx + .5)), int(math.floor(self.player[1] + .5))):
+                    self.player[0] = nx
+                if self._free(int(math.floor(self.player[0] + .5)), int(math.floor(ny + .5))):
+                    self.player[1] = ny
+            self._contact()
+            if self.phase != 'playing': return
 
     def _path_step(self, start, goal):
         path = self._path(start, goal)
@@ -240,7 +263,8 @@ class PotBreaker:
         self.partition_timer -= dt
         if self.partition_timer > 0: return
         self.partition_timer = PARTITION_MOVE_SECONDS
-        occupied = {tuple(self.player), tuple(self.boss), *[tuple(p) for p in self.pots],
+        player_cell = tuple(int(math.floor(value + .5)) for value in self.player)
+        occupied = {player_cell, tuple(self.boss), *[tuple(p) for p in self.pots],
                     *[(item['x'], item['y']) for item in self.special_pots]}
         # Every partition is movable: no static decorative blocking partitions.
         # Shuffle movement order, and allow entering already-vacated cells.
@@ -264,7 +288,7 @@ class PotBreaker:
         if not (dx or dy): return False
         attr = 'boss_dash_cd' if npc else 'player_dash_cd'
         if getattr(self,attr)>0: return False
-        start=who[:]; length=5 if npc else 3
+        start=who[:] if npc else [int(math.floor(value + .5)) for value in who]; length=5 if npc else 3
         candidate=None
         for amount in range(length,0,-1):
             tx,ty=start[0]+dx*amount,start[1]+dy*amount
@@ -274,7 +298,8 @@ class PotBreaker:
         if candidate is None:return False
         # Collision during dash costs one player HP, respecting damage invulnerability.
         other=self.player if npc else self.boss
-        crosses=(dx and other[1]==start[1] and (other[0]-start[0])*dx>0 and abs(other[0]-start[0])<=abs(candidate[0]-start[0])) or (dy and other[0]==start[0] and (other[1]-start[1])*dy>0 and abs(other[1]-start[1])<=abs(candidate[1]-start[1]))
+        other_cell=[int(math.floor(value + .5)) for value in other]
+        crosses=(dx and other_cell[1]==start[1] and (other_cell[0]-start[0])*dx>0 and abs(other_cell[0]-start[0])<=abs(candidate[0]-start[0])) or (dy and other_cell[0]==start[0] and (other_cell[1]-start[1])*dy>0 and abs(other_cell[1]-start[1])<=abs(candidate[1]-start[1]))
         if crosses: self._damage(False)
         who[:]=candidate
         setattr(self,attr,BOSS_DASH_COOLDOWN if npc else PLAYER_DASH_COOLDOWN)
@@ -283,13 +308,13 @@ class PotBreaker:
         return True
 
     def _contact(self):
-        if self.player == self.boss: self._damage(False)
+        if distance(self.player, self.boss) < .72: self._damage(False)
 
     def _pickups(self):
         for who, cap, attr in ((self.player, self.player_pot_cap, 'ammo'), (self.boss, self.boss_pot_cap, 'boss_ammo')):
             if getattr(self, attr) >= cap: continue
             for pot in list(self.pots):
-                if who == pot:
+                if distance(who, pot) < .62:
                     setattr(self, attr, getattr(self, attr) + 1)
                     self.pots.remove(pot)
                     self._maintain_field_pots()  # Keep four ammo pots and one healing pot.
@@ -468,7 +493,10 @@ class PotBreaker:
             self.dash_effect['age'] += dt
             if self.dash_effect['age'] > .35: self.dash_effect = None
         mx, my = float(mx), float(my)
-        strength = min(1.0, math.hypot(mx, my))
+        input_length = math.hypot(mx, my)
+        strength = min(1.0, input_length)
+        if input_length > 1.0:
+            mx, my = mx / input_length, my / input_length
         dx = 1 if mx > 0 else -1 if mx < 0 else 0
         dy = 1 if my > 0 else -1 if my < 0 else 0
         if dx or dy: self.face = [dx, dy]
@@ -476,14 +504,8 @@ class PotBreaker:
         if jump and self.player_dash_cd <= 0:
             dash_dx, dash_dy = (dx, dy) if (dx or dy) else tuple(self.face)
             just_dashed = self._dash(self.player, dash_dx, dash_dy, False)
-            if just_dashed:
-                self.player_move_cd = PLAYER_DASH_MOVE_INTERVAL / max(.7, strength) * (math.sqrt(2) if dash_dx and dash_dy else 1)
-        if not just_dashed and self.player_move_cd <= 0 and (dx or dy):
-            tx, ty = self.player[0] + dx, self.player[1] + dy
-            if self._free_step(self.player[0], self.player[1], dx, dy):
-                self.player = [tx, ty]
-                self._contact()
-            self.player_move_cd = PLAYER_MOVE_INTERVAL / max(.7, strength) * (math.sqrt(2) if dx and dy else 1)
+        if not just_dashed and strength > .001:
+            self._move_player(mx, my, dt)
         if self.phase != 'playing': return self.state()
         if fire and self.throw_cd <= 0 and self.ammo:
             self._fire(self.player, self._aim(self.player, self.boss))
