@@ -1382,3 +1382,6 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ## v1.0.67
 - Move the directional pad to the far left and restyle it as translucent keyboard arrow keys.
+
+## v1.0.68
+- Flush the arrow pad to the left edge and arrange it in a compact keyboard-style T layout.
