@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.30 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.31 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -20,9 +20,8 @@ CROW_RESPAWN_SECONDS = 14.0
 VISION_RANGE = None    # Boss can locate both player and pickup positions across entire map.
 PLAYER_DASH_COOLDOWN = 3.0
 BOSS_DASH_COOLDOWN = 5.0
-PLAYER_MOVE_INTERVAL = 0.0955
+PLAYER_MOVE_INTERVAL = 0.24  # One tile about every 0.24 seconds at full stick.
 PLAYER_DASH_MOVE_INTERVAL = 0.09
-PLAYER_SPEED = 1.0 / PLAYER_MOVE_INTERVAL
 PLAYER_HP = 3
 PLAYER_POT_CAP = 3
 BOSS_POT_CAP = 5
@@ -161,26 +160,33 @@ class PotBreaker:
         while came[result[-1]] is not None: result.append(came[result[-1]])
         return list(reversed(result))
 
-    def _move_player(self, mx, my, dt):
+    def _move_player(self, mx, my):
         magnitude = math.hypot(mx, my)
-        if magnitude < .001: return
-        dx, dy = mx * PLAYER_SPEED * dt, my * PLAYER_SPEED * dt
-        steps = max(1, math.ceil(max(abs(dx), abs(dy)) / .06))
-        start_x, start_y = self.player
-        for index in range(1, steps + 1):
-            nx = start_x + dx * index / steps
-            ny = start_y + dy * index / steps
-            cell = (int(math.floor(nx + .5)), int(math.floor(ny + .5)))
-            if self._free(*cell):
-                self.player = [nx, ny]
+        if magnitude < .001:
+            return False
+        mx, my = mx / magnitude, my / magnitude
+        # Snap the stick angle to the nearest of eight grid directions.
+        if abs(mx) > 2.414 * abs(my):
+            dx, dy = (1 if mx > 0 else -1), 0
+        elif abs(my) > 2.414 * abs(mx):
+            dx, dy = 0, (1 if my > 0 else -1)
+        else:
+            dx, dy = (1 if mx > 0 else -1), (1 if my > 0 else -1)
+        x, y = (int(math.floor(value + .5)) for value in self.player)
+        if self._free_step(x, y, dx, dy):
+            self.player = [x + dx, y + dy]
+        elif dx and dy:
+            # Preserve wall sliding by taking the open cardinal component.
+            if self._free(x + dx, y):
+                self.player = [x + dx, y]
+            elif self._free(x, y + dy):
+                self.player = [x, y + dy]
             else:
-                # Slide along a wall when only one component is blocked.
-                if self._free(int(math.floor(nx + .5)), int(math.floor(self.player[1] + .5))):
-                    self.player[0] = nx
-                if self._free(int(math.floor(self.player[0] + .5)), int(math.floor(ny + .5))):
-                    self.player[1] = ny
-            self._contact()
-            if self.phase != 'playing': return
+                return False
+        else:
+            return False
+        self._contact()
+        return True
 
     def _path_step(self, start, goal):
         path = self._path(start, goal)
@@ -479,6 +485,7 @@ class PotBreaker:
         dt = min(.085, max(.01, float(dt)))
         self.clock += dt
         self.player_dash_cd=max(0.,self.player_dash_cd-dt)
+        self.player_move_cd=max(0.,self.player_move_cd-dt)
         self.boss_dash_cd=max(0.,self.boss_dash_cd-dt)
         self.player_invuln=max(0.,self.player_invuln-dt)
         self.boss_invuln=max(0.,self.boss_invuln-dt)
@@ -504,8 +511,12 @@ class PotBreaker:
         if jump and self.player_dash_cd <= 0:
             dash_dx, dash_dy = (dx, dy) if (dx or dy) else tuple(self.face)
             just_dashed = self._dash(self.player, dash_dx, dash_dy, False)
-        if not just_dashed and strength > .001:
-            self._move_player(mx, my, dt)
+        if not just_dashed:
+            if strength <= .001:
+                self.player_move_cd = 0.0
+            elif self.player_move_cd <= 0:
+                moved = self._move_player(mx, my)
+                self.player_move_cd = (PLAYER_MOVE_INTERVAL if moved else PLAYER_MOVE_INTERVAL / 2) / max(strength, .25)
         if self.phase != 'playing': return self.state()
         if fire and self.throw_cd <= 0 and self.ammo:
             self._fire(self.player, self._aim(self.player, self.boss))
