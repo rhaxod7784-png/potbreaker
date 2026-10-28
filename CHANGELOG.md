@@ -1,3 +1,20 @@
+## v1.0.35 — 연속 터치 이동·방향 전환
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 손가락을 누르고 있는 동안 한 칸씩 반복 이동하고, 드래그하면 손가락의 방향에 맞춰 이동 방향 전환.
+- 손가락을 떼면 반복 이동은 즉시 멈춤. 짧은 터치 입력은 최대 한 칸 이동으로 처리.
+
+### Preserved
+- 터치 방향 버튼 없이 플레이 화면을 직접 조작. 감 과장 화분 효과 4종 각 25%.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.34 — 터치 입력·결과 전환·감 과장 아이템 수정
 
 **Release type:** PATCH  
