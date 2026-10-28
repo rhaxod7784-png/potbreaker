@@ -1367,3 +1367,6 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ## v1.0.62
 - Mobile touch turns respond slightly sooner while retaining cardinal movement and the existing drift filter.
+
+## v1.0.63
+- Lower the mobile touch turn confirmation slightly to make direction changes more responsive.
