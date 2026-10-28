@@ -43,8 +43,21 @@ class PotBreakerBalanceTests(unittest.TestCase):
         game._advance_projectiles(.085)
 
         self.assertEqual(game.projectiles, [])
-        self.assertEqual(len(game.pot_break_events), 1)
-        self.assertEqual(json.loads(game.state())["pot_breaks"][0]["id"], 1)
+        self.assertEqual(game.pot_break_events, [])
+        self.assertEqual(len(game.pots), 6)
+
+    def test_character_hit_emits_pot_break_event(self):
+        game = PotBreaker(4)
+        game.player = [2, 2]
+        game.boss = [5, 5]
+        game.projectiles = [{'x': 4.5, 'y': 5.0, 'dx': 1.0, 'dy': 0.0,
+                             'range': 4.0, 'boss': False}]
+
+        game._advance_projectiles(.01)
+
+        state = json.loads(game.state())
+        self.assertEqual(game.boss_hp, 4)
+        self.assertEqual(len(state["pot_breaks"]), 1)
 
     def test_boss_pots_are_slower_and_crow_events_are_rebalanced(self):
         game = PotBreaker(1)
@@ -126,13 +139,16 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.19", html)
+        self.assertIn("POT BREAKER RE v1.0.20", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.19"', build)
+        self.assertIn('version:"1.0.20"', build)
         self.assertIn('id="rotateStart"', html)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn('휴대폰을 가로로 돌려 주세요', html)
         self.assertIn("screen.orientation.lock('landscape')", html)
+        self.assertIn("Promise.allSettled(requests)", html)
+        self.assertIn("const orientationAttempt=requestLandscapeMode()", html)
+
         self.assertIn("requestLandscapeMode();show('intro')", html)
 
     def test_mobile_intro_uses_stage_height_and_scaled_copy(self):

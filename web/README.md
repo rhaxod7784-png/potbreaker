@@ -1,4 +1,4 @@
-# POT BREAKER RE v1.0.19
+# POT BREAKER RE v1.0.20
 
 POT BREAKER RE is a single-player browser maze game. The browser runs the Python game engine with Pyodide; the Cloudflare Worker serves the page and engine source.
 

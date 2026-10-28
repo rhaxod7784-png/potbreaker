@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.19 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.20 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -343,10 +343,7 @@ class PotBreaker:
             outside = not (0 <= nx < WIDTH and 0 <= ny < HEIGHT)
             if p['range'] <= 0 or hit_wall or outside:
                 self.projectiles.remove(p)
-                if hit_wall or outside:
-                    self._break_pot(x, y)
-                else:
-                    self._drop_pot(x, y)
+                self._drop_pot(x, y)
                 continue
             p['x'], p['y'] = nx, ny
             target = self.player if p['boss'] else self.boss
@@ -369,15 +366,6 @@ class PotBreaker:
                 if p in self.projectiles:
                     self.projectiles.remove(p)
                 continue
-            for other in list(self.projectiles):
-                if p is other or other['boss'] == p['boss']: continue
-                if distance((p['x'], p['y']), (other['x'], other['y'])) < .48:
-                    small = p if not p['boss'] else other
-                    if small in self.projectiles:
-                        self.projectiles.remove(small)
-                        self._break_pot(small['x'], small['y'])
-                    break
-
     def step(self, dt, mx=0, my=0, jump=False, fire=False, aimx=0, aimy=0):
         # Keep previous API signature for the existing Pyodide front-end.
         if self.phase != 'playing': return self.state()
