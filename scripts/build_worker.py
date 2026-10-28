@@ -79,15 +79,21 @@ language_css = """
 .locale-control .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:700px){.legend{width:96%;max-width:96%;gap:5px}.locale-control select{max-width:90px;padding:4px 16px 4px 7px}}
 """
+language_css += "\n.menu .locale-control{position:absolute;right:4%;bottom:4%;z-index:6}\n"
 html = html.replace("</style>", language_css + "\n</style>", 1)
+language_picker = """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label>"""
+menu_anchor = '<button class="menu-ranking" id="openRanking">🏆 랭킹</button>'
+if menu_anchor not in html:
+    raise SystemExit("Menu insertion point for language selector not found")
+html = html.replace(menu_anchor, menu_anchor + language_picker, 1)
 footer_tail = "누르고 있으면 계속 이동</span></div></section>"
-language_picker = """누르고 있으면 계속 이동</span>""" + site_info + """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label></div></section>"""
 if footer_tail not in html:
     footer_tail = "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동</span></div></section>"
-    language_picker = """원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동</span>""" + site_info + """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label></div></section>"""
 if footer_tail not in html:
     raise SystemExit("Footer insertion marker not found")
-html = html.replace(footer_tail, language_picker, 1)
+footer_with_guide = footer_tail.replace("</div></section>", site_info + "</div></section>")
+html = html.replace(footer_tail, footer_with_guide, 1)
+
 language_script = r"""<script>
 (()=> {
 const dictionaries = {
