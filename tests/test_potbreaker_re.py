@@ -1,4 +1,5 @@
 import json
+import math
 import re
 import unittest
 from pathlib import Path
@@ -24,6 +25,15 @@ class PotBreakerBalanceTests(unittest.TestCase):
             if state["phase"] != "playing":
                 game.reset()
 
+    def test_auto_aim_targets_opponent_and_has_no_visible_aim_line(self):
+        game = PotBreaker(7)
+        aim = game._aim([2, 2], [5, 4])
+        self.assertAlmostEqual(aim[0], 3 / math.sqrt(13))
+        self.assertAlmostEqual(aim[1], 2 / math.sqrt(13))
+
+        html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
+        self.assertNotIn("drawAimRay", html)
+        self.assertNotIn("aimArc(", html)
     def test_boss_dash_stops_at_partition(self):
         game = PotBreaker(1)
         game.boss = [9, 5]
@@ -139,9 +149,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.20", html)
+        self.assertIn("POT BREAKER RE v1.0.21", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.20"', build)
+        self.assertIn('version:"1.0.21"', build)
         self.assertIn('id="rotateStart"', html)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn('휴대폰을 가로로 돌려 주세요', html)

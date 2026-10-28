@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.20 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.21 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -17,8 +17,6 @@ FIELD_POT_COUNT = 6  # Exactly six collectible pots; throws relocate rather than
 CROW_FIRST_APPEAR_SECONDS = 2.5
 CROW_RESPAWN_SECONDS = 14.0
 VISION_RANGE = None    # Boss can locate both player and pickup positions across entire map.
-AIM_SWEEP_DEGREES = 45.0
-AIM_SWEEP_SPEED = 6.5 * (2 / 3)  # QA default: faster ±30° automatic targeting
 PLAYER_DASH_COOLDOWN = 3.0
 BOSS_DASH_COOLDOWN = 5.0
 PLAYER_MOVE_INTERVAL = 0.0955
@@ -279,10 +277,10 @@ class PotBreaker:
         self._drop_pot(x, y)
 
     def _aim(self, src, target):
-        base = math.atan2(target[1] - src[1], target[0] - src[0])
-        swing = math.radians(AIM_SWEEP_DEGREES) * math.sin(self.clock * AIM_SWEEP_SPEED)
-        angle = base + swing
-        return [math.cos(angle), math.sin(angle)]
+        dx, dy = target[0] - src[0], target[1] - src[1]
+        length = math.hypot(dx, dy)
+        if length < 1e-9: return [1.0, 0.0]
+        return [dx / length, dy / length]
 
     def _fire(self, who, vec, npc=False):
         attr = 'boss_ammo' if npc else 'ammo'
@@ -430,9 +428,6 @@ class PotBreaker:
                            'player_hp': self.player_hp, 'boss_hp': self.boss_hp,
                            'player_dash_cd': round(self.player_dash_cd,2), 'boss_dash_cd': round(self.boss_dash_cd,2),
                            'ammo': self.ammo, 'ammo_cap': PLAYER_POT_CAP, 'boss_ammo': self.boss_ammo,
-                           'aim': self._aim(self.player, self.boss),
-                           'boss_aim': self._aim(self.boss, self.player),
-                           'aim_sweep_degrees': 90,
                            'dash_effect': self.dash_effect,
                            'notice': self.notice if self.notice_time else '',
                            'clock': round(self.clock, 2), 'hits': self.hit_events,
