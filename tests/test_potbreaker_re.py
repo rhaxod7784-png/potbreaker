@@ -19,7 +19,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         game = PotBreaker(42)
         for i in range(2500):
             state = json.loads(game.step(.04, 1 if i % 6 < 3 else -1, 0, False, i % 17 == 0))
-            self.assertEqual(len(state["pots"]) + len(state["special_pots"]), 6)
+            self.assertEqual(len(state["pots"]) + len(state["special_pots"]), 5)
             self.assertTrue(0 <= state["boss_ammo"] <= 5)
             self.assertTrue(0 <= state["player_hp"] <= 3 and 0 <= state["boss_hp"] <= 7)
             if state["phase"] != "playing":
@@ -55,7 +55,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
 
         self.assertEqual(game.projectiles, [])
         self.assertEqual(game.pot_break_events, [])
-        self.assertEqual(len(game.pots) + len(game.special_pots), 6)
+        self.assertEqual(len(game.pots) + len(game.special_pots), 5)
 
     def test_character_hit_emits_pot_break_event(self):
         game = PotBreaker(4)
@@ -150,8 +150,8 @@ class PotBreakerBalanceTests(unittest.TestCase):
             self.assertIn(player[0], (3, 15))
             self.assertIn(player[1], (3, 7))
 
-        self.assertEqual(len(game.special_pots), 2)
-        self.assertEqual({item["effect"] for item in game.special_pots}, {"heal", "bomb"})
+        self.assertEqual(len(game.special_pots), 1)
+        self.assertEqual({item["effect"] for item in game.special_pots}, {"heal"})
         self.assertEqual(game.boss_ammo, 0)
         self.assertEqual(PotBreaker(1, "normal").boss_hp_cap, 3)
         self.assertEqual(PotBreaker(1, "hard").boss_hp_cap, 5)
@@ -168,6 +168,8 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertIn("@media (pointer:coarse),(max-height:520px)", html)
         self.assertIn("clamp(126px,16cqw,164px)", html)
         self.assertIn("function getMove()", html)
+        self.assertIn("function safeLoop(now)", html)
+        self.assertIn("typeof ctx.roundRect==='function'", html)
         self.assertIn(".action.fire{width:clamp(64px,6.2cqw,88px)", html)
 
     def test_fire_button_fires_while_held_and_stops_on_release(self):
@@ -202,9 +204,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.28", html)
+        self.assertIn("POT BREAKER RE v1.0.29", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.28"', build)
+        self.assertIn('version:"1.0.29"', build)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn("position:fixed;inset:0;width:100vw;height:100dvh;display:block;overflow:hidden", html)
         self.assertIn("transform:translate(-50%,-50%) rotate(90deg)", html)

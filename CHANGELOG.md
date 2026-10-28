@@ -877,6 +877,12 @@ POT BREAKER의 정규 버전 기록입니다.
 - 랭킹은 베리 하드, 하드, 노멀 순으로 묶고 각 난이도 안에서 빠른 기록을 우선 표시.
 - Cloudflare D1 `POTBREAKER_DB` 바인딩 및 초기 마이그레이션 추가.
 
+## v1.0.29
+
+- Remove the special bomb pot while keeping the healing pot and Gamgwajang’s random mystery pots.
+- Add a rounded-rectangle canvas fallback for mobile WebViews that lack `CanvasRenderingContext2D.roundRect`.
+- Catch draw-loop errors and show a retryable error panel instead of silently freezing the game screen.
+
 ## v1.0.28
 
 - Fix the missing mobile direction reader that stopped the game loop after the intro.

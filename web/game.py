@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.28 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.29 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -13,8 +13,8 @@ PAD_SPAWN_SECONDS = 1.15
 PAD_LIFETIME_SECONDS = 8.0
 PAD_LIMIT = 8
 PARTITION_MOVE_SECONDS = 1.7
-FIELD_POT_COUNT = 4  # Four ammo pots plus one healing and one bomb pot.
-SPECIAL_POT_EFFECTS = ('heal', 'bomb')
+FIELD_POT_COUNT = 4  # Four ammo pots plus one healing pot.
+SPECIAL_POT_EFFECTS = ('heal',)
 CROW_FIRST_APPEAR_SECONDS = 2.5
 CROW_RESPAWN_SECONDS = 14.0
 VISION_RANGE = None    # Boss can locate both player and pickup positions across entire map.
@@ -121,14 +121,13 @@ class PotBreaker:
             self.special_pots.append({'x': x, 'y': y, 'effect': effect})
 
     def _maintain_field_pots(self):
-        # Keep four ammo pots and exactly one healing/bomb pot available.
+        # Keep four ammo pots and exactly one healing pot available.
         while len(self.pots) < FIELD_POT_COUNT:
             before = len(self.pots)
             self._add_pot()
             if len(self.pots) == before: break
         self.pots[:] = self.pots[:FIELD_POT_COUNT]
-        for effect in SPECIAL_POT_EFFECTS:
-            self._add_special_pot(effect)
+        self._add_special_pot('heal')
 
     def _nearest_pot(self, who):
         # Use walkable path distance, not straight-line distance, to avoid NPC freezing at a partition.
@@ -293,7 +292,7 @@ class PotBreaker:
                 if who == pot:
                     setattr(self, attr, getattr(self, attr) + 1)
                     self.pots.remove(pot)
-                    self._maintain_field_pots()  # Keep four ammo pots and two special pots.
+                    self._maintain_field_pots()  # Keep four ammo pots and one healing pot.
                     break
 
     def _pick_special_pots(self):
@@ -302,16 +301,12 @@ class PotBreaker:
                 if distance(who, (item['x'], item['y'])) >= .65:
                     continue
                 self.special_pots.remove(item)
-                if item['effect'] == 'bomb':
-                    self._damage(npc, bypass_invulnerability=True)
-                    self.notice, self.notice_time = ('크다' if npc else '기묘') + ' 폭탄 화분! HP -1', 1.3
+                attr, cap = ('boss_hp', self.boss_hp_cap) if npc else ('player_hp', PLAYER_HP)
+                if getattr(self, attr) < cap:
+                    setattr(self, attr, getattr(self, attr) + 1)
+                    self.notice, self.notice_time = ('크다' if npc else '기묘') + ' 회복 화분! HP +1', 1.3
                 else:
-                    attr, cap = ('boss_hp', self.boss_hp_cap) if npc else ('player_hp', PLAYER_HP)
-                    if getattr(self, attr) < cap:
-                        setattr(self, attr, getattr(self, attr) + 1)
-                        self.notice, self.notice_time = ('크다' if npc else '기묘') + ' 회복 화분! HP +1', 1.3
-                    else:
-                        self.notice, self.notice_time = '회복 화분을 찾았지만 HP가 가득 찼습니다.', 1.3
+                    self.notice, self.notice_time = '회복 화분을 찾았지만 HP가 가득 찼습니다.', 1.3
                 self._maintain_field_pots()
                 break
 
