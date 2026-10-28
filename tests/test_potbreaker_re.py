@@ -176,7 +176,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertNotIn('class="dpad-button', html)
         self.assertIn("canvas.addEventListener('pointerdown'", html)
         self.assertIn("function directionFromScreenDelta(dx,dy)", html)
-        self.assertIn("threshold=hasDirection ? .235 : .12", html)
+        self.assertIn("threshold=hasDirection ? .17 : .08", html)
         self.assertIn("return touchActive?touchDirection:[0,0]", html)
         self.assertNotIn("touchPending", html)
         self.assertIn("canvas.addEventListener('pointermove'", html)
@@ -187,7 +187,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertIn("function getMove()", html)
         self.assertIn("function safeLoop(now)", html)
         self.assertIn("typeof ctx.roundRect==='function'", html)
-        self.assertIn(".action.fire{width:clamp(64px,6.2cqw,88px)", html)
+        self.assertIn(".action.fire{width:clamp(82px,8.5cqw,108px)", html)
 
     def test_fire_button_fires_while_held_and_stops_on_release(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
@@ -222,9 +222,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.42", html)
+        self.assertIn("POT BREAKER RE v1.0.43", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.42"', build)
+        self.assertIn('version:"1.0.43"', build)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn("position:fixed;inset:0;width:100vw;height:100dvh;display:block;overflow:hidden", html)
         self.assertIn("transform:translate(-50%,-50%) rotate(90deg)", html)
