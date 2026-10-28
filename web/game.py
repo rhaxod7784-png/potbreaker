@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.32 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.33 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -20,7 +20,7 @@ CROW_RESPAWN_SECONDS = 14.0
 VISION_RANGE = None    # Boss can locate both player and pickup positions across entire map.
 PLAYER_DASH_COOLDOWN = 3.0
 BOSS_DASH_COOLDOWN = 5.0
-PLAYER_MOVE_INTERVAL = 0.24  # One tile about every 0.24 seconds at full stick.
+PLAYER_MOVE_INTERVAL = 0.24  # One tile about every 0.24 seconds.
 PLAYER_DASH_MOVE_INTERVAL = 0.09
 PLAYER_HP = 3
 PLAYER_POT_CAP = 3
