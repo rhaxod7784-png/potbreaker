@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.31 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.32 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -41,7 +41,7 @@ class PotBreaker:
         self.rng = random.Random(seed)
         self.difficulty = difficulty if difficulty in ('normal', 'hard', 'very_hard') else 'normal'
         self.player_pot_cap = 3 if self.difficulty == 'normal' else 2
-        self.boss_hp_cap = {'normal': 3, 'hard': 5, 'very_hard': 7}[self.difficulty]
+        self.boss_hp_cap = {'normal': 5, 'hard': 7, 'very_hard': 10}[self.difficulty]
         self.reset()
 
     def reset(self):
@@ -164,27 +164,15 @@ class PotBreaker:
         magnitude = math.hypot(mx, my)
         if magnitude < .001:
             return False
-        mx, my = mx / magnitude, my / magnitude
-        # Snap the stick angle to the nearest of eight grid directions.
-        if abs(mx) > 2.414 * abs(my):
+        # Choose one cardinal grid direction; diagonal movement is never applied.
+        if abs(mx) >= abs(my):
             dx, dy = (1 if mx > 0 else -1), 0
-        elif abs(my) > 2.414 * abs(mx):
+        else:
             dx, dy = 0, (1 if my > 0 else -1)
-        else:
-            dx, dy = (1 if mx > 0 else -1), (1 if my > 0 else -1)
         x, y = (int(math.floor(value + .5)) for value in self.player)
-        if self._free_step(x, y, dx, dy):
-            self.player = [x + dx, y + dy]
-        elif dx and dy:
-            # Preserve wall sliding by taking the open cardinal component.
-            if self._free(x + dx, y):
-                self.player = [x + dx, y]
-            elif self._free(x, y + dy):
-                self.player = [x, y + dy]
-            else:
-                return False
-        else:
+        if not self._free_step(x, y, dx, dy):
             return False
+        self.player = [x + dx, y + dy]
         self._contact()
         return True
 
@@ -505,6 +493,9 @@ class PotBreaker:
             mx, my = mx / input_length, my / input_length
         dx = 1 if mx > 0 else -1 if mx < 0 else 0
         dy = 1 if my > 0 else -1 if my < 0 else 0
+        if dx and dy:
+            if abs(mx) >= abs(my): dy = 0
+            else: dx = 0
         if dx or dy: self.face = [dx, dy]
         just_dashed = False
         if jump and self.player_dash_cd <= 0:
