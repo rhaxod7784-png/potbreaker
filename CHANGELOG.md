@@ -1,3 +1,17 @@
+## v1.0.47 — 화분 피격 화면 효과 교체
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 화분 파괴 때 화면을 무작위로 흔드는 효과를 제거.
+- 같은 이벤트에 최대 24% 불투명도의 붉은 화면 플래시를 0.24초간 표시.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.46 — 연속 드래그 방향 보정
 
 **Release type:** PATCH  
