@@ -164,11 +164,12 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertEqual(PotBreaker(1, "hard").player_pot_cap, 2)
         self.assertEqual(PotBreaker(1, "very_hard").player_pot_cap, 2)
 
-    def test_mobile_controls_use_large_dpad_and_transparent_buttons(self):
+    def test_mobile_controls_use_touch_direction_without_movement_buttons(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
-        self.assertIn('id="dpad"', html)
-        self.assertIn('data-direction="up"', html)
-        self.assertIn('class="dpad-button up"', html)
+        self.assertNotIn('id="dpad"', html)
+        self.assertNotIn('class="dpad-button', html)
+        self.assertIn("canvas.addEventListener('pointerdown'", html)
+        self.assertIn("function updateTouchDirection(e)", html)
         self.assertIn("touchDirection", html)
         self.assertIn("keyDirections[code]", html)
         self.assertIn("@media (pointer:coarse),(max-height:520px)", html)
@@ -185,10 +186,11 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertNotIn("const fireNow=fire,dashNow=dash;fire=false;", html)
         self.assertIn("if(e.code==='Space')fire=false", html)
 
-    def test_mobile_dpad_and_shatter_feedback_are_wired(self):
+    def test_touch_movement_and_shatter_feedback_are_wired(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
-        self.assertIn("button.setPointerCapture(e.pointerId)", html)
-        self.assertIn("dpad.querySelectorAll('[data-direction]')", html)
+        self.assertIn("canvas.setPointerCapture(e.pointerId)", html)
+        self.assertIn("window.addEventListener('pageshow'", html)
+        self.assertIn("window.addEventListener('pagehide',stop)", html)
         self.assertIn("function getMove()", html)
         self.assertIn("fetch('/game.py'", html)
         self.assertNotIn('id="pythonEngine"', html)
@@ -210,9 +212,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.32", html)
+        self.assertIn("POT BREAKER RE v1.0.33", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.32"', build)
+        self.assertIn('version:"1.0.33"', build)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn("position:fixed;inset:0;width:100vw;height:100dvh;display:block;overflow:hidden", html)
         self.assertIn("transform:translate(-50%,-50%) rotate(90deg)", html)
