@@ -1,4 +1,4 @@
-"""Build illustrated POT BREAKER RE v1.0.78 for Cloudflare Workers.
+"""Build illustrated POT BREAKER RE v1.0.79 for Cloudflare Workers.
 
 Inputs: web/index.html (images + UI bundled) and web/game.py (Python core).
 Unlike the original v1.0.0 builder, this does not expect an inline Python script
@@ -17,15 +17,17 @@ if touch_start < 0 or touch_end < 0:
     raise SystemExit("Touch control block not found in web/index.html")
 html = html[:touch_start] + touch_block + html[touch_end:]
 
-dpad_markup = "<div class=\"dpad\" id=\"dpad\" role=\"group\" aria-label=\"방향 이동\"><button class=\"dpad-button up\" data-direction=\"up\" aria-label=\"위로 이동\">▲</button><button class=\"dpad-button left\" data-direction=\"left\" aria-label=\"왼쪽 이동\">◀</button><button class=\"dpad-button right\" data-direction=\"right\" aria-label=\"오른쪽 이동\">▶</button><button class=\"dpad-button down\" data-direction=\"down\" aria-label=\"아래로 이동\">▼</button></div>"
+dpad_markup = "<div class=\"dpad\" id=\"dpad\" role=\"group\" aria-label=\"방향 이동\"><button class=\"dpad-button up\" data-direction=\"up\" aria-label=\"위로 이동\"><span class=\"dpad-arrow\">▲</span></button><button class=\"dpad-button left\" data-direction=\"left\" aria-label=\"왼쪽 이동\"><span class=\"dpad-arrow\">◀</span></button><button class=\"dpad-button right\" data-direction=\"right\" aria-label=\"오른쪽 이동\"><span class=\"dpad-arrow\">▶</span></button><button class=\"dpad-button down\" data-direction=\"down\" aria-label=\"아래로 이동\"><span class=\"dpad-arrow\">▼</span></button></div>"
 touch_target = '<div class="touch-layer"><div class="actions">'
 if touch_target not in html:
     raise SystemExit("Mobile action markup not found in web/index.html")
 html = html.replace(touch_target, '<div class="touch-layer">' + dpad_markup + '<div class="actions">', 1)
-html = html.replace("화면을 밀어 방향 조작", "십자 방향키를 눌러 이동")
+html = html.replace("화면을 밀어 방향 조작", "원형 조작부를 눌러 방향 이동")
 html = html.replace("</style>", ".dpad{position:absolute!important;left:0!important;bottom:2.5%!important;width:clamp(204px,27cqw,252px)!important;height:clamp(136px,18cqw,168px)!important;aspect-ratio:auto;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));column-gap:4px;row-gap:0;padding:3px!important;box-sizing:border-box;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;pointer-events:auto!important;touch-action:none!important;user-select:none;-webkit-user-select:none}\n.dpad-button{display:grid!important;place-items:center;width:auto!important;height:auto!important;min-width:0;min-height:0;aspect-ratio:auto;padding:0;border:2px solid #f8feffed!important;border-radius:12px!important;background:linear-gradient(145deg,#ffffffc9,#c9ddf3ad)!important;color:#344f83!important;font-size:clamp(25px,3.7cqw,39px)!important;font-weight:1000;line-height:1;box-shadow:inset 0 2px 2px #fff9,0 4px 0 #283f655c!important;pointer-events:auto!important;touch-action:none!important;user-select:none;-webkit-user-select:none}\n.dpad-button.up{grid-column:2;grid-row:1}.dpad-button.left{grid-column:1;grid-row:1 / 3}.dpad-button.right{grid-column:3;grid-row:1 / 3}.dpad-button.down{grid-column:2;grid-row:2}\n.dpad-button.pressed{background:linear-gradient(145deg,#ffe9a8dd,#ffd982c9)!important;transform:translateY(3px);box-shadow:inset 0 1px 2px #fff9,0 1px 0 #283f6570!important}\n.dpad-button.up,.dpad-button.down{width:166.666%!important;justify-self:center;position:relative;z-index:2}\n.action.fire{width:clamp(98px,11cqw,132px)!important;min-width:0;min-height:0}.action.fire .symbol{font-size:clamp(24px,3.7cqw,42px)!important}\n.dpad{background:linear-gradient(45deg,transparent 49.4%,#ffffffdc 49.7%,#ffffffdc 50.3%,transparent 50.6%),linear-gradient(-45deg,transparent 49.4%,#ffffffdc 49.7%,#ffffffdc 50.3%,transparent 50.6%),conic-gradient(from -45deg,#d9eafa 0deg 90deg,#c8def4 90deg 180deg,#d9eafa 180deg 270deg,#c8def4 270deg 360deg)!important}
 .dpad-button{border:0!important;background:transparent!important;pointer-events:none!important}
-.dpad-button.pressed{background:#ffdc7a99!important;filter:none!important}\n@media (orientation:portrait) and (pointer:coarse){\n .stage{width:100dvh!important;height:100vw!important;top:50%!important;overflow:hidden!important}\n #gamePanel{overflow:hidden!important}\n .dpad{left:1.5%!important;right:auto!important;top:auto!important;bottom:1.5%!important;transform:none!important}\n}
+.dpad-button.pressed{background:#ffdc7a99!important;filter:none!important}
+.dpad-arrow{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none}
+.dpad-button.up .dpad-arrow{top:24%}.dpad-button.right .dpad-arrow{left:76%}.dpad-button.down .dpad-arrow{top:76%}.dpad-button.left .dpad-arrow{left:24%}\n@media (orientation:portrait) and (pointer:coarse){\n .stage{width:100dvh!important;height:100vw!important;top:50%!important;overflow:hidden!important}\n #gamePanel{overflow:hidden!important}\n .dpad{left:1.5%!important;right:auto!important;top:auto!important;bottom:1.5%!important;transform:none!important}\n}
 .dpad{width:clamp(184px,24cqw,232px)!important;height:clamp(184px,24cqw,232px)!important;aspect-ratio:1;display:block!important;padding:0!important;overflow:hidden!important;border:3px solid #ffffffed!important;border-radius:50%!important;background:#d9eafaad!important;box-shadow:0 4px 12px #31486b55!important}
 .dpad-button{position:absolute!important;inset:0!important;display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important;min-width:0;min-height:0;aspect-ratio:auto;padding:0!important;border:1px solid #ffffffa8!important;border-radius:0!important;background:linear-gradient(145deg,#ffffffa8,#b9d3ee9c)!important;color:#344f83!important;font-size:clamp(28px,4cqw,42px)!important;font-weight:1000;line-height:1;box-shadow:none!important;pointer-events:auto!important;touch-action:none!important;user-select:none;-webkit-user-select:none}
 .dpad-button.up{clip-path:polygon(0 0,100% 0,50% 50%);align-items:flex-start!important;padding-top:12%!important}
@@ -35,10 +37,10 @@ html = html.replace("</style>", ".dpad{position:absolute!important;left:0!import
 .dpad-button.pressed{filter:brightness(1.18) saturate(1.15)!important;transform:none!important}
 .dpad:after{content:"";position:absolute;left:42%;top:42%;width:16%;height:16%;border:2px solid #ffffffd9;border-radius:50%;background:#dcecffb8;box-shadow:0 1px 4px #334a6c55;pointer-events:none;z-index:5}
 .action.fire{width:clamp(98px,11cqw,132px)!important;min-width:0;min-height:0}.action.fire .symbol{font-size:clamp(24px,3.7cqw,42px)!important}" + "</style>", 1)
-html = html.replace("1.0.54", "1.0.78")
-python_source = python_source.replace("1.0.54", "1.0.78")
+html = html.replace("1.0.54", "1.0.79")
+python_source = python_source.replace("1.0.54", "1.0.79")
 worker = (
-    "// Generated by scripts/build_worker.py. POT BREAKER RE v1.0.78 illustrated\n"
+    "// Generated by scripts/build_worker.py. POT BREAKER RE v1.0.79 illustrated\n"
     + "const PAGE=" + json.dumps(html, ensure_ascii=False) + ";\n"
     + "const GAME=" + json.dumps(python_source, ensure_ascii=False) + ";\n"
     + """const SCHEMA=`CREATE TABLE IF NOT EXISTS visits (visitor_id TEXT PRIMARY KEY, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%S','now')));
@@ -52,7 +54,7 @@ const validDifficulty=value=>["normal","hard","very_hard"].includes(value);
 export default {async fetch(request,env){
 const path=new URL(request.url).pathname;
 if(path==="/health")
-  return json({ok:true,version:"1.0.78",visual:"illustrated",engine:"Python/Pyodide",database:!!env.POTBREAKER_DB});
+  return json({ok:true,version:"1.0.79",visual:"illustrated",engine:"Python/Pyodide",database:!!env.POTBREAKER_DB});
 if(path.startsWith("/api/")){
   if(!env.POTBREAKER_DB)return json({error:"랭킹 데이터베이스가 연결되지 않았습니다."},503);
   try{
