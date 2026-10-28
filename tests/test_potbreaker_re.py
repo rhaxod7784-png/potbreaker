@@ -176,7 +176,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertNotIn("shakeTimer", html)
         self.assertNotIn("Math.random()-.5)*.32", html)
         self.assertIn("flashTimer=.24", html)
-        self.assertIn("ctx.fillStyle='#f34252'", html)
+        self.assertIn('id="damageFlash"', html)
+        self.assertIn(".damage-flash{position:absolute;inset:0;z-index:5;pointer-events:none", html)
+        self.assertIn("$('damageFlash').style.opacity", html)
 
     def test_mobile_controls_use_touch_direction_without_movement_buttons(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
@@ -230,9 +232,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.47", html)
+        self.assertIn("POT BREAKER RE v1.0.48", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.47"', build)
+        self.assertIn('version:"1.0.48"', build)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn("position:fixed;inset:0;width:100vw;height:100dvh;display:block;overflow:hidden", html)
         self.assertIn("transform:translate(-50%,-50%) rotate(90deg)", html)
