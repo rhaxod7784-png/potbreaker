@@ -116,15 +116,23 @@ class PotBreakerBalanceTests(unittest.TestCase):
             self.assertIn(player[0], (3, 15))
             self.assertIn(player[1], (3, 7))
 
-    def test_mobile_controls_use_compact_dpad_and_transparent_buttons(self):
+    def test_mobile_controls_use_large_dpad_and_transparent_buttons(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
         self.assertIn('id="dpad"', html)
         self.assertIn('data-dir="up"', html)
         self.assertNotIn('class="joystick"', html)
         self.assertIn("dpadDirection", html)
         self.assertIn("@media (pointer:coarse),(max-height:520px)", html)
-        self.assertIn("opacity:.78", html)
+        self.assertIn("clamp(216px,23cqw,264px)", html)
+        self.assertIn("opacity:.9", html)
         self.assertIn(".action.fire{width:clamp(64px,6.2cqw,88px)", html)
+
+    def test_fire_button_fires_while_held_and_stops_on_release(self):
+        html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
+        self.assertIn("for(const type of ['pointerup','pointercancel','lostpointercapture'])fireButton.addEventListener(type,stopFiring)", html)
+        self.assertIn("const fireNow=fire,dashNow=dash;dash=false;", html)
+        self.assertNotIn("const fireNow=fire,dashNow=dash;fire=false;", html)
+        self.assertIn("if(e.code==='Space')fire=false", html)
 
     def test_mobile_dpad_and_shatter_feedback_are_wired(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
@@ -149,17 +157,16 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.21", html)
+        self.assertIn("POT BREAKER RE v1.0.22", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.21"', build)
-        self.assertIn('id="rotateStart"', html)
+        self.assertIn('version:"1.0.22"', build)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
-        self.assertIn('휴대폰을 가로로 돌려 주세요', html)
-        self.assertIn("screen.orientation.lock('landscape')", html)
-        self.assertIn("Promise.allSettled(requests)", html)
-        self.assertIn("const orientationAttempt=requestLandscapeMode()", html)
-
-        self.assertIn("requestLandscapeMode();show('intro')", html)
+        self.assertIn("transform:rotate(90deg)", html)
+        self.assertIn("width:min(100dvh,177.778vw)", html)
+        self.assertNotIn('id="rotate"', html)
+        self.assertNotIn("screen.orientation.lock", html)
+        self.assertNotIn("휴대폰을 가로로 돌려 주세요", html)
+        self.assertIn("requestFullscreen", html)
 
     def test_mobile_intro_uses_stage_height_and_scaled_copy(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
