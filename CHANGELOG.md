@@ -1,3 +1,20 @@
+## v1.0.33 — 터치 방향 이동·화면 복귀 초기화
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Fixed
+- 방향 버튼을 제거하고, 플레이 화면 터치·드래그 방향으로 기묘가 한 칸씩 이동하도록 변경. 세로 화면 회전 좌표도 반영하며 빠른 터치 입력은 한 칸 이동으로 처리.
+- 페이지 새로고침·복귀와 새 게임 시작 때 이전 승리 화면이 남지 않도록 종료 화면 상태를 초기화하고, 대기 중인 종료 전환을 취소.
+
+### Preserved
+- 크다 부장 체력: 노멀 5, 하드 7, 베리 하드 10.
+
+### Code
+- `web/index.html`, `web/game.py`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.32 — 크다 부장 체력·방향 버튼 이동
 
 **Release type:** PATCH  
