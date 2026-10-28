@@ -54,21 +54,40 @@ seo_head = """
 if "</head>" not in html:
     raise SystemExit("HTML head not found for SEO metadata")
 html = html.replace("</head>", seo_head + "\n</head>", 1)
-site_info = """<details class="seo-info">
-<summary>게임 안내</summary>
-<div class="seo-info-content">
+site_info = """<footer class="site-footer" id="site-footer">
+<section class="site-guide" aria-labelledby="seo-heading">
+<div class="site-guide-copy">
 <h1 id="seo-heading">기묘와 크다 부장의 사무실 미로 추격전</h1>
 <p>CBZP 인턴 고양이 기묘가 이동 파티션으로 이루어진 사무실에서 크다 부장을 피해 화분을 던지는 1인용 브라우저 게임입니다.</p>
-<details><summary>게임 방법</summary><p>방향 패드로 이동하고, 대시로 위험을 피하며, 투척 버튼으로 화분을 던지세요. 기묘와 크다 부장의 체력 중 먼저 0이 되면 경기가 끝납니다.</p></details>
-<nav aria-label="게임 안내"><a href="/about">게임 소개와 조작법</a><a href="/privacy">개인정보 및 광고 안내</a></nav>
 </div>
-</details>"""
+<details class="site-guide-howto"><summary>게임 방법</summary><p>방향 패드로 이동하고, 대시로 위험을 피하며, 투척 버튼으로 화분을 던지세요. 기묘와 크다 부장의 체력 중 먼저 0이 되면 경기가 끝납니다.</p></details>
+<nav aria-label="게임 안내"><a href="/about">게임 소개와 조작법</a><a href="/privacy">개인정보 및 광고 안내</a></nav>
+</section>
+</footer>"""
 seo_css = """
-.seo-info{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);z-index:30;width:min(90vw,620px);max-height:48vh;overflow:auto;padding:8px 12px;border:1px solid #ffffffd9;border-radius:14px;background:#fffaf0f2;box-shadow:0 3px 14px #31415b45;color:#303d67;font-size:clamp(9px,1.05cqw,13px);line-height:1.4;text-align:left;white-space:normal}
-.seo-info>summary{cursor:pointer;font-weight:900;list-style:none}.seo-info>summary::-webkit-details-marker{display:none}.seo-info>summary:after{content:"＋";margin-left:.5em}
-.seo-info[open]>summary:after{content:"－"}.seo-info-content h1{margin:.45em 0;font-size:1.15em;line-height:1.25}.seo-info-content p{margin:.4em 0}.seo-info-content details{margin-top:.5em}.seo-info-content details summary{cursor:pointer;font-weight:800}.seo-info-content nav{display:flex;gap:.8em;flex-wrap:wrap;margin-top:.55em}.seo-info-content a{color:#244e70;text-decoration:underline;text-underline-offset:2px}
+:root{--pb-footer-h:clamp(72px,9vh,104px)}
+html,body{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important}
+body{min-height:100dvh!important}
+.viewport{height:calc(100dvh - var(--pb-footer-h))!important;min-height:280px;box-sizing:border-box}
+.stage{width:min(100vw,calc((100dvh - var(--pb-footer-h))*1.77778))!important;height:min(calc(100dvh - var(--pb-footer-h)),56.25vw)!important}
+.site-footer{position:relative;z-index:50;width:100%;min-height:var(--pb-footer-h);box-sizing:border-box;display:grid;place-items:center;padding:8px clamp(12px,2vw,28px);background:linear-gradient(100deg,#dff5ff,#b9e0fa 55%,#99cdf2);border-top:1px solid #ffffffc7;color:#293b60}
+.site-guide{width:min(100%,1280px);display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:clamp(8px,1.6vw,22px)}
+.site-guide-copy h1{margin:0 0 3px;font-size:clamp(11px,1.15vw,16px);line-height:1.2}.site-guide-copy p{margin:0;font-size:clamp(9px,.9vw,12px);line-height:1.35}
+.site-guide-howto{position:relative;font-size:clamp(9px,.9vw,12px)}.site-guide-howto summary{cursor:pointer;font-weight:800;white-space:nowrap}.site-guide-howto p{max-width:min(55vw,520px);margin:6px 0 0}
+.site-guide nav{display:flex;gap:clamp(6px,1vw,14px);flex-wrap:wrap;justify-content:flex-end;font-size:clamp(9px,.9vw,12px)}.site-guide a{color:#244e70;text-underline-offset:2px}
+.comic-cover-wrap{position:relative;width:100%;height:100%;min-width:0;min-height:0;max-height:100%;overflow:hidden}
+.comic-cover-wrap>.comic-cover{display:block;width:100%;height:100%;min-width:0;min-height:0;max-height:100%;object-fit:contain}
+.comic-translation-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+@media(max-width:700px){:root{--pb-footer-h:clamp(78px,11vh,116px)}.site-guide{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}.site-guide-copy{grid-column:1/-1}.site-guide nav{justify-content:flex-start}.site-guide-howto p{max-width:80vw}}
+@media(orientation:portrait) and (pointer:coarse){
+ .viewport{position:relative!important;inset:auto!important;height:calc(100dvh - var(--pb-footer-h))!important;min-height:220px!important;width:100vw!important;display:block!important;overflow:hidden!important}
+ .stage{position:absolute!important;left:50%!important;top:50%!important;width:min(calc(100dvh - var(--pb-footer-h)),177.778vw)!important;height:min(100vw,calc((100dvh - var(--pb-footer-h))*0.5625))!important;transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center center!important}
+}
+@media(orientation:landscape){.viewport{height:calc(100dvh - var(--pb-footer-h))!important}}
 """
 html = html.replace("</style>", seo_css + "\\n</style>", 1)
+html = html.replace("POT BREAKER RE v1.0.89", "POT BREAKER RE v1.0.91")
+html = html.replace("</body>", site_info + "\\n</body>", 1)
 
 
 language_css = """
@@ -86,19 +105,19 @@ menu_anchor = '<button class="menu-ranking" id="openRanking">🏆 랭킹</button
 if menu_anchor not in html:
     raise SystemExit("Menu insertion point for language selector not found")
 html = html.replace(menu_anchor, menu_anchor + language_picker, 1)
-footer_tail = "누르고 있으면 계속 이동</span></div></section>"
-if footer_tail not in html:
-    footer_tail = "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동</span></div></section>"
-if footer_tail not in html:
-    raise SystemExit("Footer insertion marker not found")
-footer_with_guide = footer_tail.replace("</div></section>", site_info + "</div></section>")
-html = html.replace(footer_tail, footer_with_guide, 1)
+language_picker = """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label>"""
+menu_anchor = '<button class="menu-ranking" id="openRanking">🏆 랭킹</button>'
+if menu_anchor not in html:
+    raise SystemExit("Menu insertion point for language selector not found")
+html = html.replace(menu_anchor, menu_anchor + language_picker, 1)
 
 language_script = r"""<script>
 (()=> {
 const dictionaries = {
 en: {
 "폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE | Gimyo vs. Manager Keuda",
+"POT BREAKER RE v1.0.91":"POT BREAKER RE v1.0.91",
+"기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"A four-panel comic: Gimyo starts at CBZP, dodges flying pots, and is chased by Manager Keuda.",
 "기묘와 크다 부장의 사무실 미로 추격전":"Office Maze Chase: Gimyo vs. Manager Keuda",
 "CBZP 인턴 고양이 기묘가 이동 파티션으로 이루어진 사무실에서 크다 부장을 피해 화분을 던지는 1인용 브라우저 게임입니다.":"Play as Gimyo, a CBZP cat intern. Dodge Manager Keuda and throw pots in this browser maze game.",
 "기묘를 조작해 CBZP 사무실 미로에서 크다 부장과 대결하는 무료 브라우저 게임. 게임 소개, 조작법, 개인정보 및 광고 안내를 확인하세요.":"A free browser maze game: guide Gimyo through the CBZP office. Read the game guide, controls, privacy and advertising information.",
@@ -149,7 +168,7 @@ zh: {
 "♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"♥ 回复 · 甘科长：4种随机花盆效果（心值±1、花盆补满、重置场地，各25%）· 奇妙冲刺：3秒 / 克达冲刺：5秒 · 使用圆形方向键移动，按住可持续移动",
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"使用圆形方向键移动 · 按住可持续移动","화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"花盆：攻击 · 冲刺：移动3格（冷却3秒）",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"电脑：方向键 / WASD · 空格（投掷）· Shift（冲刺）",
-"언어 변경":"切换语言","언어 선택":"选择语言","게임 안내":"游戏说明"
+"언어 변경":"切换语言","언어 선택":"选择语言","게임 안내":"游戏说明","기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"四格漫画：奇妙来到 CBZP 实习，在办公室躲避花盆并被克达部长追赶。"
 },
 ja: {
 "폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE｜キミョとクダ部長",
@@ -175,7 +194,7 @@ ja: {
 "♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"♥ 回復 · カム課長：植木鉢の効果4種（ハート±1、植木鉢補充、フィールドリセット・各25%）· キミョのダッシュ：3秒 / クダのダッシュ：5秒 · 円形パッドで移動、長押しで連続移動",
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"円形パッドで移動 · 長押しで連続移動","화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"植木鉢：攻撃 · ダッシュ：3マス移動（クールダウン3秒）",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"PC：矢印キー / WASD · Space（投げる）· Shift（ダッシュ）",
-"언어 변경":"言語を変更","언어 선택":"言語を選択","게임 안내":"ゲームガイド"
+"언어 변경":"言語を変更","언어 선택":"言語を選択","게임 안내":"ゲームガイド","기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"4コマ漫画：キミョがCBZPに出勤し、植木鉢を避けながらクダ部長に追われます。"
 }
 };
 const selector=document.getElementById("pb-locale");
