@@ -183,20 +183,19 @@ function visit(root=document.documentElement){
  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement?.closest("script,style,select,option,textarea")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
  let n;while(n=walker.nextNode()){
   const current=n.nodeValue;
-  if(textRendered.has(n)&&textRendered.get(n)===current)continue;
-  textOriginal.set(n,current);
-  const original=textOriginal.get(n),next=translate(original);
-  if(next!==current){textRendered.set(n,next);n.nodeValue=next}else textRendered.delete(n);
+  if(!textOriginal.has(n)||(textRendered.has(n)&&textRendered.get(n)!==current))textOriginal.set(n,current);
+  const next=translate(textOriginal.get(n));textRendered.set(n,next);
+  if(next!==current)n.nodeValue=next;
  }
  const elements=root.nodeType===Node.ELEMENT_NODE?[root,...root.querySelectorAll("*")]:[];
  const attrs=["aria-label","title","placeholder","content"];
  for(const el of elements){
   let saved=attrOriginal.get(el);if(!saved){saved={};attrOriginal.set(el,saved)}
   for(const attr of attrs){if(!el.hasAttribute(attr))continue;
-   const current=el.getAttribute(attr),key=attr+":"+el.tagName;
-   if(attrRendered.get(el)?.[key]===current)continue;
-   saved[key]=current;const next=translate(saved[key]);
-   if(next!==current){const rendered=attrRendered.get(el)||{};rendered[key]=next;attrRendered.set(el,rendered);el.setAttribute(attr,next)}
+   const current=el.getAttribute(attr),key=attr+":"+el.tagName,rendered=attrRendered.get(el)||{};
+   if(!Object.prototype.hasOwnProperty.call(saved,key)||(Object.prototype.hasOwnProperty.call(rendered,key)&&rendered[key]!==current))saved[key]=current;
+   const next=translate(saved[key]);rendered[key]=next;attrRendered.set(el,rendered);
+   if(next!==current)el.setAttribute(attr,next)
   }
  }
 }
