@@ -1,3 +1,18 @@
+## v1.0.32 — 크다 부장 체력·방향 버튼 이동
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 크다 부장 체력: 노멀 5, 하드 7, 베리 하드 10.
+- 원형 조이스틱을 상·하·좌·우 터치 버튼으로 교체하고, 이동 입력은 한 번에 한 방향 한 칸씩 처리. 대각선 이동은 끔.
+- 버튼을 누르고 있으면 한 칸씩 반복 이동하며, 최대 이동 간격은 0.24초.
+
+### Code
+- `web/game.py`, `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.31 — 격자 이동·세로 화면 조이스틱 QA
 
 **Release type:** PATCH  
