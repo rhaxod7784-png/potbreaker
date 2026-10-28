@@ -1364,3 +1364,6 @@ POT BREAKER의 정규 버전 기록입니다.
 - 휴대폰 이동 패드를 원형 조이스틱으로 복구하고 8방향 입력으로 대각선 이동을 지원.
 - 대시 버튼은 재사용 대기 중에도 터치 가능 상태를 유지하고, 입력 방향이 없으면 바라보는 방향으로 대시.
 - 화분 충돌을 이동 선분 전체에서 검사해 빠른 투사체가 캐릭터를 통과하는 문제 수정.
+
+## v1.0.62
+- Mobile touch turns respond slightly sooner while retaining cardinal movement and the existing drift filter.
