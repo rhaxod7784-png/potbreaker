@@ -1,3 +1,17 @@
+## v1.0.40 — 미세한 방향 튐 추가 보정
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 방향이 이미 정해진 상태에서 비슷한 크기의 가로·세로 드래그가 들어오면 기존 축을 조금 더 유지하도록 보정.
+- 이동 간격과 터치 전환 임계값은 유지.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.39 — 드래그 방향 흔들림 완화
 
 **Release type:** PATCH  
