@@ -1,3 +1,16 @@
+## v1.0.41 — 방향 흔들림 억제 30% 추가
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 최초 드래그 반응은 유지하고, 이미 이동 중일 때 방향을 다시 판정하는 누적 거리를 0.22칸에서 0.286칸으로 30% 높여 미세한 손가락 흔들림을 줄임.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.40 — 미세한 방향 튐 추가 보정
 
 **Release type:** PATCH  
