@@ -1397,3 +1397,6 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ## v1.0.72
 - Fill the mobile portrait viewport and move the arrow pad to the lower-left corner.
+
+## v1.0.73
+- Anchor the arrow keyboard to the lower-left corner of the game screen.
