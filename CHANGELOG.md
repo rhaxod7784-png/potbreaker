@@ -1,3 +1,20 @@
+## v1.0.46 — 연속 드래그 방향 보정
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 고정 거리 문턱 대신 연속 드래그 벡터를 짧게 평균내고, 새 축 방향이 이어질 때 전환하도록 수정.
+- 명확한 입력은 빠르게 반영하고, 단발성 흔들림은 걸러 방향 전환이 덜 딱딱하고 덜 튀게 조정.
+
+### Preserved
+- 실제 표시 캔버스 축 변환, 0.18초/칸 이동 속도, 확대된 발사 버튼.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.45 — 드래그 방향 전환 안정화
 
 **Release type:** PATCH  
