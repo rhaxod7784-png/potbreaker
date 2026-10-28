@@ -1,3 +1,17 @@
+## v1.0.48 — 게임 전체 피격 플래시 적용
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 캔버스 안쪽 플래시를 HUD와 조작 버튼까지 덮는 게임 화면 전체 오버레이로 변경.
+- 화분 파괴 시 0.24초 동안 최대 24%의 붉은 투명도 효과 적용. 화면 흔들림은 없음.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.47 — 화분 피격 화면 효과 교체
 
 **Release type:** PATCH  
