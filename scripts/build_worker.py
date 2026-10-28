@@ -117,7 +117,7 @@ en: {
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"Use the circular pad to move · Hold to keep moving",
 "화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"Pots: attack · Dash: 3 tiles (3s cooldown)",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"PC: Arrows / WASD · Space (throw) · Shift (dash)",
-"언어 변경":"Change language","언어 선택":"Select language"
+"언어 변경":"Change language","언어 선택":"Select language","게임 안내":"Game Guide"
 },
 zh: {
 "폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE｜奇妙与克达部长",
@@ -143,7 +143,7 @@ zh: {
 "♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"♥ 回复 · 甘科长：4种随机花盆效果（心值±1、花盆补满、重置场地，各25%）· 奇妙冲刺：3秒 / 克达冲刺：5秒 · 使用圆形方向键移动，按住可持续移动",
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"使用圆形方向键移动 · 按住可持续移动","화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"花盆：攻击 · 冲刺：移动3格（冷却3秒）",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"电脑：方向键 / WASD · 空格（投掷）· Shift（冲刺）",
-"언어 변경":"切换语言","언어 선택":"选择语言"
+"언어 변경":"切换语言","언어 선택":"选择语言","게임 안내":"游戏说明"
 },
 ja: {
 "폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE｜キミョとクダ部長",
@@ -169,7 +169,7 @@ ja: {
 "♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"♥ 回復 · カム課長：植木鉢の効果4種（ハート±1、植木鉢補充、フィールドリセット・各25%）· キミョのダッシュ：3秒 / クダのダッシュ：5秒 · 円形パッドで移動、長押しで連続移動",
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"円形パッドで移動 · 長押しで連続移動","화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"植木鉢：攻撃 · ダッシュ：3マス移動（クールダウン3秒）",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"PC：矢印キー / WASD · Space（投げる）· Shift（ダッシュ）",
-"언어 변경":"言語を変更","언어 선택":"言語を選択"
+"언어 변경":"言語を変更","언어 선택":"言語を選択","게임 안내":"ゲームガイド"
 }
 };
 const selector=document.getElementById("pb-locale");
@@ -189,7 +189,7 @@ function visit(root=document.body){
   if(next!==current){textRendered.set(n,next);n.nodeValue=next}else textRendered.delete(n);
  }
  const elements=root.nodeType===Node.ELEMENT_NODE?[root,...root.querySelectorAll("*")]:[];
- const attrs=["aria-label","title","placeholder"];
+ const attrs=["aria-label","title","placeholder","content"];
  for(const el of elements){
   let saved=attrOriginal.get(el);if(!saved){saved={};attrOriginal.set(el,saved)}
   for(const attr of attrs){if(!el.hasAttribute(attr))continue;
@@ -215,7 +215,7 @@ if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.__pbTran
  CanvasRenderingContext2D.prototype.__pbTranslated=true;
 }
 apply(locale);
-new MutationObserver(records=>{if(busy)return;for(const r of records){if(r.type==="characterData")visit(r.target.parentElement);else if(r.type==="childList")for(const node of r.addedNodes)if(node.nodeType===Node.ELEMENT_NODE||node.nodeType===Node.TEXT_NODE)visit(node);else if(r.type==="attributes")visit(r.target)}}).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["aria-label","title","placeholder"]});
+new MutationObserver(records=>{if(busy)return;for(const r of records){if(r.type==="characterData"){visit(r.target.parentElement)}else if(r.type==="childList"){for(const node of r.addedNodes){if(node.nodeType===Node.ELEMENT_NODE||node.nodeType===Node.TEXT_NODE)visit(node)}}else if(r.type==="attributes"){visit(r.target)}}}).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["aria-label","title","placeholder","content"]});
 })();
 </script>"""
 html = html.replace("</body>", language_script + "\\n</body>", 1)
