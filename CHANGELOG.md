@@ -1385,3 +1385,6 @@ POT BREAKER의 정규 버전 기록입니다.
 
 ## v1.0.68
 - Flush the arrow pad to the left edge and arrange it in a compact keyboard-style T layout.
+
+## v1.0.69
+- Use the outer blue margin for mobile portrait arrow controls and align the game board to the top.
