@@ -38,8 +38,8 @@ dpad_css = """
 html = html.replace("</style>", dpad_css + "\\n</style>", 1)
 
 
-# v1.0.89: crawlable site metadata, visible game guidance, and safe publisher gates.
-html = html.replace("POT BREAKER RE v1.0.89 · CBZP", "폿브레이커 RE | 기묘와 크다 부장의 미로 게임", 1)
+# v1.0.90: crawlable site metadata, visible game guidance, and safe publisher gates.
+html = html.replace("POT BREAKER RE v1.0.90 · CBZP", "폿브레이커 RE | 기묘와 크다 부장의 미로 게임", 1)
 seo_head = """
 <meta name="description" content="기묘를 조작해 CBZP 사무실 미로에서 크다 부장과 대결하는 무료 브라우저 게임. 게임 소개, 조작법, 개인정보 및 광고 안내를 확인하세요.">
 <link rel="canonical" href="https://potbreaker.com/">
@@ -71,8 +71,158 @@ seo_css = """
 """
 html = html.replace("</style>", seo_css + "\n</style>", 1)
 
+
+language_css = """
+.legend{pointer-events:auto!important;display:flex;align-items:center;justify-content:center;gap:8px;max-width:96%;white-space:nowrap}
+.locale-control{display:inline-flex;align-items:center;pointer-events:auto;position:relative;z-index:20}
+.locale-control select{pointer-events:auto;appearance:auto;max-width:104px;padding:4px 20px 4px 9px;border:1px solid #ffffffed;border-radius:999px;background:#fffef4;color:#293b60;font:700 clamp(9px,1cqw,12px)/1.2 system-ui,sans-serif;box-shadow:0 2px 7px #34486b36;touch-action:manipulation}
+.locale-control select:focus-visible{outline:3px solid #f0bd48;outline-offset:2px}
+.locale-control .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:700px){.legend{max-width:98%;gap:5px}.locale-control select{max-width:90px;padding:4px 16px 4px 7px}}
+"""
+html = html.replace("</style>", language_css + "\\n</style>", 1)
+footer_tail = "누르고 있으면 계속 이동</span></div></section>"
+language_picker = """누르고 있으면 계속 이동</span><label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label></div></section>"""
+if footer_tail not in html:
+    footer_tail = "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동</span></div></section>"
+    language_picker = """원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동</span><label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label></div></section>"""
+if footer_tail not in html:
+    raise SystemExit("Footer insertion marker not found")
+html = html.replace(footer_tail, language_picker, 1)
+language_script = r"""<script>
+(()=> {
+const dictionaries = {
+en: {
+"폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE | Gimyo vs. Manager Keuda",
+"기묘와 크다 부장의 사무실 미로 추격전":"Office Maze Chase: Gimyo vs. Manager Keuda",
+"CBZP 인턴 고양이 기묘가 이동 파티션으로 이루어진 사무실에서 크다 부장을 피해 화분을 던지는 1인용 브라우저 게임입니다.":"Play as Gimyo, a CBZP cat intern. Dodge Manager Keuda and throw pots in this browser maze game.",
+"기묘를 조작해 CBZP 사무실 미로에서 크다 부장과 대결하는 무료 브라우저 게임. 게임 소개, 조작법, 개인정보 및 광고 안내를 확인하세요.":"A free browser maze game: guide Gimyo through the CBZP office. Read the game guide, controls, privacy and advertising information.",
+"고양이 인턴 기묘와 악어 부장 크다의 CBZP 사무실 미로 추격전.":"A CBZP office maze chase starring cat intern Gimyo and crocodile manager Keuda.",
+"게임 시작":"Start Game","🏆 랭킹":"🏆 Rankings","게임 방법":"How to Play",
+"방향 패드로 이동하고, 대시로 위험을 피하며, 투척 버튼으로 화분을 던지세요. 기묘와 크다 부장의 체력 중 먼저 0이 되면 경기가 끝납니다.":"Move with the directional pad, dash to dodge, and throw pots. The match ends when either character runs out of HP.",
+"게임 소개와 조작법":"Game Guide & Controls","개인정보 및 광고 안내":"Privacy & Ads",
+"이상한 회사의":"A Strange","인턴 생활":"Company Internship","정말... 이 회사에서":"Can I really survive","살아남을 수 있을까?":"at this company?",
+"난이도":"Difficulty","노멀":"Normal","하드":"Hard","베리 하드":"Very Hard","베리 하드":"Very Hard","베리 하드":"Very Hard",
+"사무실로 입장 ▶":"Enter the Office ▶","기묘 / PLAYER":"Gimyo / PLAYER","크다 부장 / NPC":"Manager Keuda / NPC",
+"대시":"Dash","던지기":"Throw","↻ 다시 도전":"↻ Play Again","처음으로":"Home","랭킹 등록":"Submit Score",
+"🏆 POT BREAKER 랭킹":"🏆 POT BREAKER Rankings","닉네임":"Nickname","최대 16자":"Up to 16 characters",
+"랭킹을 불러오는 중…":"Loading rankings…","사무실 문을 열고 있습니다":"Opening the office door","Python 게임 엔진을 준비하고 있습니다.":"Preparing the Python game engine.",
+"다시 시도하기":"Try Again","잠깐 휴식!":"Take a Break!","계속하기":"Resume","아직 등록된 클리어 기록이 없습니다.":"No completed runs have been recorded yet.",
+"랭킹을 불러오지 못했습니다.":"Could not load rankings.","서버 연결에 실패했습니다.":"Could not connect to the server.",
+"랭킹에 등록했습니다.":"Score submitted.","Pyodide를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.":"Could not load Pyodide. Check your internet connection.",
+"게임 엔진을 불러오지 못했습니다.":"Could not load the game engine.","게임을 불러오지 못했습니다.":"Could not load the game.",
+"게임 화면 갱신 오류:":"Game screen update error:","기묘 승리!":"Gimyo Wins!","크다 부장 승리!":"Manager Keuda Wins!",
+"화분 한 방! 크다 부장의 뚝배기를 깼습니다.":"One pot hit! Manager Keuda is down.","기묘가 화분에 머리만 내놓고 심어졌습니다…":"Gimyo got planted with only their head above the pot…",
+"쨍그랑!":"Crash!","감 과장":"Manager Gam","랭킹 닫기":"Close rankings",
+"♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"♥ Heal · Manager Gam: 4 random pot effects (±1 heart, refill pots, reset field; 25% each) · Gimyo dash: 3s / Keuda dash: 5s · Use the circular pad to move; hold to keep moving",
+"원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"Use the circular pad to move · Hold to keep moving",
+"화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"Pots: attack · Dash: 3 tiles (3s cooldown)",
+"PC: 방향키 / WASD · Space(공격) · Shift(대시)":"PC: Arrows / WASD · Space (throw) · Shift (dash)",
+"언어 변경":"Change language","언어 선택":"Select language"
+},
+zh: {
+"폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE｜奇妙与克达部长",
+"기묘와 크다 부장의 사무실 미로 추격전":"奇妙与克达部长的办公室迷宫追逐战",
+"CBZP 인턴 고양이 기묘가 이동 파티션으로 이루어진 사무실에서 크다 부장을 피해 화분을 던지는 1인용 브라우저 게임입니다.":"扮演 CBZP 实习猫奇妙，在办公室迷宫中躲避克达部长并投掷花盆的单人网页游戏。",
+"기묘를 조작해 CBZP 사무실 미로에서 크다 부장과 대결하는 무료 브라우저 게임. 게임 소개, 조작법, 개인정보 및 광고 안내를 확인하세요.":"免费浏览器迷宫游戏：操控奇妙在 CBZP 办公室中挑战克达部长。查看游戏介绍、操作、隐私与广告说明。",
+"고양이 인턴 기묘와 악어 부장 크다의 CBZP 사무실 미로 추격전.":"猫咪实习生奇妙与鳄鱼部长克达在 CBZP 办公室迷宫展开追逐。",
+"게임 시작":"开始游戏","🏆 랭킹":"🏆 排行榜","게임 방법":"游戏方法",
+"방향 패드로 이동하고, 대시로 위험을 피하며, 투척 버튼으로 화분을 던지세요. 기묘와 크다 부장의 체력 중 먼저 0이 되면 경기가 끝납니다.":"使用方向键移动、冲刺躲避，并投掷花盆。奇妙或克达部长任一方生命值归零时，比赛结束。",
+"게임 소개와 조작법":"游戏介绍与操作","개인정보 및 광고 안내":"隐私与广告",
+"이상한 회사의":"奇怪公司的","인턴 생활":"实习生活","정말... 이 회사에서":"真的……我能在这家公司","살아남을 수 있을까?":"活下来吗？",
+"난이도":"难度","노멀":"普通","하드":"困难","베리 하드":"极难","사무실로 입장 ▶":"进入办公室 ▶",
+"기묘 / PLAYER":"奇妙 / 玩家","크다 부장 / NPC":"克达部长 / NPC","대시":"冲刺","던지기":"投掷",
+"↻ 다시 도전":"↻ 再试一次","처음으로":"返回首页","랭킹 등록":"提交排行","🏆 POT BREAKER 랭킹":"🏆 POT BREAKER 排行榜",
+"닉네임":"昵称","최대 16자":"最多16个字符","랭킹을 불러오는 중…":"正在加载排行榜…","사무실 문을 열고 있습니다":"正在打开办公室的门",
+"Python 게임 엔진을 준비하고 있습니다.":"正在准备 Python 游戏引擎。","다시 시도하기":"重试","잠깐 휴식!":"休息一下！","계속하기":"继续",
+"아직 등록된 클리어 기록이 없습니다.":"暂无通关记录。","랭킹을 불러오지 못했습니다.":"无法加载排行榜。",
+"서버 연결에 실패했습니다.":"连接服务器失败。","랭킹에 등록했습니다.":"已提交排行。","Pyodide를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.":"无法加载 Pyodide，请检查网络连接。",
+"게임 엔진을 불러오지 못했습니다.":"无法加载游戏引擎。","게임을 불러오지 못했습니다.":"无法加载游戏。","게임 화면 갱신 오류:":"游戏画面更新错误：",
+"기묘 승리!":"奇妙获胜！","크다 부장 승리!":"克达部长获胜！","화분 한 방! 크다 부장의 뚝배기를 깼습니다.":"花盆一击！克达部长被击倒了。",
+"기묘가 화분에 머리만 내놓고 심어졌습니다…":"奇妙被种进花盆，只露出了脑袋……","쨍그랑!":"哐当！","감 과장":"甘科长",
+"랭킹 닫기":"关闭排行榜",
+"♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"♥ 回复 · 甘科长：4种随机花盆效果（心值±1、花盆补满、重置场地，各25%）· 奇妙冲刺：3秒 / 克达冲刺：5秒 · 使用圆形方向键移动，按住可持续移动",
+"원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"使用圆形方向键移动 · 按住可持续移动","화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"花盆：攻击 · 冲刺：移动3格（冷却3秒）",
+"PC: 방향키 / WASD · Space(공격) · Shift(대시)":"电脑：方向键 / WASD · 空格（投掷）· Shift（冲刺）",
+"언어 변경":"切换语言","언어 선택":"选择语言"
+},
+ja: {
+"폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE｜キミョとクダ部長",
+"기묘와 크다 부장의 사무실 미로 추격전":"キミョとクダ部長のオフィス迷路チェイス",
+"CBZP 인턴 고양이 기묘가 이동 파티션으로 이루어진 사무실에서 크다 부장을 피해 화분을 던지는 1인용 브라우저 게임입니다.":"CBZPの猫インターン、キミョを操作して、オフィス迷路でクダ部長を避けながら植木鉢を投げるブラウザーゲームです。",
+"기묘를 조작해 CBZP 사무실 미로에서 크다 부장과 대결하는 무료 브라우저 게임. 게임 소개, 조작법, 개인정보 및 광고 안내를 확인하세요.":"キミョを操作してCBZPのオフィス迷路でクダ部長と対決する無料ブラウザーゲーム。遊び方、操作方法、プライバシーと広告の案内はこちら。",
+"고양이 인턴 기묘와 악어 부장 크다의 CBZP 사무실 미로 추격전.":"猫のインターン、キミョとワニのクダ部長がCBZPのオフィス迷路で追いかけっこ。",
+"게임 시작":"ゲーム開始","🏆 랭킹":"🏆 ランキング","게임 방법":"遊び方",
+"방향 패드로 이동하고, 대시로 위험을 피하며, 투척 버튼으로 화분을 던지세요. 기묘와 크다 부장의 체력 중 먼저 0이 되면 경기가 끝납니다.":"方向パッドで移動し、ダッシュで攻撃を避け、投げるボタンで植木鉢を投げます。どちらかの体力が0になると試合終了です。",
+"게임 소개와 조작법":"ゲーム紹介・操作方法","개인정보 및 광고 안내":"プライバシー・広告について",
+"이상한 회사의":"不思議な会社の","인턴 생활":"インターン生活","정말... 이 회사에서":"本当に…この会社で","살아남을 수 있을까?":"生き残れるのかな？",
+"난이도":"難易度","노멀":"ノーマル","하드":"ハード","베리 하드":"ベリーハード","사무실로 입장 ▶":"オフィスへ ▶",
+"기묘 / PLAYER":"キミョ / PLAYER","크다 부장 / NPC":"クダ部長 / NPC","대시":"ダッシュ","던지기":"投げる",
+"↻ 다시 도전":"↻ もう一度挑戦","처음으로":"タイトルへ","랭킹 등록":"ランキング登録","🏆 POT BREAKER 랭킹":"🏆 POT BREAKER ランキング",
+"닉네임":"ニックネーム","최대 16자":"16文字まで","랭킹을 불러오는 중…":"ランキングを読み込み中…","사무실 문을 열고 있습니다":"オフィスのドアを開いています",
+"Python 게임 엔진을 준비하고 있습니다.":"Pythonゲームエンジンを準備しています。","다시 시도하기":"再試行","잠깐 휴식!":"ちょっと休憩！","계속하기":"続ける",
+"아직 등록된 클리어 기록이 없습니다.":"クリア記録はまだありません。","랭킹을 불러오지 못했습니다.":"ランキングを読み込めませんでした。",
+"서버 연결에 실패했습니다.":"サーバーに接続できませんでした。","랭킹에 등록했습니다.":"ランキングに登録しました。","Pyodide를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.":"Pyodideを読み込めませんでした。ネット接続を確認してください。",
+"게임 엔진을 불러오지 못했습니다.":"ゲームエンジンを読み込めませんでした。","게임을 불러오지 못했습니다.":"ゲームを読み込めませんでした。","게임 화면 갱신 오류:":"画面更新エラー：",
+"기묘 승리!":"キミョの勝利！","크다 부장 승리!":"クダ部長の勝利！","화분 한 방! 크다 부장의 뚝배기를 깼습니다.":"植木鉢の一撃！クダ部長を倒しました。",
+"기묘가 화분에 머리만 내놓고 심어졌습니다…":"キミョは植木鉢に植えられ、頭だけ出ています…","쨍그랑!":"ガシャーン！","감 과장":"カム課長",
+"랭킹 닫기":"ランキングを閉じる",
+"♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"♥ 回復 · カム課長：植木鉢の効果4種（ハート±1、植木鉢補充、フィールドリセット・各25%）· キミョのダッシュ：3秒 / クダのダッシュ：5秒 · 円形パッドで移動、長押しで連続移動",
+"원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"円形パッドで移動 · 長押しで連続移動","화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"植木鉢：攻撃 · ダッシュ：3マス移動（クールダウン3秒）",
+"PC: 방향키 / WASD · Space(공격) · Shift(대시)":"PC：矢印キー / WASD · Space（投げる）· Shift（ダッシュ）",
+"언어 변경":"言語を変更","언어 선택":"言語を選択"
+}
+};
+const selector=document.getElementById("pb-locale");
+if(!selector)return;
+const textOriginal=new WeakMap(),textRendered=new WeakMap(),attrOriginal=new WeakMap(),attrRendered=new WeakMap();
+let locale="ko",busy=false;
+try{const saved=localStorage.getItem("potbreaker-locale");if(["ko","en","zh","ja"].includes(saved))locale=saved}catch{}
+const translate=value=>locale==="ko"?value:(dictionaries[locale]?.[value]||value);
+function visit(root=document.body){
+ if(!root)return;
+ const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement?.closest("script,style,select,option,textarea")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+ let n;while(n=walker.nextNode()){
+  const current=n.nodeValue;
+  if(textRendered.has(n)&&textRendered.get(n)===current)continue;
+  textOriginal.set(n,current);
+  const original=textOriginal.get(n),next=translate(original);
+  if(next!==current){textRendered.set(n,next);n.nodeValue=next}else textRendered.delete(n);
+ }
+ const elements=root.nodeType===Node.ELEMENT_NODE?[root,...root.querySelectorAll("*")]:[];
+ const attrs=["aria-label","title","placeholder"];
+ for(const el of elements){
+  let saved=attrOriginal.get(el);if(!saved){saved={};attrOriginal.set(el,saved)}
+  for(const attr of attrs){if(!el.hasAttribute(attr))continue;
+   const current=el.getAttribute(attr),key=attr+":"+el.tagName;
+   if(attrRendered.get(el)?.[key]===current)continue;
+   saved[key]=current;const next=translate(saved[key]);
+   if(next!==current){const rendered=attrRendered.get(el)||{};rendered[key]=next;attrRendered.set(el,rendered);el.setAttribute(attr,next)}
+  }
+ }
+}
+function apply(next){
+ locale=["ko","en","zh","ja"].includes(next)?next:"ko";
+ try{localStorage.setItem("potbreaker-locale",locale)}catch{}
+ document.documentElement.lang=locale;
+ busy=true;selector.value=locale;visit();busy=false;
+}
+selector.addEventListener("change",()=>apply(selector.value));
+if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.__pbTranslated){
+ for(const method of ["fillText","strokeText"]){
+  const original=CanvasRenderingContext2D.prototype[method];
+  CanvasRenderingContext2D.prototype[method]=function(text,...args){return original.call(this,translate(String(text)),...args)};
+ }
+ CanvasRenderingContext2D.prototype.__pbTranslated=true;
+}
+apply(locale);
+new MutationObserver(records=>{if(busy)return;for(const r of records){if(r.type==="characterData")visit(r.target.parentElement);else if(r.type==="childList")for(const node of r.addedNodes)if(node.nodeType===Node.ELEMENT_NODE||node.nodeType===Node.TEXT_NODE)visit(node);else if(r.type==="attributes")visit(r.target)}}).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["aria-label","title","placeholder"]});
+})();
+</script>"""
+html = html.replace("</body>", language_script + "\\n</body>", 1)
+
 worker = (
-    "// Generated by scripts/build_worker.py. POT BREAKER RE v1.0.89 SEO/AdSense-ready\n"
+    "// Generated by scripts/build_worker.py. POT BREAKER RE v1.0.90 SEO/AdSense-ready\n"
     + "const PAGE=" + json.dumps(html, ensure_ascii=False) + ";\n"
     + "const GAME=" + json.dumps(python_source, ensure_ascii=False) + ";\n"
     + """const SCHEMA=`CREATE TABLE IF NOT EXISTS visits (visitor_id TEXT PRIMARY KEY, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%S','now')));
