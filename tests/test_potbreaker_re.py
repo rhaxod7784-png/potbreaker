@@ -170,6 +170,14 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertEqual(PotBreaker(1, "hard").player_pot_cap, 2)
         self.assertEqual(PotBreaker(1, "very_hard").player_pot_cap, 2)
 
+
+    def test_pot_break_uses_red_flash_without_screen_shake(self):
+        html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
+        self.assertNotIn("shakeTimer", html)
+        self.assertNotIn("Math.random()-.5)*.32", html)
+        self.assertIn("flashTimer=.24", html)
+        self.assertIn("ctx.fillStyle='#f34252'", html)
+
     def test_mobile_controls_use_touch_direction_without_movement_buttons(self):
         html = Path(__file__).parents[1].joinpath("web", "index.html").read_text(encoding="utf-8")
         self.assertNotIn('id="dpad"', html)
@@ -222,9 +230,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.46", html)
+        self.assertIn("POT BREAKER RE v1.0.47", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.46"', build)
+        self.assertIn('version:"1.0.47"', build)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn("position:fixed;inset:0;width:100vw;height:100dvh;display:block;overflow:hidden", html)
         self.assertIn("transform:translate(-50%,-50%) rotate(90deg)", html)
