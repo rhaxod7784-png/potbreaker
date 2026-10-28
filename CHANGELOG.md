@@ -1,3 +1,17 @@
+## v1.0.31 — 격자 이동·세로 화면 조이스틱 QA
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Fixed
+- 기묘의 자유 연속 이동을 격자 기준 8방향 한 칸 이동으로 변경하고, 최대 이동 속도를 약 10.5칸/초에서 약 4.2칸/초로 낮춤.
+- 세로 화면에서 게임 무대가 90도 회전할 때 조이스틱 입력 벡터를 같은 회전 방향으로 보정해 손가락 방향과 캐릭터 이동 방향을 일치시킴.
+
+### Code
+- `web/game.py`, `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.24 — 세로 휴대폰 시작 화면 정렬 보정
 
 **Release type:** PATCH  
