@@ -38,8 +38,8 @@ dpad_css = """
 html = html.replace("</style>", dpad_css + "\\n</style>", 1)
 
 
-# v1.0.90: crawlable site metadata, visible game guidance, and safe publisher gates.
-html = html.replace("POT BREAKER RE v1.0.90 · CBZP", "폿브레이커 RE | 기묘와 크다 부장의 미로 게임", 1)
+# v1.0.91: crawlable site metadata, visible game guidance, and safe publisher gates.
+html = html.replace("POT BREAKER RE v1.0.91 · CBZP", "폿브레이커 RE | 기묘와 크다 부장의 미로 게임", 1)
 seo_head = """
 <meta name="description" content="기묘를 조작해 CBZP 사무실 미로에서 크다 부장과 대결하는 무료 브라우저 게임. 게임 소개, 조작법, 개인정보 및 광고 안내를 확인하세요.">
 <link rel="canonical" href="https://potbreaker.com/">
@@ -54,22 +54,21 @@ seo_head = """
 if "</head>" not in html:
     raise SystemExit("HTML head not found for SEO metadata")
 html = html.replace("</head>", seo_head + "\n</head>", 1)
-title_end = '<button class="menu-ranking" id="openRanking">🏆 랭킹</button></section>'
-site_info = """<section class="seo-info" aria-labelledby="seo-heading">
+site_info = """<details class="seo-info">
+<summary>게임 안내</summary>
+<div class="seo-info-content">
 <h1 id="seo-heading">기묘와 크다 부장의 사무실 미로 추격전</h1>
 <p>CBZP 인턴 고양이 기묘가 이동 파티션으로 이루어진 사무실에서 크다 부장을 피해 화분을 던지는 1인용 브라우저 게임입니다.</p>
 <details><summary>게임 방법</summary><p>방향 패드로 이동하고, 대시로 위험을 피하며, 투척 버튼으로 화분을 던지세요. 기묘와 크다 부장의 체력 중 먼저 0이 되면 경기가 끝납니다.</p></details>
 <nav aria-label="게임 안내"><a href="/about">게임 소개와 조작법</a><a href="/privacy">개인정보 및 광고 안내</a></nav>
-</section>"""
-if title_end not in html:
-    raise SystemExit("Title screen marker not found for visible game information")
-html = html.replace(title_end, '<button class="menu-ranking" id="openRanking">🏆 랭킹</button>' + site_info + '</section>', 1)
+</div>
+</details>"""
 seo_css = """
-.seo-info{position:absolute;left:2%;bottom:1.5%;z-index:5;width:min(43%,520px);max-height:40%;overflow:auto;padding:clamp(6px,1.1cqw,14px);border:1px solid #ffffffbd;border-radius:14px;background:#fffaf0e8;box-shadow:0 3px 14px #31415b35;color:#303d67;font-size:clamp(8px,1.03cqw,13px);line-height:1.35;text-align:left}
-.seo-info h1{margin:0 0 .35em;font-size:1.18em;line-height:1.2}.seo-info p{margin:.25em 0}.seo-info details{margin-top:.25em}.seo-info summary{cursor:pointer;font-weight:900}.seo-info nav{display:flex;gap:.8em;flex-wrap:wrap;margin-top:.35em}.seo-info a{color:#244e70;text-decoration:underline;text-underline-offset:2px}
-@media(max-width:700px){.seo-info{width:48%;max-height:36%;font-size:clamp(7px,1.2cqw,11px)}}
+.seo-info{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);z-index:30;width:min(90vw,620px);max-height:48vh;overflow:auto;padding:8px 12px;border:1px solid #ffffffd9;border-radius:14px;background:#fffaf0f2;box-shadow:0 3px 14px #31415b45;color:#303d67;font-size:clamp(9px,1.05cqw,13px);line-height:1.4;text-align:left;white-space:normal}
+.seo-info>summary{cursor:pointer;font-weight:900;list-style:none}.seo-info>summary::-webkit-details-marker{display:none}.seo-info>summary:after{content:"＋";margin-left:.5em}
+.seo-info[open]>summary:after{content:"－"}.seo-info-content h1{margin:.45em 0;font-size:1.15em;line-height:1.25}.seo-info-content p{margin:.4em 0}.seo-info-content details{margin-top:.5em}.seo-info-content details summary{cursor:pointer;font-weight:800}.seo-info-content nav{display:flex;gap:.8em;flex-wrap:wrap;margin-top:.55em}.seo-info-content a{color:#244e70;text-decoration:underline;text-underline-offset:2px}
 """
-html = html.replace("</style>", seo_css + "\n</style>", 1)
+html = html.replace("</style>", seo_css + "\\n</style>", 1)
 
 
 language_css = """
@@ -82,10 +81,10 @@ language_css = """
 """
 html = html.replace("</style>", language_css + "\\n</style>", 1)
 footer_tail = "누르고 있으면 계속 이동</span></div></section>"
-language_picker = """누르고 있으면 계속 이동</span><label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label></div></section>"""
+language_picker = """누르고 있으면 계속 이동</span>""" + site_info + """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label></div></section>"""
 if footer_tail not in html:
     footer_tail = "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동</span></div></section>"
-    language_picker = """원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동</span><label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label></div></section>"""
+    language_picker = """원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동</span>""" + site_info + """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label></div></section>"""
 if footer_tail not in html:
     raise SystemExit("Footer insertion marker not found")
 html = html.replace(footer_tail, language_picker, 1)
@@ -222,7 +221,7 @@ new MutationObserver(records=>{if(busy)return;for(const r of records){if(r.type=
 html = html.replace("</body>", language_script + "\\n</body>", 1)
 
 worker = (
-    "// Generated by scripts/build_worker.py. POT BREAKER RE v1.0.90 SEO/AdSense-ready\n"
+    "// Generated by scripts/build_worker.py. POT BREAKER RE v1.0.91 SEO/AdSense-ready\n"
     + "const PAGE=" + json.dumps(html, ensure_ascii=False) + ";\n"
     + "const GAME=" + json.dumps(python_source, ensure_ascii=False) + ";\n"
     + """const SCHEMA=`CREATE TABLE IF NOT EXISTS visits (visitor_id TEXT PRIMARY KEY, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%S','now')));
