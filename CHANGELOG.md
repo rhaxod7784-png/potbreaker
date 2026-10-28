@@ -1,3 +1,18 @@
+## v1.0.43 — 이동 속도·터치 반응·발사 버튼 보정
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 기묘의 한 칸 이동 간격을 0.24초에서 0.18초로 줄여 이동 속도를 약 33% 높임.
+- 방향 전환 누적 거리와 축 판정 여유를 낮춰 드래그 방향을 더 쉽게 바꾸도록 조정.
+- 휴대폰 발사 버튼 크기를 82–108px 범위로 확대.
+
+### Code
+- `web/game.py`, `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.42 — 방향 전환 완충값 조정
 
 **Release type:** PATCH  
