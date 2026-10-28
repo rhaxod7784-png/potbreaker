@@ -178,7 +178,7 @@ const textOriginal=new WeakMap(),textRendered=new WeakMap(),attrOriginal=new Wea
 let locale="ko",busy=false;
 try{const saved=localStorage.getItem("potbreaker-locale");if(["ko","en","zh","ja"].includes(saved))locale=saved}catch{}
 const translate=value=>locale==="ko"?value:(dictionaries[locale]?.[value]||value);
-function visit(root=document.body){
+function visit(root=document.documentElement){
  if(!root)return;
  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement?.closest("script,style,select,option,textarea")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
  let n;while(n=walker.nextNode()){
