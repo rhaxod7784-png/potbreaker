@@ -125,11 +125,16 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertEqual(game.player_hp, 3)
         self.assertEqual(game.boss_hp, 3)
 
-    def test_kimyo_movement_is_slightly_faster(self):
-        self.assertAlmostEqual(PLAYER_MOVE_INTERVAL, 0.0955)
-        self.assertAlmostEqual(.105 / PLAYER_MOVE_INTERVAL - 1, .10, places=2)
+    def test_kimyo_moves_on_grid_at_reduced_speed(self):
+        self.assertAlmostEqual(PLAYER_MOVE_INTERVAL, 0.24)
         self.assertAlmostEqual(PLAYER_DASH_MOVE_INTERVAL, 0.09)
-        self.assertLess(PLAYER_DASH_MOVE_INTERVAL, 0.095)
+        game = PotBreaker(11)
+        game.walls = set()
+        game.moving_walls = set()
+        game.player = [5, 5]
+        self.assertTrue(game._move_player(1.0, 0.0))
+        self.assertEqual(game.player, [6, 5])
+        self.assertTrue(all(float(value).is_integer() for value in game.player))
 
     def test_player_pot_capacity_is_three_and_start_is_inset(self):
         game = PotBreaker(3)
@@ -165,6 +170,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertIn('id="dpadKnob"', html)
         self.assertIn('class="dpad-ring"', html)
         self.assertIn("dpadDirection", html)
+        self.assertIn("rawX=rotated?screenY:screenX,rawY=rotated?-screenX:screenY", html)
         self.assertIn("@media (pointer:coarse),(max-height:520px)", html)
         self.assertIn("clamp(126px,16cqw,164px)", html)
         self.assertIn("function getMove()", html)
@@ -204,9 +210,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.30", html)
+        self.assertIn("POT BREAKER RE v1.0.31", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.30"', build)
+        self.assertIn('version:"1.0.31"', build)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn("position:fixed;inset:0;width:100vw;height:100dvh;display:block;overflow:hidden", html)
         self.assertIn("transform:translate(-50%,-50%) rotate(90deg)", html)
