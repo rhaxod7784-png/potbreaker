@@ -99,3 +99,13 @@ Android 앱에서 생성된 승리 기록은 WebView의 `localStorage`에 저장
 
 - 브라우저 게임 기준선: `v0.15.0`
 - Android 설치 패키징 추가: `v0.16.0`
+
+## 브라우저 게임 v1.0.25
+
+- 웹 게임 소스: `web/index.html`, `web/game.py`
+- Worker 생성: `python scripts/build_worker.py`
+- 배포 설정: `wrangler.toml`
+- Cloudflare D1 초기 스키마: `cloudflare/migrations/0001_init.sql`
+- D1 바인딩 이름: `POTBREAKER_DB`
+
+노멀은 기존 밸런스, 하드는 기묘의 화분 1개, 베리 하드는 기묘의 화분 1개와 크다 체력 10으로 플레이합니다. 익명 방문 및 게임 결과 이벤트를 D1에 기록하며, 승리로 끝난 게임만 닉네임·난이도·클리어 시간을 랭킹에 등록합니다. 랭킹은 베리 하드, 하드, 노멀 순으로 표시하고 난이도 안에서는 빠른 기록이 먼저 나옵니다.

@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.24 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.26 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -36,8 +36,11 @@ def distance(a, b):
 
 
 class PotBreaker:
-    def __init__(self, seed=None):
+    def __init__(self, seed=None, difficulty='normal'):
         self.rng = random.Random(seed)
+        self.difficulty = difficulty if difficulty in ('normal', 'hard', 'very_hard') else 'normal'
+        self.player_pot_cap = 3 if self.difficulty == 'normal' else 1
+        self.boss_hp_cap = 10 if self.difficulty == 'very_hard' else BOSS_HP
         self.reset()
 
     def reset(self):
@@ -64,7 +67,7 @@ class PotBreaker:
                 self.moving_walls.remove(self.rng.choice(tuple(self.moving_walls)))
             else:
                 break
-        self.ammo, self.boss_ammo, self.max_boss_ammo = PLAYER_POT_CAP, 5, 5
+        self.ammo, self.boss_ammo, self.max_boss_ammo = self.player_pot_cap, 5, 5
         self.throw_cd, self.boss_throw_cd = 0.0, 1.2
         self.player_move_cd, self.boss_move_cd = 0.0, .5
         self.projectiles, self.pots = [], []
@@ -74,7 +77,7 @@ class PotBreaker:
         self.pot_break_events = []
         self.pot_break_seq = 0
         self.crow_spawn_timer = CROW_FIRST_APPEAR_SECONDS
-        self.player_hp, self.boss_hp = PLAYER_HP, BOSS_HP
+        self.player_hp, self.boss_hp = PLAYER_HP, self.boss_hp_cap
         self.player_invuln, self.boss_invuln = 0.0, 0.0
         self.player_dash_cd, self.boss_dash_cd = 0.0, 0.0
         self.partition_timer = PARTITION_MOVE_SECONDS
@@ -265,7 +268,7 @@ class PotBreaker:
         if self.player == self.boss: self._damage(False)
 
     def _pickups(self):
-        for who, cap, attr in ((self.player, PLAYER_POT_CAP, 'ammo'), (self.boss, 5, 'boss_ammo')):
+        for who, cap, attr in ((self.player, self.player_pot_cap, 'ammo'), (self.boss, 5, 'boss_ammo')):
             if getattr(self, attr) >= cap: continue
             for pot in list(self.pots):
                 if who == pot:
@@ -280,7 +283,7 @@ class PotBreaker:
                 if distance(who, (item['x'], item['y'])) >= .65:
                     continue
                 self.mystery_pots.remove(item)
-                attr, cap, name = ('boss_hp', BOSS_HP, '크다') if npc else ('player_hp', PLAYER_HP, '기묘')
+                attr, cap, name = ('boss_hp', self.boss_hp_cap, '크다') if npc else ('player_hp', PLAYER_HP, '기묘')
                 if item['effect'] == 'damage':
                     self._damage(npc, bypass_invulnerability=True)
                     self.notice, self.notice_time = f"? 화분 폭발! {name} HP -1", 1.3
@@ -379,9 +382,18 @@ class PotBreaker:
                 self.projectiles.remove(p)
                 self._drop_pot(x, y)
                 continue
-            p['x'], p['y'] = nx, ny
             target = self.player if p['boss'] else self.boss
-            if distance((p['x'], p['y']), target) < (.62 if p['boss'] else .55):
+            # Sweep the full frame segment so fast mobile throws cannot tunnel through a character.
+            vx, vy = nx - x, ny - y
+            segment_sq = vx * vx + vy * vy
+            if segment_sq:
+                contact_t = max(0.0, min(1.0, ((target[0] - x) * vx + (target[1] - y) * vy) / segment_sq))
+            else:
+                contact_t = 0.0
+            contact_x, contact_y = x + vx * contact_t, y + vy * contact_t
+            hit_radius = .72 if not p['boss'] else .68
+            if distance((contact_x, contact_y), target) < hit_radius:
+                p['x'], p['y'] = contact_x, contact_y
                 self._damage(not p['boss'])
                 self._break_pot(p['x'], p['y'])
                 if p in self.projectiles:self.projectiles.remove(p)
@@ -389,6 +401,7 @@ class PotBreaker:
                     self.projectiles.clear()
                     return
                 continue
+            p['x'], p['y'] = nx, ny
             crow = self.crow_flight
             if not p['boss'] and crow and distance((p['x'], p['y']), (crow['x'], crow['y'])) < .62:
                 if self.player_hp < PLAYER_HP:
@@ -424,10 +437,13 @@ class PotBreaker:
         dx = 1 if mx > 0 else -1 if mx < 0 else 0
         dy = 1 if my > 0 else -1 if my < 0 else 0
         if dx or dy: self.face = [dx, dy]
-        if jump and (dx or dy) and self.player_dash_cd <= 0:
-            self._dash(self.player, dx, dy, False)
-            self.player_move_cd = PLAYER_DASH_MOVE_INTERVAL / max(.7, strength) * (math.sqrt(2) if dx and dy else 1)
-        if self.player_move_cd <= 0 and (dx or dy):
+        just_dashed = False
+        if jump and self.player_dash_cd <= 0:
+            dash_dx, dash_dy = (dx, dy) if (dx or dy) else tuple(self.face)
+            just_dashed = self._dash(self.player, dash_dx, dash_dy, False)
+            if just_dashed:
+                self.player_move_cd = PLAYER_DASH_MOVE_INTERVAL / max(.7, strength) * (math.sqrt(2) if dash_dx and dash_dy else 1)
+        if not just_dashed and self.player_move_cd <= 0 and (dx or dy):
             tx, ty = self.player[0] + dx, self.player[1] + dy
             if self._free_step(self.player[0], self.player[1], dx, dy):
                 self.player = [tx, ty]
@@ -466,7 +482,8 @@ class PotBreaker:
                            'mystery_pots': self.mystery_pots,
                            'player_hp': self.player_hp, 'boss_hp': self.boss_hp,
                            'player_dash_cd': round(self.player_dash_cd,2), 'boss_dash_cd': round(self.boss_dash_cd,2),
-                           'ammo': self.ammo, 'ammo_cap': PLAYER_POT_CAP, 'boss_ammo': self.boss_ammo,
+                           'ammo': self.ammo, 'ammo_cap': self.player_pot_cap, 'boss_ammo': self.boss_ammo,
+                           'boss_hp_cap': self.boss_hp_cap, 'difficulty': self.difficulty,
                            'dash_effect': self.dash_effect,
                            'notice': self.notice if self.notice_time else '',
                            'clock': round(self.clock, 2), 'hits': self.hit_events,
