@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.6 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.15 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -21,7 +21,7 @@ AIM_SWEEP_DEGREES = 45.0
 AIM_SWEEP_SPEED = 6.5 * (2 / 3)  # QA default: faster ±30° automatic targeting
 PLAYER_DASH_COOLDOWN = 3.0
 BOSS_DASH_COOLDOWN = 5.0
-PLAYER_MOVE_INTERVAL = 0.105
+PLAYER_MOVE_INTERVAL = 0.0955
 PLAYER_DASH_MOVE_INTERVAL = 0.09
 PLAYER_HP = 3
 BOSS_HP = 5
@@ -41,8 +41,8 @@ class PotBreaker:
 
     def reset(self):
         self.phase, self.clock = 'playing', 0.0
-        self.player = list(self.rng.choice([(1, 1), (1, HEIGHT - 2),
-                                            (WIDTH - 2, 1), (WIDTH - 2, HEIGHT - 2)]))
+        self.player = list(self.rng.choice([(2, 2), (2, HEIGHT - 3),
+                                            (WIDTH - 3, 2), (WIDTH - 3, HEIGHT - 3)]))
         self.boss = [WIDTH // 2, HEIGHT // 2]
         self.face, self.boss_face = [1, 0], [-1, 0]
         self.walls, self.moving_walls = set(), set()  # All partition tiles are dynamic.
@@ -355,6 +355,17 @@ class PotBreaker:
                 if self.phase != 'playing':
                     self.projectiles.clear()
                     return
+                continue
+            crow = self.crow_flight
+            if not p['boss'] and crow and distance((p['x'], p['y']), (crow['x'], crow['y'])) < .62:
+                if self.player_hp < PLAYER_HP:
+                    self.player_hp += 1
+                    self.notice, self.notice_time = '감 과장 명중! 기묘 HP +1', 1.5
+                else:
+                    self.notice, self.notice_time = '감 과장 명중!', 1.0
+                self._break_pot(p['x'], p['y'])
+                if p in self.projectiles:
+                    self.projectiles.remove(p)
                 continue
             for other in list(self.projectiles):
                 if p is other or other['boss'] == p['boss']: continue
