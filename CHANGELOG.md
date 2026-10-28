@@ -1,3 +1,17 @@
+## v1.0.39 — 드래그 방향 흔들림 완화
+
+**Release type:** PATCH  
+**Date:** 2026-10-28
+
+### Changed
+- 방향이 정해진 뒤 반대 방향 전환은 조금 더 분명한 손가락 이동이 있어야 반영하도록 완충 구간 추가.
+- 대각선에 가까운 미세 흔들림은 기존 방향을 유지하고, 명확한 가로·세로 드래그는 한 칸 이동 방향으로 반영.
+
+### Code
+- `web/index.html`, `cloudflare/worker.js`, `scripts/build_worker.py`, `tests/test_potbreaker_re.py`
+
+---
+
 ## v1.0.38 — 터치 드래그 방향 계산 통일
 
 **Release type:** PATCH  
