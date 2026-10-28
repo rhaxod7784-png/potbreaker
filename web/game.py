@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.0.18 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.0.19 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json

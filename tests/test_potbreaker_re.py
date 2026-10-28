@@ -100,7 +100,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertNotIn('class="joystick"', html)
         self.assertIn("dpadDirection", html)
         self.assertIn("@media (pointer:coarse),(max-height:520px)", html)
-        self.assertIn("opacity:.62", html)
+        self.assertIn("opacity:.78", html)
         self.assertIn(".action.fire{width:clamp(64px,6.2cqw,88px)", html)
 
     def test_mobile_dpad_and_shatter_feedback_are_wired(self):
@@ -108,9 +108,13 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertIn("button.setPointerCapture(e.pointerId)", html)
         self.assertIn("button.addEventListener('pointerup',release)", html)
         self.assertIn("button.addEventListener('pointercancel',release)", html)
+        self.assertIn("fetch('/game.py'", html)
+        self.assertNotIn('id="pythonEngine"', html)
+        self.assertIn("breakParticles.push", html)
+        self.assertIn("life:1.05,label:true", html)
         self.assertIn("function shatterSound()", html)
         self.assertIn("s.pot_breaks||[]", html)
-        self.assertIn("shakeTimer=.22", html)
+        self.assertIn("shakeTimer=.3", html)
         self.assertIn("ctx.translate((Math.random()-.5)*.32", html)
         for color in ("#e65b58", "#5b91e8", "#f0c44e", "#62bd78"):
             self.assertIn(color, html)
@@ -122,9 +126,9 @@ class PotBreakerBalanceTests(unittest.TestCase):
         boxes = [[int(value) for value in panel.split(",")] for panel in re.findall(r"\[([^\[\]]+)\]", match.group(1))]
         self.assertEqual(len(boxes), 4)
         self.assertEqual({(width, height) for _, _, width, height in boxes}, {(672, 409)})
-        self.assertIn("POT BREAKER RE v1.0.18", html)
+        self.assertIn("POT BREAKER RE v1.0.19", html)
         build = Path(__file__).parents[1].joinpath("scripts", "build_worker.py").read_text(encoding="utf-8")
-        self.assertIn('version:"1.0.17"', build)
+        self.assertIn('version:"1.0.19"', build)
         self.assertIn('id="rotateStart"', html)
         self.assertIn("(orientation:portrait) and (pointer:coarse)", html)
         self.assertIn('휴대폰을 가로로 돌려 주세요', html)
