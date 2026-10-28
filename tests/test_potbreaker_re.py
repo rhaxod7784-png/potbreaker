@@ -132,7 +132,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertEqual(game.boss_hp, 3)
 
     def test_kimyo_moves_on_grid_at_reduced_speed(self):
-        self.assertAlmostEqual(PLAYER_MOVE_INTERVAL, 0.24)
+        self.assertAlmostEqual(PLAYER_MOVE_INTERVAL, 0.18)
         self.assertAlmostEqual(PLAYER_DASH_MOVE_INTERVAL, 0.09)
         game = PotBreaker(11)
         game.walls = set()
