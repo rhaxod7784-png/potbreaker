@@ -103,7 +103,7 @@ html = html.replace("<title>POT BREAKER RE v1.0.97 · CBZP</title>", "<title>폿
 footer_state_script = """<script>
 (()=>{const footer=document.getElementById("site-footer"),game=document.getElementById("gamePanel");if(!footer||!game)return;const sync=()=>footer.classList.toggle("pb-game-hidden",!game.classList.contains("hidden"));sync();new MutationObserver(sync).observe(game,{attributes:true,attributeFilter:["class"]})})();
 </script>"""
-html = html.replace("</body>", site_info + "\\n" + footer_state_script + "\\n</body>", 1)
+html = html.replace("</body>", site_info + "\n" + footer_state_script + "\n</body>", 1)
 
 
 language_css = """
