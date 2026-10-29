@@ -360,15 +360,20 @@ const translate=value=>{
  }
  return result;
 };
+const visitTextNode=n=>{
+ const current=n.nodeValue;
+ if(!textOriginal.has(n)||(textRendered.has(n)&&textRendered.get(n)!==current))textOriginal.set(n,current);
+ const next=translate(textOriginal.get(n));textRendered.set(n,next);
+ if(next!==current)n.nodeValue=next;
+};
 function visit(root=document.documentElement){
  if(!root)return;
- const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement?.closest("script,style,select,option,textarea")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
- let n;while(n=walker.nextNode()){
-  const current=n.nodeValue;
-  if(!textOriginal.has(n)||(textRendered.has(n)&&textRendered.get(n)!==current))textOriginal.set(n,current);
-  const next=translate(textOriginal.get(n));textRendered.set(n,next);
-  if(next!==current)n.nodeValue=next;
+ if(root.nodeType===Node.TEXT_NODE){
+  if(!root.parentElement?.closest("script,style,select,option,textarea"))visitTextNode(root);
+  return;
  }
+ const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement?.closest("script,style,select,option,textarea")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+ let n;while(n=walker.nextNode())visitTextNode(n);
  const elements=root.nodeType===Node.ELEMENT_NODE?[root,...root.querySelectorAll("*")]:[];
  const attrs=["aria-label","title","placeholder","content"];
  for(const el of elements){
@@ -499,7 +504,27 @@ if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.__pbTran
  CanvasRenderingContext2D.prototype.__pbTranslated=true;
 }
 apply(locale);
-new MutationObserver(records=>{if(busy)return;for(const r of records){if(r.type==="characterData"){visit(r.target.parentElement)}else if(r.type==="childList"){for(const node of r.addedNodes){if(node.nodeType===Node.ELEMENT_NODE||node.nodeType===Node.TEXT_NODE)visit(node)}}else if(r.type==="attributes"){visit(r.target)}}drawEndingTranslations()}).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["aria-label","title","placeholder","content","src"]});
+new MutationObserver(records=>{
+ if(busy)return;
+ let redrawComic=false,redrawEnding=false;
+ for(const r of records){
+  const target=r.target,el=target.nodeType===Node.ELEMENT_NODE?target:target.parentElement;
+  if(r.type==="characterData"){
+   visit(target);
+   if(el?.closest("#end"))redrawEnding=true;
+  }else if(r.type==="childList"){
+   for(const node of r.addedNodes)if(node.nodeType===Node.ELEMENT_NODE||node.nodeType===Node.TEXT_NODE)visit(node);
+   if(el?.closest("#intro"))redrawComic=true;
+   if(el?.closest("#end"))redrawEnding=true;
+  }else if(r.type==="attributes"){
+   visit(target);
+   if(target.matches?.("#intro")||target.closest?.("#intro"))redrawComic=true;
+   if(target.matches?.("#end")||target.closest?.("#end"))redrawEnding=true;
+  }
+ }
+ if(redrawComic)requestAnimationFrame(drawComicTranslations);
+ if(redrawEnding)requestAnimationFrame(drawEndingTranslations);
+}).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["aria-label","title","placeholder","content","src","class"]});
 })();
 </script>"""
 html = html.replace("</body>", language_script + "\n</body>", 1)
