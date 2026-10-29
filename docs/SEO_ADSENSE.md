@@ -1,4 +1,4 @@
-# SEO and AdSense setup — POT BREAKER RE v1.0.89
+# SEO and AdSense setup — POT BREAKER RE v1.0.97
 
 ## Search discovery
 - The Worker serves `/robots.txt` and `/sitemap.xml`; the sitemap lists the game, game guide, and privacy/advertising notice.
@@ -7,7 +7,7 @@
 - In Search Console, verify the `potbreaker.com` domain property and submit `https://potbreaker.com/sitemap.xml`. Google may crawl and index eligible pages but submission does not guarantee indexing.
 
 ## AdSense activation (not enabled by this release)
-The game screen does not load the AdSense library. This avoids placing ads next to mobile movement, dash, throw, or pause controls. The optional loader is limited to `/about` and requires all of these Cloudflare Worker variables:
+Source locations: editable page content is in `web/pages/about.html` and `web/pages/privacy.html`; routes, ad-loader gates, `/ads.txt`, and publisher verification are in `cloudflare/worker.template.js`. `cloudflare/worker.js` is generated and should not be edited by hand. The game screen does not load the AdSense library. This avoids placing ads next to mobile movement, dash, throw, or pause controls. The optional loader is limited to `/about` and requires all of these Cloudflare Worker variables:
 
 - `ADSENSE_PUBLISHER_ID`: exact account ID in `ca-pub-0000000000000000` format (16 digits).
 - `ADSENSE_ENABLED=true`: only after the site is added and approved in AdSense and an ad placement has been reviewed.

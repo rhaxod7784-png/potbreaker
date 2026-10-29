@@ -1,4 +1,4 @@
-# Current browser release — POT BREAKER RE v1.0.89
+# Current browser release — POT BREAKER RE v1.0.97
 
 The current web game is the Korean-language Cloudflare Worker release at [potbreaker.com](https://potbreaker.com/). It runs the Python game engine in the browser with Pyodide and Canvas rendering.
 
@@ -9,6 +9,23 @@ The current web game is the Korean-language Cloudflare Worker release at [potbre
 - Release notes: [POT_BREAKER_RE_v1.0.89_CHANGELOG.md](POT_BREAKER_RE_v1.0.89_CHANGELOG.md).
 - The Android WebView v0.16.0 package below is a separate legacy app and does not automatically receive web release updates.
 
+## Web source layout
+
+The checked-in Worker bundle is generated from these source files:
+
+- `web/index.html`: game shell, bundled illustrations, and core browser rendering.
+- `web/game.py`: game rules and state model.
+- `web/touch-controls.js`: mobile D-pad pointer handling.
+- `web/footer-state.js`: footer visibility and reserved viewport-height state.
+- `web/language.js`: locale dictionaries and DOM/canvas translation.
+- `web/styles/potbreaker.css`: site, mobile, and game-screen styles.
+- `web/partials/`: SEO head, footer, language selector, and D-pad markup.
+- `web/pages/about.html`, `web/pages/privacy.html`: indexable information pages.
+- `cloudflare/worker.template.js`: routes, APIs, SEO responses, and AdSense gates.
+- `scripts/build_worker.py`: deterministic source bundler.
+- `cloudflare/worker.js`: generated output; edit the source files above instead.
+
+For AdSense, update the page source and the `/about` route in the Worker template, then keep the privacy notice and `docs/SEO_ADSENSE.md` aligned. The game screen intentionally has no ad loader beside touch controls.
 ---
 
 # POT BREAKER Android v0.16.0
