@@ -122,7 +122,7 @@ mobile_footer_css = """
  .site-guide{grid-template-columns:minmax(0,1fr)!important;align-items:start!important}
 }
 """
-html = html.replace("</style>", mobile_footer_css + "\\n</style>", 1)
+html = html.replace("</style>", mobile_footer_css + "\n</style>", 1)
 language_picker = """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label>"""
 menu_anchor = '<button class="menu-ranking" id="openRanking">🏆 랭킹</button>'
 if menu_anchor not in html:
