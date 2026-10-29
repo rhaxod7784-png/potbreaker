@@ -6,17 +6,17 @@
 - `/game.py` is a runtime resource and is sent with `X-Robots-Tag: noindex`; it is not included in the sitemap.
 - In Search Console, verify the `potbreaker.com` domain property and submit `https://potbreaker.com/sitemap.xml`. Google may crawl and index eligible pages but submission does not guarantee indexing.
 
-## AdSense activation (not enabled by this release)
-Source locations: editable page content is in `web/pages/about.html` and `web/pages/privacy.html`; routes, ad-loader gates, `/ads.txt`, and publisher verification are in `cloudflare/worker.template.js`. `cloudflare/worker.js` is generated and should not be edited by hand. The game screen does not load the AdSense library. This avoids placing ads next to mobile movement, dash, throw, or pause controls. The optional loader is limited to `/about` and requires all of these Cloudflare Worker variables:
+## AdSense script
 
-- `ADSENSE_PUBLISHER_ID`: exact account ID in `ca-pub-0000000000000000` format (16 digits).
-- `ADSENSE_ENABLED=true`: only after the site is added and approved in AdSense and an ad placement has been reviewed.
-- `ADSENSE_PRIVACY_READY=true`: only after the privacy notice has been reviewed and reflects the actual account setup.
-- `ADSENSE_CONSENT_READY=true`: only after any required consent platform is configured. Google requires its certified CMP integrated with IAB TCF for personalized ads shown to users in the EEA, UK, and Switzerland.
+The provided AdSense library tag is injected into the `<head>` of every HTML response: the home page and its language variants, `/about`, `/privacy`, and their localized routes. The publisher ID in the script is `ca-pub-7687564326575687`.
 
-When a valid publisher ID is configured, the Worker exposes the AdSense account-verification meta tag and generates the publisher line at `/ads.txt`. Without the ID, no placeholder publisher ID is emitted and `/ads.txt` returns 404. The script loader does not create an ad unit; placement/Auto Ads still requires deliberate setup in the AdSense console.
+The script loads the library; it does not add an in-body ad unit. AdSense Auto Ads can still be controlled through the publisher account. The game page currently has no manually inserted ad unit beside its controls.
 
-Do not place ads adjacent to play, navigation, or game controls; do not use pre-roll or auto-refresh. Google warns these arrangements can cause accidental clicks or interrupt access to games.
+The editable source is `cloudflare/worker.template.js`; `cloudflare/worker.js` is generated and should not be edited by hand. The `ADSENSE_PUBLISHER_ID` Worker variable still controls the verification meta tag and `/ads.txt`. Without that variable, `/ads.txt` returns 404 even though the page-head script is present.
+
+For personalized ads to users in the EEA, UK, or Switzerland, configure a Google-certified CMP and meet the applicable consent requirements before serving personalized ads. Keep the privacy notice aligned with actual advertising behavior.
+
+Do not place ad units next to play, navigation, or game controls, or use pre-roll or auto-refresh.
 
 ## Privacy and accuracy
 The privacy page describes game identifiers, selected difficulty, outcome, elapsed time, optional leaderboard nickname, Cloudflare D1 storage, and Google ad cookies when enabled. The current database does not implement automatic record expiry. Review the notice against the deployed data flow and applicable laws before enabling ads.

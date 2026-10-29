@@ -4,7 +4,7 @@ The current web game is the Korean-language Cloudflare Worker release at [potbre
 
 - Search discovery: `/robots.txt`, `/sitemap.xml`, canonical page metadata, and accessible game guidance.
 - Indexable pages: `/`, `/about`, and `/privacy`; `/game.py` is marked `noindex`.
-- AdSense: publisher verification and `/ads.txt` are generated only when a valid `ADSENSE_PUBLISHER_ID` is configured. Ad script loading is gated by explicit flags and limited to `/about`; the game screen has no ad script.
+- AdSense: the provided publisher script is included in the `<head>` of every HTML route, including localized home, guide, and privacy pages. This adds the library loader; ad placements are configured separately. Publisher verification metadata and `/ads.txt` still depend on `ADSENSE_PUBLISHER_ID`.
 - Setup requirements: [docs/SEO_ADSENSE.md](docs/SEO_ADSENSE.md).
 - Release notes: [POT_BREAKER_RE_v1.0.89_CHANGELOG.md](POT_BREAKER_RE_v1.0.89_CHANGELOG.md).
 - The Android WebView v0.16.0 package below is a separate legacy app and does not automatically receive web release updates.
@@ -148,4 +148,4 @@ Worker build status is generated from `scripts/build_worker.py` on each push to 
 
 - Added a Korean / English / Simplified Chinese / Japanese language selector in the in-game footer. The selection persists between visits and translates the game UI, accessible labels, and canvas messages.
 - Moved the game description and controls guidance out of the playfield overlay into a collapsible section in the bottom footer.
-- AdSense remains gated behind a real publisher ID and privacy/consent readiness settings.
+- The AdSense loader is included in the `<head>` of every HTML page; in-page ad units and consent configuration remain separate.
