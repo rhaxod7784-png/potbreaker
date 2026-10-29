@@ -114,7 +114,8 @@ language_css += "\n.menu .locale-control{position:absolute;right:3%;top:3%;botto
 html = html.replace("</style>", language_css + "\n</style>", 1)
 
 mobile_footer_css = """
-@media(max-width:700px) and (orientation:portrait){
+@media(max-width:1024px) and (orientation:portrait){
+ :root{--pb-footer-h:clamp(110px,18vh,160px)}
  html,body{width:100%;height:100%;overflow:hidden!important}
  .viewport{position:fixed!important;left:0!important;right:0!important;top:0!important;bottom:var(--pb-footer-h)!important;inset:0 0 var(--pb-footer-h) 0!important;width:100vw!important;height:calc(100dvh - var(--pb-footer-h))!important;min-height:0!important;display:block!important;overflow:hidden!important}
  .stage{position:absolute!important;left:50%!important;top:50%!important;width:min(calc(100dvh - var(--pb-footer-h)),177.778vw)!important;height:min(100vw,calc((100dvh - var(--pb-footer-h))*0.5625))!important;transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center center!important}
