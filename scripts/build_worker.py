@@ -412,7 +412,7 @@ function drawComicTranslations(){
   const contentX=ir.left-wr.left+(ir.width-contentW)/2,contentY=ir.top-wr.top+(ir.height-contentH)/2;
   const boxes=[
    {x:.073,y:.177,w:.31,h:.061},{x:.548,y:.177,w:.37,h:.061},
-   {x:.073,y:.49,w:.41,h:.085},{x:.582,y:.54,w:.395,h:.085}
+   {x:.073,y:.56,w:.41,h:.085},{x:.582,y:.54,w:.395,h:.085}
   ];
   boxes.forEach((box,index)=>{
    const x=contentX+contentW*box.x,y=contentY+contentH*box.y,w=contentW*box.w,h=contentH*box.h,r=Math.min(5,h*.16);
