@@ -4,7 +4,7 @@ The current web game is the Korean-language Cloudflare Worker release at [potbre
 
 - Search discovery: `/robots.txt`, `/sitemap.xml`, canonical page metadata, and accessible game guidance.
 - Indexable pages: `/`, `/about`, and `/privacy`; `/game.py` is marked `noindex`.
-- AdSense: the provided publisher script is included in the `<head>` of every HTML route, including localized home, guide, and privacy pages. This adds the library loader; ad placements are configured separately. Publisher verification metadata and `/ads.txt` still depend on `ADSENSE_PUBLISHER_ID`.
+- AdSense: the provided publisher script is included in the `<head>` of every HTML route, including localized home, guide, and privacy pages. This adds the library loader; ad placements are configured separately. AdSense account-verification metadata still depends on `ADSENSE_PUBLISHER_ID`; `/ads.txt` serves the publisher line from the root route.
 - Setup requirements: [docs/SEO_ADSENSE.md](docs/SEO_ADSENSE.md).
 - Release notes: [POT_BREAKER_RE_v1.0.89_CHANGELOG.md](POT_BREAKER_RE_v1.0.89_CHANGELOG.md).
 - The Android WebView v0.16.0 package below is a separate legacy app and does not automatically receive web release updates.
@@ -21,7 +21,7 @@ The checked-in Worker bundle is generated from these source files:
 - `web/styles/potbreaker.css`: site, mobile, and game-screen styles.
 - `web/partials/`: SEO head, footer, language selector, and D-pad markup.
 - `web/pages/about.html`, `web/pages/privacy.html`: indexable information pages.
-- `cloudflare/worker.template.js`: routes, APIs, SEO responses, and AdSense gates.
+- `cloudflare/worker.template.js`: routes, APIs, SEO responses, and AdSense loader/seller-file responses.
 - `scripts/build_worker.py`: deterministic source bundler.
 - `cloudflare/worker.js`: generated output; edit the source files above instead.
 
