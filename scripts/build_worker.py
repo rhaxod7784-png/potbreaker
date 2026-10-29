@@ -100,6 +100,11 @@ html = html.replace("</style>", seo_css + "\n</style>", 1)
 html = html.replace("POT BREAKER RE v1.0.89", "POT BREAKER RE v1.0.97")
 html = html.replace("POT BREAKER RE v1.0.54", "POT BREAKER RE v1.0.97")
 html = html.replace("<title>POT BREAKER RE v1.0.97 · CBZP</title>", "<title>폿브레이커 RE | 기묘와 크다 부장의 사무실 미로</title>")
+screen_switch = "const show=id=>['title','intro','gamePanel','end'].forEach(n=>$(n).classList.toggle('hidden',n!==id));show('title');"
+if screen_switch not in html:
+    raise SystemExit("Screen switch function not found")
+html = html.replace(screen_switch, "const show=id=>{['title','intro','gamePanel','end'].forEach(n=>$(n).classList.toggle('hidden',n!==id));document.getElementById('site-footer')?.classList.toggle('pb-game-hidden',id==='gamePanel'||id==='end')};show('title');", 1)
+
 footer_state_script = """<script>
 (()=>{const footer=document.getElementById("site-footer"),game=document.getElementById("gamePanel");if(!footer||!game)return;const sync=()=>footer.classList.toggle("pb-game-hidden",!game.classList.contains("hidden"));sync();new MutationObserver(sync).observe(game,{attributes:true,attributeFilter:["class"]})})();
 </script>"""
