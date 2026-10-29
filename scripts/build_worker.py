@@ -10,6 +10,8 @@ import json
 root = Path(__file__).resolve().parents[1]
 html = (root / "web" / "index.html").read_text(encoding="utf-8")
 python_source = (root / "web" / "game.py").read_text(encoding="utf-8")
+html = html.replace("화면을 원하는 방향으로 밀기: 누르고 있으면 계속 이동", "방향 패드를 눌러 이동 · 누르고 있으면 계속 이동")
+html = html.replace("♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 화면을 밀어 방향 조작 · 누르고 있으면 계속 이동", "감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동")
 touch_block = "let touchDirection=[0,0],touchActive=false,dpadOrder=0;\nconst keyDirections={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};\nconst dpadDirections={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};\nconst dpadPointers=new Map();\nconst dpad=document.getElementById('dpad');\nfor(const [direction,glyph] of [['up','▲'],['right','▶'],['down','▼'],['left','◀']]){const icon=document.createElement('span');icon.className='dpad-icon '+direction;icon.textContent=glyph;dpad.appendChild(icon)}\nfunction refreshDpad(){\n let last=null;for(const p of dpadPointers.values())if(p.direction&&(!last||p.order>last.order))last=p;\n dpad.classList.remove('active-up','active-down','active-left','active-right');\n touchActive=!!last;touchDirection=last?dpadDirections[last.direction]:[0,0];\n if(last)dpad.classList.add('active-'+last.direction);\n}\nfunction directionAt(e){\n const rect=dpad.getBoundingClientRect(),dx=(e.clientX-(rect.left+rect.width/2))/(rect.width/2),dy=(e.clientY-(rect.top+rect.height/2))/(rect.height/2),radius=Math.hypot(dx,dy);\n if(radius>1.2||radius<.10)return null;\n const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest?.('#dpad .dpad-button');\n if(hit?.dataset.direction)return hit.dataset.direction;\n return Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');\n}\nfunction setPointerDirection(e,p){\n const direction=directionAt(e);if(direction===p.direction)return;\n if(p.button)p.button.classList.remove('pressed');\n p.direction=direction;p.button=direction?dpad.querySelector('.dpad-button.'+direction):null;p.order=++dpadOrder;\n if(p.button)p.button.classList.add('pressed');refreshDpad();\n}\nfunction clearDpadPointer(id){\n const p=dpadPointers.get(id);if(!p)return;\n if(p.button)p.button.classList.remove('pressed');dpadPointers.delete(id);refreshDpad();\n}\nfunction moveDpadPointer(e){const p=dpadPointers.get(e.pointerId);if(p)setPointerDirection(e,p)}\ndpad.addEventListener('pointerdown',e=>{\n if(!active||paused)return;e.preventDefault();\n const direction=directionAt(e);if(!direction)return;\n const prior=dpadPointers.get(e.pointerId);if(prior&&prior.button)prior.button.classList.remove('pressed');\n const p={button:null,direction:null,order:++dpadOrder};dpadPointers.set(e.pointerId,p);setPointerDirection(e,p);\n try{dpad.setPointerCapture(e.pointerId)}catch{}\n});\nwindow.addEventListener('pointermove',moveDpadPointer);\nwindow.addEventListener('pointerup',e=>clearDpadPointer(e.pointerId));\nwindow.addEventListener('pointercancel',e=>clearDpadPointer(e.pointerId));\nfunction resetTouch(){for(const p of dpadPointers.values())if(p.button)p.button.classList.remove('pressed');dpadPointers.clear();touchActive=false;touchDirection=[0,0];dpad.classList.remove('active-up','active-down','active-left','active-right')}\n"
 touch_start = html.index("let touchPointerId=null")
 touch_end = html.index("window.addEventListener('keyup'", touch_start)
@@ -86,7 +88,7 @@ body{min-height:100dvh!important}
 .comic-cover-wrap{position:relative;width:100%;height:100%;min-width:0;min-height:0;max-height:100%;overflow:hidden}
 .comic-cover-wrap>.comic-cover{display:block;width:100%;height:100%;min-width:0;min-height:0;max-height:100%;object-fit:contain}
 .comic-translation-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
-@media(max-width:700px){:root{--pb-footer-h:clamp(78px,11vh,116px)}.site-guide{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}.site-guide-copy{grid-column:1/-1}.site-guide nav{justify-content:flex-start}.site-guide-howto p{max-width:80vw}}
+@media(max-width:700px){:root{--pb-footer-h:clamp(96px,16vh,136px)}.site-guide{grid-template-columns:minmax(0,1fr);align-items:start;gap:5px}.site-guide-copy{grid-column:auto}.site-guide-copy h1{font-size:12px}.site-guide-copy p{font-size:10px;line-height:1.3}.site-guide nav{justify-content:flex-start;font-size:10px}.site-guide-howto{font-size:10px}.site-guide-howto p{max-width:90vw}}
 @media(orientation:portrait) and (pointer:coarse){
  .viewport{position:relative!important;inset:auto!important;height:calc(100dvh - var(--pb-footer-h))!important;min-height:220px!important;width:100vw!important;display:block!important;overflow:hidden!important}
  .stage{position:absolute!important;left:50%!important;top:50%!important;width:min(calc(100dvh - var(--pb-footer-h)),177.778vw)!important;height:min(100vw,calc((100dvh - var(--pb-footer-h))*0.5625))!important;transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center center!important}
@@ -101,14 +103,14 @@ html = html.replace("</body>", site_info + "\n</body>", 1)
 
 
 language_css = """
-.legend{pointer-events:auto!important;display:flex;align-items:center;justify-content:center;gap:8px;width:min(94%,900px);max-width:94%;box-sizing:border-box;white-space:normal;flex-wrap:wrap}
+.legend{pointer-events:auto!important;display:flex;align-items:center;justify-content:center;gap:8px;width:min(94%,900px);max-width:94%;box-sizing:border-box;white-space:normal;flex-wrap:wrap;text-align:center;line-height:1.25;font-size:clamp(9px,1cqw,12px)!important;background:#fffbd2ed;border-radius:14px;padding:6px 10px}
 .locale-control{display:inline-flex;align-items:center;pointer-events:auto;position:relative;z-index:20}
 .locale-control select{pointer-events:auto;appearance:auto;max-width:104px;padding:4px 20px 4px 9px;border:1px solid #ffffffed;border-radius:999px;background:#fffef4;color:#293b60;font:700 clamp(9px,1cqw,12px)/1.2 system-ui,sans-serif;box-shadow:0 2px 7px #34486b36;touch-action:manipulation}
 .locale-control select:focus-visible{outline:3px solid #f0bd48;outline-offset:2px}
 .locale-control .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:700px){.legend{width:96%;max-width:96%;gap:5px}.locale-control select{max-width:90px;padding:4px 16px 4px 7px}}
 """
-language_css += "\n.menu .locale-control{position:absolute;right:4%;bottom:4%;z-index:6}\n"
+language_css += "\n.menu .locale-control{position:absolute;right:3%;top:3%;bottom:auto;z-index:6}\n"
 html = html.replace("</style>", language_css + "\n</style>", 1)
 language_picker = """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label>"""
 menu_anchor = '<button class="menu-ranking" id="openRanking">🏆 랭킹</button>'
@@ -147,7 +149,7 @@ en: {
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"Use the circular pad to move · Hold to keep moving",
 "화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"Pots: attack · Dash: 3 tiles (3s cooldown)",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"PC: Arrows / WASD · Space (throw) · Shift (dash)",
-"언어 변경":"Change language","언어 선택":"Select language","게임 안내":"Game Guide"
+"언어 변경":"Change language","언어 선택":"Select language","게임 안내":"Game Guide",
 "대시 버튼: 3칸 돌진 · 3초 재사용 대기":"Dash: move 3 tiles · 3-second cooldown",
 "감 과장 출동!":"Manager Gam is here!",
 "화분 투하!":"Pots incoming!",
@@ -159,7 +161,32 @@ en: {
 "화분 회복!":"Healing pot!",
 "화분 풀충전!":"Pots refilled!",
 "필드 화분 리셋!":"Field pots reset!",
-"감 과장 명중!":"Manager Gam hit!"
+"감 과장 명중!":"Manager Gam hit!",
+"방향 패드를 눌러 이동 · 누르고 있으면 계속 이동":"Press the directional pad to move · Hold to keep moving",
+"방향 패드를 눌러 이동":"Press the directional pad to move",
+"화면을 원하는 방향으로 밀기: 누르고 있으면 계속 이동":"Press the directional pad to move · Hold to keep moving",
+"감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동":"Manager Gam's pot: one of heal, damage, refill, or field reset · Dash cooldown: Gimyo 3s / Keuda 5s · Press the directional pad to move",
+"? 화분 4종":"4 random pot effects",
+"하트 ±1":"±1 heart",
+"화분 풀충전":"refill pots",
+"필드 리셋":"reset the field",
+"각 25%":"25% each",
+"기묘: 대시 3초":"Gimyo: 3s dash",
+"크다: 대시 5초":"Keuda: 5s dash",
+"화면을 밀어 방향 조작":"Use the directional pad",
+"누르고 있으면 계속 이동":"Hold to keep moving",
+"? 화분 폭발!":"Mystery pot exploded!",
+"? 화분 회복!":"Mystery pot restored HP!",
+"? 화분 풀충전!":"Mystery pot refilled pots!",
+"? 필드 화분 리셋!":"Mystery field pot reset!",
+"감 과장 출동! ? 화분 투하!":"Manager Gam is here! Mystery pots incoming!",
+"POT BREAKER RE 메인 화면":"POT BREAKER RE main screen",
+"CBZP 사무실 배경의 POT BREAKER RE 메인 화면. 아래에는 뒤돌아선 기묘와 크다 부장이 보입니다.":"POT BREAKER RE's main screen with the CBZP office in the background; Gimyo and Manager Keuda are seen from behind below.",
+"기묘와 크다 부장이 화분을 던지고 피하는 사무실 게임":"An office game where Gimyo and Manager Keuda throw and dodge flowerpots.",
+"위로 이동":"Move up",
+"왼쪽 이동":"Move left",
+"오른쪽 이동":"Move right",
+"아래로 이동":"Move down"
 },
 zh: {
 "폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE｜奇妙与克达部长",
@@ -185,7 +212,7 @@ zh: {
 "♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"♥ 回复 · 甘科长：4种随机花盆效果（心值±1、花盆补满、重置场地，各25%）· 奇妙冲刺：3秒 / 克达冲刺：5秒 · 使用圆形方向键移动，按住可持续移动",
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"使用圆形方向键移动 · 按住可持续移动","화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"花盆：攻击 · 冲刺：移动3格（冷却3秒）",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"电脑：方向键 / WASD · 空格（投掷）· Shift（冲刺）",
-"언어 변경":"切换语言","언어 선택":"选择语言","게임 안내":"游戏说明","기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"四格漫画：奇妙来到 CBZP 实习，在办公室躲避花盆并被克达部长追赶。"
+"언어 변경":"切换语言","언어 선택":"选择语言","게임 안내":"游戏说明","기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"四格漫画：奇妙来到 CBZP 实习，在办公室躲避花盆并被克达部长追赶。",
 "대시 버튼: 3칸 돌진 · 3초 재사용 대기":"冲刺：移动3格 · 冷却3秒",
 "감 과장 출동!":"甘科长登场！",
 "화분 투하!":"花盆来袭！",
@@ -197,7 +224,32 @@ zh: {
 "화분 회복!":"花盆恢复！",
 "화분 풀충전!":"花盆补满！",
 "필드 화분 리셋!":"场地花盆已重置！",
-"감 과장 명중!":"甘科长命中！"
+"감 과장 명중!":"甘科长命中！",
+"방향 패드를 눌러 이동 · 누르고 있으면 계속 이동":"按方向键移动 · 按住可持续移动",
+"방향 패드를 눌러 이동":"按方向键移动",
+"화면을 원하는 방향으로 밀기: 누르고 있으면 계속 이동":"按方向键移动 · 按住可持续移动",
+"감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동":"甘科长花盆效果随机一种：恢复、受伤、补充花盆或重置场地 · 冲刺冷却：奇妙3秒 / 克达3秒 · 按方向键移动",
+"? 화분 4종":"4种随机花盆效果",
+"하트 ±1":"心值±1",
+"화분 풀충전":"花盆补满",
+"필드 리셋":"重置场地",
+"각 25%":"各25%",
+"기묘: 대시 3초":"奇妙：冲刺3秒",
+"크다: 대시 5초":"克达：冲刺5秒",
+"화면을 밀어 방향 조작":"按方向键移动",
+"누르고 있으면 계속 이동":"按住可持续移动",
+"? 화분 폭발!":"神秘花盆爆炸！",
+"? 화분 회복!":"神秘花盆恢复！",
+"? 화분 풀충전!":"神秘花盆补满！",
+"? 필드 화분 리셋!":"神秘花盆重置场地！",
+"감 과장 출동! ? 화분 투하!":"甘科长来了！神秘花盆掉落！",
+"POT BREAKER RE 메인 화면":"POT BREAKER RE 主画面",
+"CBZP 사무실 배경의 POT BREAKER RE 메인 화면. 아래에는 뒤돌아선 기묘와 크다 부장이 보입니다.":"POT BREAKER RE 主画面以 CBZP 办公室为背景，下方可见奇妙和克达部长的背影。",
+"기묘와 크다 부장이 화분을 던지고 피하는 사무실 게임":"奇妙与克达部长在办公室里投掷并躲避花盆的游戏。",
+"위로 이동":"向上移动",
+"왼쪽 이동":"向左移动",
+"오른쪽 이동":"向右移动",
+"아래로 이동":"向下移动"
 },
 ja: {
 "폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE｜キミョとクダ部長",
@@ -223,7 +275,7 @@ ja: {
 "♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"♥ 回復 · カム課長：植木鉢の効果4種（ハート±1、植木鉢補充、フィールドリセット・各25%）· キミョのダッシュ：3秒 / クダのダッシュ：5秒 · 円形パッドで移動、長押しで連続移動",
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"円形パッドで移動 · 長押しで連続移動","화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"植木鉢：攻撃 · ダッシュ：3マス移動（クールダウン3秒）",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"PC：矢印キー / WASD · Space（投げる）· Shift（ダッシュ）",
-"언어 변경":"言語を変更","언어 선택":"言語を選択","게임 안내":"ゲームガイド","기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"4コマ漫画：キミョがCBZPに出勤し、植木鉢を避けながらクダ部長に追われます。"
+"언어 변경":"言語を変更","언어 선택":"言語を選択","게임 안내":"ゲームガイド","기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"4コマ漫画：キミョがCBZPに出勤し、植木鉢を避けながらクダ部長に追われます。",
 "대시 버튼: 3칸 돌진 · 3초 재사용 대기":"ダッシュ：3マス移動 · クールダウン3秒",
 "감 과장 출동!":"カム課長が登場！",
 "화분 투하!":"植木鉢が降ってくる！",
@@ -235,7 +287,32 @@ ja: {
 "화분 회복!":"植木鉢で回復！",
 "화분 풀충전!":"植木鉢を補充！",
 "필드 화분 리셋!":"フィールドの植木鉢をリセット！",
-"감 과장 명중!":"カム課長に命中！"
+"감 과장 명중!":"カム課長に命中！",
+"방향 패드를 눌러 이동 · 누르고 있으면 계속 이동":"方向パッドで移動 · 長押しで連続移動",
+"방향 패드를 눌러 이동":"方向パッドで移動",
+"화면을 원하는 방향으로 밀기: 누르고 있으면 계속 이동":"方向パッドで移動 · 長押しで連続移動",
+"감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동":"カム課長の植木鉢：回復・ダメージ・補充・フィールド初期化のいずれか · ダッシュ待機：キミョ3秒 / クダ5秒 · 方向パッドで移動",
+"? 화분 4종":"植木鉢の効果は4種類",
+"하트 ±1":"ハート±1",
+"화분 풀충전":"植木鉢を補充",
+"필드 리셋":"フィールド初期化",
+"각 25%":"各25%",
+"기묘: 대시 3초":"キミョ：ダッシュ3秒",
+"크다: 대시 5초":"クダ：ダッシュ5秒",
+"화면을 밀어 방향 조작":"方向パッドで移動",
+"누르고 있으면 계속 이동":"長押しで連続移動",
+"? 화분 폭발!":"謎の植木鉢が爆発！",
+"? 화분 회복!":"謎の植木鉢で回復！",
+"? 화분 풀충전!":"謎の植木鉢を補充！",
+"? 필드 화분 리셋!":"謎の植木鉢でフィールドを初期化！",
+"감 과장 출동! ? 화분 투하!":"カム課長が登場！謎の植木鉢が降ってくる！",
+"POT BREAKER RE 메인 화면":"POT BREAKER RE メイン画面",
+"CBZP 사무실 배경의 POT BREAKER RE 메인 화면. 아래에는 뒤돌아선 기묘와 크다 부장이 보입니다.":"CBZPオフィスを背景にしたPOT BREAKER REのメイン画面。下には後ろ姿のキミョとクダ部長が見えます。",
+"기묘와 크다 부장이 화분을 던지고 피하는 사무실 게임":"キミョとクダ部長がオフィスで植木鉢を投げ合い、避けるゲームです。",
+"위로 이동":"上へ移動",
+"왼쪽 이동":"左へ移動",
+"오른쪽 이동":"右へ移動",
+"아래로 이동":"下へ移動"
 }
 };
 const selectors=[...document.querySelectorAll(".locale-control select")];
@@ -297,8 +374,8 @@ function drawComicTranslations(){
   if(locale==="ko")return;
   const captions=comicCaptions[locale];if(!captions)return;
   const boxes=[
-   {x:.09,y:.155,w:.397,h:.073},{x:.585,y:.155,w:.385,h:.073},
-   {x:.09,y:.545,w:.397,h:.073},{x:.585,y:.545,w:.385,h:.073}
+   {x:.073,y:.178,w:.405,h:.061},{x:.553,y:.178,w:.415,h:.061},
+   {x:.073,y:.500,w:.405,h:.062},{x:.553,y:.557,w:.415,h:.061}
   ];
   const ox=ir.left-wr.left,oy=ir.top-wr.top;
   boxes.forEach((box,index)=>{
