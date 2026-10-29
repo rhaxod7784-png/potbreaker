@@ -321,8 +321,37 @@ const textOriginal=new WeakMap(),textRendered=new WeakMap(),attrOriginal=new Wea
 const routeLocale=location.pathname.match(/^\/(en|zh|ja)\/?$/)?.[1];
 let locale=routeLocale||"ko",busy=false;
 if(!routeLocale){try{const saved=localStorage.getItem("potbreaker-locale");if(["ko","en","zh","ja"].includes(saved))locale=saved}catch{}}
+const translateNotice=value=>{
+ const names=locale==="en"?{"기묘":"Gimyo","크다":"Keuda"}:locale==="zh"?{"기묘":"奇妙","크다":"克达"}:{"기묘":"キミョ","크다":"クダ"};
+ let m=value.match(/^\? 화분 (폭발|회복)! (기묘|크다) HP ([+-]1)$/);
+ if(m){
+  const name=names[m[2]],amount=m[3];
+  if(locale==="en")return m[1]==="폭발"?"Mystery pot exploded! "+name+" HP "+amount:"Mystery pot restored "+name+"'s HP "+amount;
+  if(locale==="zh")return m[1]==="폭발"?"神秘花盆爆炸！"+name+" HP "+amount:"神秘花盆恢复！"+name+" HP "+amount;
+  return m[1]==="폭발"?"謎の植木鉢が爆発！"+name+" HP "+amount:"謎の植木鉢で"+name+"のHPが"+amount+"回復！";
+ }
+ m=value.match(/^\? 화분 풀충전! (기묘|크다) 화분 (\d+\/\d+)$/);
+ if(m){
+  const name=names[m[1]],count=m[2];
+  if(locale==="en")return "Mystery pot refilled "+name+"'s pots ("+count+")";
+  if(locale==="zh")return "神秘花盆补满"+name+"的花盆（"+count+"）";
+  return "謎の植木鉢で"+name+"の植木鉢を補充（"+count+"）";
+ }
+ if(value==="? 필드 화분 리셋!"){
+  return locale==="en"?"Mystery pot reset the field!":locale==="zh"?"神秘花盆重置了场地！":"謎の植木鉢でフィールドをリセット！";
+ }
+ m=value.match(/^감 과장 명중! (기묘) HP \+1$/);
+ if(m)return locale==="en"?"Manager Gam hit! Gimyo HP +1":locale==="zh"?"甘科长命中！奇妙 HP +1":"カム課長に命中！キミョ HP +1";
+ m=value.match(/^(기묘|크다) 회복 화분! HP \+1$/);
+ if(m){
+  const name=names[m[1]];
+  return locale==="en"?name+" healed! HP +1":locale==="zh"?name+"恢复了！HP +1":name+"が回復！HP +1";
+ }
+ return null;
+};
 const translate=value=>{
  if(locale==="ko")return value;
+ const notice=translateNotice(value);if(notice!==null)return notice;
  const dictionary=dictionaries[locale]||{};
  if(Object.prototype.hasOwnProperty.call(dictionary,value))return dictionary[value];
  let result=value;
@@ -377,8 +406,8 @@ function drawComicTranslations(){
   const contentW=img.naturalWidth*fit,contentH=img.naturalHeight*fit;
   const contentX=ir.left-wr.left+(ir.width-contentW)/2,contentY=ir.top-wr.top+(ir.height-contentH)/2;
   const boxes=[
-   {x:.073,y:.181,w:.315,h:.067},{x:.548,y:.181,w:.365,h:.067},
-   {x:.073,y:.525,w:.355,h:.068},{x:.548,y:.585,w:.365,h:.068}
+   {x:.073,y:.177,w:.31,h:.061},{x:.548,y:.177,w:.37,h:.061},
+   {x:.073,y:.512,w:.37,h:.068},{x:.548,y:.558,w:.395,h:.068}
   ];
   boxes.forEach((box,index)=>{
    const x=contentX+contentW*box.x,y=contentY+contentH*box.y,w=contentW*box.w,h=contentH*box.h,r=Math.min(5,h*.16);
@@ -403,6 +432,51 @@ function drawComicTranslations(){
  if(!canvas.__pbResizeObserver){canvas.__pbResizeObserver=new ResizeObserver(draw);canvas.__pbResizeObserver.observe(wrap);canvas.__pbResizeObserver.observe(img)}
  window.addEventListener("resize",draw,{passive:true});
 }
+
+function drawEndingTranslations(){
+ const end=document.querySelector("#end"),img=document.querySelector("#endingArt");if(!end||!img)return;
+ let canvas=end.querySelector(".ending-translation-layer");
+ if(!canvas){
+  canvas=document.createElement("canvas");canvas.className="ending-translation-layer";canvas.setAttribute("aria-hidden","true");
+  canvas.style.cssText="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1";
+  end.appendChild(canvas);
+ }
+ const draw=()=>{
+  const er=end.getBoundingClientRect(),ir=img.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+  if(!er.width||!er.height||!ir.width||!ir.height||!img.naturalWidth||!img.naturalHeight)return;
+  canvas.width=Math.round(er.width*dpr);canvas.height=Math.round(er.height*dpr);
+  const ctx=canvas.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,er.width,er.height);
+  const tag=document.querySelector("#endTag");
+  if(locale==="ko"||!tag?.textContent.includes("WINNER"))return;
+  const fit=Math.max(ir.width/img.naturalWidth,ir.height/img.naturalHeight);
+  const contentW=img.naturalWidth*fit,contentH=img.naturalHeight*fit;
+  const contentX=ir.left-er.left+(ir.width-contentW)/2,contentY=ir.top-er.top+(ir.height-contentH)/2;
+  const captions=locale==="en"?{title:"GIMYO WINS!",impact:"BAM!"}:locale==="zh"?{title:"奇妙获胜！",impact:"砰！"}:{title:"キミョの勝利！",impact:"ドカン！"};
+  const cover=(box,stroke)=>{
+   const x=contentX+contentW*box.x,y=contentY+contentH*box.y,w=contentW*box.w,h=contentH*box.h,r=Math.min(h*.2,22);
+   ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h);
+   ctx.fillStyle="#fffaf0";ctx.fill();ctx.lineWidth=Math.max(2,h*.025);ctx.strokeStyle=stroke;ctx.stroke();
+   return {x,y,w,h};
+  };
+  const heading=cover({x:.03,y:.035,w:.47,h:.315},"#e7ad47");
+  ctx.textAlign="center";ctx.textBaseline="middle";ctx.lineJoin="round";
+  let size=Math.min(heading.h*.34,heading.w*.11);
+  ctx.font="1000 "+size+"px system-ui,'Noto Sans CJK KR',sans-serif";
+  while(ctx.measureText(captions.title).width>heading.w-24&&size>heading.h*.22){size-=2;ctx.font="1000 "+size+"px system-ui,'Noto Sans CJK KR',sans-serif"}
+  ctx.lineWidth=Math.max(3,size*.08);ctx.strokeStyle="#e4a63e";ctx.strokeText(captions.title,heading.x+heading.w/2,heading.y+heading.h/2,heading.w-24);
+  ctx.fillStyle="#243c72";ctx.fillText(captions.title,heading.x+heading.w/2,heading.y+heading.h/2,heading.w-24);
+  const impact=cover({x:.765,y:.12,w:.17,h:.18},"#405b9a");
+  size=Math.min(impact.h*.48,impact.w*.25);ctx.font="1000 "+size+"px system-ui,sans-serif";
+  ctx.lineWidth=Math.max(2,size*.06);ctx.strokeStyle="#e9aa37";ctx.strokeText(captions.impact,impact.x+impact.w/2,impact.y+impact.h/2,impact.w-12);
+  ctx.fillStyle="#24427d";ctx.fillText(captions.impact,impact.x+impact.w/2,impact.y+impact.h/2,impact.w-12);
+ };
+ if(!canvas.__pbEndingObserver){
+  img.addEventListener("load",draw);
+  const observer=new ResizeObserver(draw);observer.observe(end);observer.observe(img);canvas.__pbEndingObserver=observer;
+ }
+ draw();
+}
+
 function apply(next){
  locale=["ko","en","zh","ja"].includes(next)?next:"ko";
  try{localStorage.setItem("potbreaker-locale",locale)}catch{}
@@ -413,7 +487,7 @@ function apply(next){
  const ogLocale=document.querySelector('meta[property="og:locale"]');if(ogLocale)ogLocale.content=locale==="ko"?"ko_KR":locale==="en"?"en_US":locale==="zh"?"zh_CN":"ja_JP";
  busy=true;selectors.forEach(selector=>selector.value=locale);
  document.querySelectorAll('a[href="/about"],a[href="/privacy"]').forEach(link=>{const slug=link.getAttribute("href").slice(1);link.href=locale==="ko"?"/"+slug:"/"+locale+"/"+slug});
- visit();drawComicTranslations();busy=false;
+ visit();drawComicTranslations();drawEndingTranslations();busy=false;
 }
 selectors.forEach(selector=>selector.addEventListener("change",()=>apply(selector.value)));
 window.addEventListener("popstate",()=>apply(location.pathname.match(/^\/(en|zh|ja)\/?$/)?.[1]||"ko"));
@@ -425,7 +499,7 @@ if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.__pbTran
  CanvasRenderingContext2D.prototype.__pbTranslated=true;
 }
 apply(locale);
-new MutationObserver(records=>{if(busy)return;for(const r of records){if(r.type==="characterData"){visit(r.target.parentElement)}else if(r.type==="childList"){for(const node of r.addedNodes){if(node.nodeType===Node.ELEMENT_NODE||node.nodeType===Node.TEXT_NODE)visit(node)}}else if(r.type==="attributes"){visit(r.target)}}}).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["aria-label","title","placeholder","content"]});
+new MutationObserver(records=>{if(busy)return;for(const r of records){if(r.type==="characterData"){visit(r.target.parentElement)}else if(r.type==="childList"){for(const node of r.addedNodes){if(node.nodeType===Node.ELEMENT_NODE||node.nodeType===Node.TEXT_NODE)visit(node)}}else if(r.type==="attributes"){visit(r.target)}}drawEndingTranslations()}).observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:["aria-label","title","placeholder","content","src"]});
 })();
 </script>"""
 html = html.replace("</body>", language_script + "\n</body>", 1)
