@@ -103,7 +103,11 @@ html = html.replace("<title>POT BREAKER RE v1.0.97 · CBZP</title>", "<title>폿
 screen_switch = "const show=id=>['title','intro','gamePanel','end'].forEach(n=>$(n).classList.toggle('hidden',n!==id));show('title');"
 if screen_switch not in html:
     raise SystemExit("Screen switch function not found")
-html = html.replace(screen_switch, "const show=id=>{['title','intro','gamePanel','end'].forEach(n=>$(n).classList.toggle('hidden',n!==id));document.getElementById('site-footer')?.classList.toggle('pb-game-hidden',id==='gamePanel'||id==='end')};show('title');", 1)
+html = html.replace(screen_switch, "const show=id=>{['title','intro','gamePanel','end'].forEach(n=>$(n).classList.toggle('hidden',n!==id));const f=document.getElementById('site-footer');if(f)f.style.setProperty('display',id==='gamePanel'||id==='end'?'none':'grid','important')};show('title');", 1)
+game_start = "async function start(){\\n stop();paused=false;show('gamePanel');"
+if game_start not in html:
+    raise SystemExit("Game start function not found")
+html = html.replace(game_start, "async function start(){\\n stop();paused=false;show('gamePanel');document.getElementById('site-footer')?.style.setProperty('display','none','important');", 1)
 
 footer_state_script = """<script>
 (()=>{const footer=document.getElementById("site-footer"),game=document.getElementById("gamePanel");if(!footer||!game)return;const sync=()=>footer.classList.toggle("pb-game-hidden",!game.classList.contains("hidden"));sync();new MutationObserver(sync).observe(game,{attributes:true,attributeFilter:["class"]})})();
