@@ -387,7 +387,7 @@ function visit(root=document.documentElement){
  }
 }
 const comicCaptions={
-en:["Gimyo starts as a CBZP intern!","But… something feels strange about the office.","Flowerpots suddenly come flying from somewhere!","Manager Keuda throws another pot at Gimyo!","Whoosh!"],
+en:["Gimyo starts as a CBZP intern!","But… something feels strange about the office.","A flowerpot suddenly flies in from somewhere!","Manager Keuda throws another flowerpot at Gimyo!","Whoosh!"],
 zh:["奇妙来到 CBZP，开始实习了！","但是……公司的气氛有点奇怪。","突然，不知从哪儿飞来了花盆！","克达部长又朝奇妙扔花盆了！","嗖！"],
 ja:["キミョ、CBZPでインターン開始！","でも…会社の雰囲気がなんだか変。","突然どこからか植木鉢が飛んできた！","クダ部長がキミョにまた植木鉢を投げた！","シュッ！"]
 };
@@ -412,7 +412,7 @@ function drawComicTranslations(){
   const contentX=ir.left-wr.left+(ir.width-contentW)/2,contentY=ir.top-wr.top+(ir.height-contentH)/2;
   const boxes=[
    {x:.073,y:.177,w:.31,h:.061},{x:.548,y:.177,w:.37,h:.061},
-   {x:.073,y:.512,w:.37,h:.068},{x:.548,y:.558,w:.395,h:.068}
+   {x:.073,y:.49,w:.41,h:.085},{x:.582,y:.54,w:.395,h:.085}
   ];
   boxes.forEach((box,index)=>{
    const x=contentX+contentW*box.x,y=contentY+contentH*box.y,w=contentW*box.w,h=contentH*box.h,r=Math.min(5,h*.16);
