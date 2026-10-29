@@ -391,8 +391,18 @@ en:["Gimyo starts as a CBZP intern!","But… something feels strange about the o
 zh:["奇妙来到 CBZP，开始实习了！","但是……公司的气氛有点奇怪。","突然，不知从哪儿飞来了花盆！","克达部长又朝奇妙扔花盆了！","嗖！"],
 ja:["キミョ、CBZPでインターン開始！","でも…会社の雰囲気がなんだか変。","突然どこからか植木鉢が飛んできた！","クダ部長がキミョにまた植木鉢を投げた！","シュッ！"]
 };
+const localizedComicImages={
+ko:"https://raw.githubusercontent.com/rhaxod7784-png/potbreaker/feat/potbreaker-seo-adsense/web/assets/comic-ko.png",
+en:"https://raw.githubusercontent.com/rhaxod7784-png/potbreaker/feat/potbreaker-seo-adsense/web/assets/comic-en.png",
+zh:"https://raw.githubusercontent.com/rhaxod7784-png/potbreaker/feat/potbreaker-seo-adsense/web/assets/comic-zh.png",
+ja:"https://raw.githubusercontent.com/rhaxod7784-png/potbreaker/feat/potbreaker-seo-adsense/web/assets/comic-ja.png"
+};
 function drawComicTranslations(){
  const img=document.querySelector(".comic-cover");if(!img)return;
+ if(img.dataset.pbLocalizedComic==="true"){
+  img.parentElement?.querySelector(".comic-translation-layer")?.remove();
+  return;
+ }
  let wrap=img.parentElement;
  if(!wrap?.classList.contains("comic-cover-wrap")){
   wrap=document.createElement("div");wrap.className="comic-cover-wrap";
@@ -491,6 +501,13 @@ function apply(next){
  const canonical=document.querySelector('link[rel="canonical"]');if(canonical)canonical.href=location.origin+localePath;
  const ogLocale=document.querySelector('meta[property="og:locale"]');if(ogLocale)ogLocale.content=locale==="ko"?"ko_KR":locale==="en"?"en_US":locale==="zh"?"zh_CN":"ja_JP";
  busy=true;selectors.forEach(selector=>selector.value=locale);
+ const comicImg=document.querySelector(".comic-cover"),comicUrl=localizedComicImages[locale];
+ if(comicImg&&comicUrl&&comicImg.dataset.pbComicLocale!==locale){
+  comicImg.dataset.pbLocalizedComic="true";
+  comicImg.dataset.pbComicLocale=locale;
+  comicImg.src=comicUrl;
+  comicImg.alt=locale==="en"?"Four-panel POT BREAKER RE comic, English edition":locale==="zh"?"POT BREAKER RE 四格漫画，简体中文版":locale==="ja"?"POT BREAKER REの4コマ漫画、日本語版":"폿브레이커 RE 4컷 만화, 한국어 버전";
+ }
  document.querySelectorAll('a[href="/about"],a[href="/privacy"]').forEach(link=>{const slug=link.getAttribute("href").slice(1);link.href=locale==="ko"?"/"+slug:"/"+locale+"/"+slug});
  visit();drawComicTranslations();drawEndingTranslations();busy=false;
 }
