@@ -112,6 +112,17 @@ language_css = """
 """
 language_css += "\n.menu .locale-control{position:absolute;right:3%;top:3%;bottom:auto;z-index:6}\n"
 html = html.replace("</style>", language_css + "\n</style>", 1)
+
+mobile_footer_css = """
+@media(max-width:700px) and (orientation:portrait){
+ html,body{width:100%;height:100%;overflow:hidden!important}
+ .viewport{position:fixed!important;left:0!important;right:0!important;top:0!important;bottom:var(--pb-footer-h)!important;inset:0 0 var(--pb-footer-h) 0!important;width:100vw!important;height:calc(100dvh - var(--pb-footer-h))!important;min-height:0!important;display:block!important;overflow:hidden!important}
+ .stage{position:absolute!important;left:50%!important;top:50%!important;width:min(calc(100dvh - var(--pb-footer-h)),177.778vw)!important;height:min(100vw,calc((100dvh - var(--pb-footer-h))*0.5625))!important;transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center center!important}
+ .site-footer{position:fixed!important;left:0!important;right:0!important;top:auto!important;bottom:0!important;width:100vw!important;min-height:var(--pb-footer-h)!important;max-height:var(--pb-footer-h)!important;box-sizing:border-box!important;overflow:auto!important;z-index:1000!important}
+ .site-guide{grid-template-columns:minmax(0,1fr)!important;align-items:start!important}
+}
+"""
+html = html.replace("</style>", mobile_footer_css + "\\n</style>", 1)
 language_picker = """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label>"""
 menu_anchor = '<button class="menu-ranking" id="openRanking">🏆 랭킹</button>'
 if menu_anchor not in html:
