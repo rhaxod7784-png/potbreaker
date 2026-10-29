@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "potbreaker",
+  "main": "cloudflare/worker.js",
+  "compatibility_date": "2026-10-27",
+  "routes": [
+    { "pattern": "*.potbreaker.com/*", "zone_name": "potbreaker.com" }
+  ],
+  "d1_databases": [
+    {
+      "binding": "POTBREAKER_DB",
+      "database_name": "potbreaker-re-ranking",
+      "database_id": "bfc89eda-b76b-44f0-9653-bbda3b7c6806"
+    }
+  ]
+}
