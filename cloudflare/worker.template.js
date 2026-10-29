@@ -19,7 +19,7 @@ function localizeInfo(doc,locale,slug){
  if(locale!=="ko")html=html.replaceAll('href="/about"',`href="/${locale}/about"`).replaceAll('href="/privacy"',`href="/${locale}/privacy"`).replaceAll('href="/"',`href="/${locale}"`);
  const variants=["ko","en","zh","ja"].map(lang=>{const path=lang==="ko"?"/"+slug:"/"+lang+"/"+slug;return '<link rel="alternate" hreflang="'+lang+'" href="'+origin+path+'">'}).join("");
  const switcher='<nav aria-label="Language" style="display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1rem"><a href="'+origin+'/'+slug+'">한국어</a><a href="'+origin+'/en/'+slug+'">English</a><a href="'+origin+'/zh/'+slug+'">中文</a><a href="'+origin+'/ja/'+slug+'">日本語</a></nav>';
- return html.replace("</head>",variants+"</head>").replace(/<body>\\s*<main>/,"<body><main>"+switcher);
+ return html.replace("</head>",variants+"</head>").replace(/<body>\s*<main>/,"<body><main>"+switcher);
 }
 const SITE_ABOUT=__SITE_ABOUT__;
 const SITE_PRIVACY=__SITE_PRIVACY__;
