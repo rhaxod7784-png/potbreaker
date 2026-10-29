@@ -78,7 +78,7 @@ html,body{height:auto!important;min-height:100%!important;overflow-x:hidden!impo
 body{min-height:100dvh!important}
 .viewport{height:calc(100dvh - var(--pb-footer-h))!important;min-height:280px;box-sizing:border-box}
 .stage{width:min(100vw,calc((100dvh - var(--pb-footer-h))*1.77778))!important;height:min(calc(100dvh - var(--pb-footer-h)),56.25vw)!important}
-.site-footer{position:relative;z-index:50;width:100%;min-height:var(--pb-footer-h);box-sizing:border-box;display:grid;place-items:center;padding:8px clamp(12px,2vw,28px);background:linear-gradient(100deg,#dff5ff,#b9e0fa 55%,#99cdf2);border-top:1px solid #ffffffc7;color:#293b60}
+.site-footer{position:fixed;left:0;right:0;bottom:0;z-index:1000;width:100vw;min-height:var(--pb-footer-h);box-sizing:border-box;display:grid;place-items:center;padding:8px clamp(12px,2vw,28px);background:linear-gradient(100deg,#dff5ff,#b9e0fa 55%,#99cdf2);border-top:1px solid #ffffffc7;color:#293b60}
 .site-guide{width:min(100%,1280px);display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:clamp(8px,1.6vw,22px)}
 .site-guide-copy h1{margin:0 0 3px;font-size:clamp(11px,1.15vw,16px);line-height:1.2}.site-guide-copy p{margin:0;font-size:clamp(9px,.9vw,12px);line-height:1.35}
 .site-guide-howto{position:relative;font-size:clamp(9px,.9vw,12px)}.site-guide-howto summary{cursor:pointer;font-weight:800;white-space:nowrap}.site-guide-howto p{max-width:min(55vw,520px);margin:6px 0 0}
