@@ -85,10 +85,7 @@ if(!["GET","HEAD"].includes(request.method))return new Response("Method Not Allo
 const headers={"cache-control":"public, max-age=300","x-content-type-options":"nosniff"};
 const publisherId=typeof env.ADSENSE_PUBLISHER_ID==="string"&&/^ca-pub-\d{16}$/.test(env.ADSENSE_PUBLISHER_ID)?env.ADSENSE_PUBLISHER_ID:"";
 const text=(body,type="text/plain; charset=utf-8",status=200,extra={})=>new Response(request.method==="HEAD"?null:body,{status,headers:{"content-type":type,...headers,...extra}});
-if(path==="/robots.txt")return text("User-agent: *
-Allow: /
-Sitemap: https://potbreaker.com/sitemap.xml
-");
+if(path==="/robots.txt")return text("User-agent: *\nAllow: /\nSitemap: https://potbreaker.com/sitemap.xml\n");
 if(path==="/sitemap.xml"){
  const slugs=["","about","privacy"];
  const urls=slugs.map(slug=>{
@@ -101,10 +98,8 @@ if(path==="/sitemap.xml"){
   "application/xml; charset=utf-8");
 }
 if(path==="/ads.txt"){
- if(!publisherId)return text("AdSense publisher ID is not configured.
-","text/plain; charset=utf-8",404);
- return text("google.com, "+publisherId.replace("ca-pub-","pub-")+", DIRECT, f08c47fec0942fa0
-");
+ if(!publisherId)return text("AdSense publisher ID is not configured.\n","text/plain; charset=utf-8",404);
+ return text("google.com, "+publisherId.replace("ca-pub-","pub-")+", DIRECT, f08c47fec0942fa0\n");
 }
 const infoMatch=path.match(/^\/(?:((?:en|zh|ja))\/)?(about|privacy)\/?$/);
 if(infoMatch){
