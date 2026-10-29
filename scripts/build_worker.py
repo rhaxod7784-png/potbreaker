@@ -126,12 +126,9 @@ language_css = """
 language_css += "\n.menu .locale-control{position:absolute;right:3%;top:3%;bottom:auto;z-index:6}\n"
 html = html.replace("</style>", language_css + "\n</style>", 1)
 
-# Keep the touch-screen instruction card readable and out of the control hit areas.
+# The gameplay HUD text overlaps touch controls, so keep the legend off the play screen.
 touch_legend_css = """
-@media (pointer:coarse){
- #gamePanel .legend{top:9%!important;bottom:auto!important;left:50%!important;transform:translateX(-50%)!important;z-index:5!important;pointer-events:none!important;width:min(72%,720px)!important;max-width:72%!important;box-sizing:border-box;padding:7px 12px!important;border-radius:12px!important;background:#fffde9ed!important;font-size:clamp(11px,1.2cqw,15px)!important;line-height:1.3!important;text-align:center!important;white-space:normal!important}
- #gamePanel .legend .crow-token-hud{display:block}
-}
+#gamePanel .legend{display:none!important;pointer-events:none!important}
 """
 html = html.replace("</style>", touch_legend_css + "\n</style>", 1)
 
