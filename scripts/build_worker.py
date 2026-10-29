@@ -228,7 +228,7 @@ zh: {
 "방향 패드를 눌러 이동 · 누르고 있으면 계속 이동":"按方向键移动 · 按住可持续移动",
 "방향 패드를 눌러 이동":"按方向键移动",
 "화면을 원하는 방향으로 밀기: 누르고 있으면 계속 이동":"按方向键移动 · 按住可持续移动",
-"감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동":"甘科长花盆效果随机一种：恢复、受伤、补充花盆或重置场地 · 冲刺冷却：奇妙3秒 / 克达3秒 · 按方向键移动",
+"감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동":"甘科长花盆效果随机一种：恢复、受伤、补充花盆或重置场地 · 冲刺冷却：奇妙3秒 / 克达5秒 · 按方向键移动",
 "? 화분 4종":"4种随机花盆效果",
 "하트 ±1":"心值±1",
 "화분 풀충전":"花盆补满",
@@ -353,9 +353,9 @@ function visit(root=document.documentElement){
  }
 }
 const comicCaptions={
-en:["Gimyo starts as a CBZP intern!","But… something feels strange about the office.","Flowerpots suddenly come flying from somewhere!","Manager Keuda throws another pot at Gimyo!"],
-zh:["奇妙来到 CBZP，开始实习了！","但是……公司的气氛有点奇怪。","突然，不知从哪儿飞来了花盆！","克达部长又朝奇妙扔花盆了！"],
-ja:["キミョ、CBZPでインターン開始！","でも…会社の雰囲気がなんだか変。","突然どこからか植木鉢が飛んできた！","クダ部長がキミョにまた植木鉢を投げた！"]
+en:["Gimyo starts as a CBZP intern!","But… something feels strange about the office.","Flowerpots suddenly come flying from somewhere!","Manager Keuda throws another pot at Gimyo!","Whoosh!"],
+zh:["奇妙来到 CBZP，开始实习了！","但是……公司的气氛有点奇怪。","突然，不知从哪儿飞来了花盆！","克达部长又朝奇妙扔花盆了！","嗖！"],
+ja:["キミョ、CBZPでインターン開始！","でも…会社の雰囲気がなんだか変。","突然どこからか植木鉢が飛んできた！","クダ部長がキミョにまた植木鉢を投げた！","シュッ！"]
 };
 function drawComicTranslations(){
  const img=document.querySelector(".comic-cover");if(!img)return;
@@ -387,6 +387,15 @@ function drawComicTranslations(){
    ctx.fillStyle="#203451";ctx.textAlign="left";ctx.textBaseline="middle";
    ctx.fillText(captions[index],x+5,y+h*.52,w-10);
   });
+  const effect=captions[4];
+  if(effect){
+   const x=ox+ir.width*.137,y=oy+ir.height*.655,w=ir.width*.125,h=ir.height*.105;
+   ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,Math.min(8,h*.16));else ctx.rect(x,y,w,h);
+   ctx.fillStyle="rgba(255,253,245,.94)";ctx.fill();
+   ctx.font="1000 "+Math.min(h*.46,w*.22)+"px system-ui,sans-serif";
+   ctx.fillStyle="#23427a";ctx.textAlign="center";ctx.textBaseline="middle";
+   ctx.fillText(effect,x+w/2,y+h/2,w-8);
+  }
  };
  if(img.complete)draw();else img.addEventListener("load",draw,{once:true});
  if(!canvas.__pbResizeObserver){canvas.__pbResizeObserver=new ResizeObserver(draw);canvas.__pbResizeObserver.observe(wrap)}
