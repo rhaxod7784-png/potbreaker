@@ -1,10 +1,10 @@
 # SEO and AdSense setup — POT BREAKER RE v1.0.97
 
 ## Search discovery
-- The Worker serves a crawlable `/robots.txt` and `/sitemap.xml`; the sitemap lists 12 canonical Korean, English, Chinese, and Japanese URLs for the game, guide, and privacy notice.
+- The Worker serves a crawlable `/robots.txt`, a plain-text `/sitemap.txt` containing 12 absolute canonical URLs, and an XML `/sitemap.xml` with localized alternate links. `/robots.txt` advertises `/sitemap.txt`, the supported one-URL-per-line format. Submit `https://potbreaker.com/sitemap.txt` in Search Console.
 - The home page, `/about`, and `/privacy` return HTML with Korean language metadata, a unique title/description, canonical URL, and Open Graph metadata.
 - `/game.py` is a runtime resource and is sent with `X-Robots-Tag: noindex`; it is not included in the sitemap. All 12 sitemap URLs return HTTP 200 and use matching self-canonical URLs.
-- In Search Console, verify the `potbreaker.com` domain property and submit `https://potbreaker.com/sitemap.xml`. Google may crawl and index eligible pages but submission does not guarantee indexing.
+- In Search Console, verify the `potbreaker.com` domain property and submit `https://potbreaker.com/sitemap.txt`. Google may crawl and index eligible pages but submission does not guarantee indexing.
 
 ## AdSense script
 
@@ -22,7 +22,7 @@ The game response has no manually inserted ad unit. If Auto Ads is enabled in Ad
 The privacy page describes game identifiers, selected difficulty, outcome, elapsed time, optional leaderboard nickname, Cloudflare D1 storage, and Google ad cookies when enabled. The current database does not implement automatic record expiry. Review the notice against the deployed data flow and applicable laws before enabling ads.
 
 ## Release verification
-- Confirm production responses for `/`, `/about`, `/privacy`, `/ads.txt`, `/robots.txt`, and `/sitemap.xml`.
-- Confirm `https://potbreaker.com/ads.txt` returns HTTP 200 with the publisher line, and that `robots.txt` allows crawling and lists the sitemap.
+- Confirm production responses for `/`, `/about`, `/privacy`, `/ads.txt`, `/robots.txt`, `/sitemap.txt`, and `/sitemap.xml`.
+- Confirm `https://potbreaker.com/ads.txt` returns HTTP 200 with the publisher line, and that `robots.txt` allows crawling and points to `/sitemap.txt`.
 - Verify the deployed canonical host matches the Search Console property.
 - Record Search Console crawl/index results separately; Worker deployment alone does not mean Google has indexed the site.
