@@ -103,7 +103,7 @@ html = html.replace("<title>POT BREAKER RE v1.0.97 · CBZP</title>", "<title>폿
 screen_switch = "const show=id=>['title','intro','gamePanel','end'].forEach(n=>$(n).classList.toggle('hidden',n!==id));show('title');"
 if screen_switch not in html:
     raise SystemExit("Screen switch function not found")
-html = html.replace(screen_switch, "const show=id=>{const active=id==='gamePanel'||id==='end';['title','intro','gamePanel','end'].forEach(n=>$(n).classList.toggle('hidden',n!==id));const f=document.getElementById('site-footer');if(f)f.style.setProperty('display',active?'none':'grid','important');if(active)document.documentElement.style.setProperty('--pb-footer-h','0px');else document.documentElement.style.removeProperty('--pb-footer-h')};show('title');", 1)
+html = html.replace(screen_switch, "const show=id=>{const active=id==='gamePanel'||id==='end';document.body.classList.toggle('pb-game-active',id==='gamePanel');['title','intro','gamePanel','end'].forEach(n=>$(n).classList.toggle('hidden',n!==id));const f=document.getElementById('site-footer');if(f)f.style.setProperty('display',active?'none':'grid','important');if(active)document.documentElement.style.setProperty('--pb-footer-h','0px');else document.documentElement.style.removeProperty('--pb-footer-h')};show('title');", 1)
 game_start = "async function start(){\n stop();paused=false;show('gamePanel');"
 if game_start not in html:
     raise SystemExit("Game start function not found")
@@ -708,5 +708,16 @@ const body=page?localizedPage.replace("</head>",verification+"</head>"):GAME;
 return new Response(request.method==="HEAD"?null:body,{status:200,headers:responseHeaders});
 }};"""
 )
+# During mobile gameplay, use the complete viewport so no blue side bars remain.
+game_fill_css = """
+@media (max-width:1024px) and (pointer:coarse) and (orientation:landscape){
+ body.pb-game-active .stage{width:100vw!important;height:100dvh!important;aspect-ratio:auto!important}
+}
+@media (max-width:1024px) and (pointer:coarse) and (orientation:portrait){
+ body.pb-game-active .stage{width:100dvh!important;height:100vw!important;aspect-ratio:auto!important}
+}
+"""
+html = html.replace("</style>", game_fill_css + "\\n</style>", 1)
+
 (root / "cloudflare" / "worker.js").write_text(worker, encoding="utf-8")
 print("Built cloudflare/worker.js", len(worker.encode("utf-8")), "bytes")
