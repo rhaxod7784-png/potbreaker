@@ -717,7 +717,7 @@ game_fill_css = """
  body.pb-game-active .stage{width:100dvh!important;height:100vw!important;aspect-ratio:auto!important}
 }
 """
-html = html.replace("</style>", game_fill_css + "\\n</style>", 1)
+html = html.replace("</style>", game_fill_css + "\n</style>", 1)
 
 (root / "cloudflare" / "worker.js").write_text(worker, encoding="utf-8")
 print("Built cloudflare/worker.js", len(worker.encode("utf-8")), "bytes")
