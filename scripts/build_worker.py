@@ -1,4 +1,4 @@
-"""Build illustrated POT BREAKER RE v1.0.91 for Cloudflare Workers.
+"""Build illustrated POT BREAKER RE v1.0.97 for Cloudflare Workers.
 
 Inputs: web/index.html (images + UI bundled) and web/game.py (Python core).
 Unlike the original v1.0.0 builder, this does not expect an inline Python script
@@ -10,6 +10,8 @@ import json
 root = Path(__file__).resolve().parents[1]
 html = (root / "web" / "index.html").read_text(encoding="utf-8")
 python_source = (root / "web" / "game.py").read_text(encoding="utf-8")
+html = html.replace("화면을 원하는 방향으로 밀기: 누르고 있으면 계속 이동", "방향 패드를 눌러 이동 · 누르고 있으면 계속 이동")
+html = html.replace("♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 화면을 밀어 방향 조작 · 누르고 있으면 계속 이동", "감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동")
 touch_block = "let touchDirection=[0,0],touchActive=false,dpadOrder=0;\nconst keyDirections={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};\nconst dpadDirections={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};\nconst dpadPointers=new Map();\nconst dpad=document.getElementById('dpad');\nfor(const [direction,glyph] of [['up','▲'],['right','▶'],['down','▼'],['left','◀']]){const icon=document.createElement('span');icon.className='dpad-icon '+direction;icon.textContent=glyph;dpad.appendChild(icon)}\nfunction refreshDpad(){\n let last=null;for(const p of dpadPointers.values())if(p.direction&&(!last||p.order>last.order))last=p;\n dpad.classList.remove('active-up','active-down','active-left','active-right');\n touchActive=!!last;touchDirection=last?dpadDirections[last.direction]:[0,0];\n if(last)dpad.classList.add('active-'+last.direction);\n}\nfunction directionAt(e){\n const rect=dpad.getBoundingClientRect(),dx=(e.clientX-(rect.left+rect.width/2))/(rect.width/2),dy=(e.clientY-(rect.top+rect.height/2))/(rect.height/2),radius=Math.hypot(dx,dy);\n if(radius>1.2||radius<.10)return null;\n const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest?.('#dpad .dpad-button');\n if(hit?.dataset.direction)return hit.dataset.direction;\n return Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');\n}\nfunction setPointerDirection(e,p){\n const direction=directionAt(e);if(direction===p.direction)return;\n if(p.button)p.button.classList.remove('pressed');\n p.direction=direction;p.button=direction?dpad.querySelector('.dpad-button.'+direction):null;p.order=++dpadOrder;\n if(p.button)p.button.classList.add('pressed');refreshDpad();\n}\nfunction clearDpadPointer(id){\n const p=dpadPointers.get(id);if(!p)return;\n if(p.button)p.button.classList.remove('pressed');dpadPointers.delete(id);refreshDpad();\n}\nfunction moveDpadPointer(e){const p=dpadPointers.get(e.pointerId);if(p)setPointerDirection(e,p)}\ndpad.addEventListener('pointerdown',e=>{\n if(!active||paused)return;e.preventDefault();\n const direction=directionAt(e);if(!direction)return;\n const prior=dpadPointers.get(e.pointerId);if(prior&&prior.button)prior.button.classList.remove('pressed');\n const p={button:null,direction:null,order:++dpadOrder};dpadPointers.set(e.pointerId,p);setPointerDirection(e,p);\n try{dpad.setPointerCapture(e.pointerId)}catch{}\n});\nwindow.addEventListener('pointermove',moveDpadPointer);\nwindow.addEventListener('pointerup',e=>clearDpadPointer(e.pointerId));\nwindow.addEventListener('pointercancel',e=>clearDpadPointer(e.pointerId));\nfunction resetTouch(){for(const p of dpadPointers.values())if(p.button)p.button.classList.remove('pressed');dpadPointers.clear();touchActive=false;touchDirection=[0,0];dpad.classList.remove('active-up','active-down','active-left','active-right')}\n"
 touch_start = html.index("let touchPointerId=null")
 touch_end = html.index("window.addEventListener('keyup'", touch_start)
@@ -38,11 +40,15 @@ dpad_css = """
 html = html.replace("</style>", dpad_css + "\n</style>", 1)
 
 
-# v1.0.91: crawlable site metadata, visible game guidance, and safe publisher gates.
-html = html.replace("POT BREAKER RE v1.0.91 · CBZP", "폿브레이커 RE | 기묘와 크다 부장의 미로 게임", 1)
+# v1.0.97: crawlable site metadata, visible game guidance, and safe publisher gates.
+html = html.replace("POT BREAKER RE v1.0.97 · CBZP", "폿브레이커 RE | 기묘와 크다 부장의 미로 게임", 1)
 seo_head = """
 <meta name="description" content="기묘를 조작해 CBZP 사무실 미로에서 크다 부장과 대결하는 무료 브라우저 게임. 게임 소개, 조작법, 개인정보 및 광고 안내를 확인하세요.">
 <link rel="canonical" href="https://potbreaker.com/">
+<link rel="alternate" hreflang="ko" href="https://potbreaker.com/">
+<link rel="alternate" hreflang="en" href="https://potbreaker.com/en">
+<link rel="alternate" hreflang="zh" href="https://potbreaker.com/zh">
+<link rel="alternate" hreflang="ja" href="https://potbreaker.com/ja">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ko_KR">
 <meta property="og:site_name" content="POT BREAKER RE">
@@ -66,6 +72,8 @@ site_info = """<footer class="site-footer" id="site-footer">
 </footer>"""
 seo_css = """
 :root{--pb-footer-h:clamp(72px,9vh,104px)}
+.viewport{display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;background:linear-gradient(135deg,#c8e8ff,#9acaf6)!important}
+.stage{flex:0 0 auto!important}
 html,body{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important}
 body{min-height:100dvh!important}
 .viewport{height:calc(100dvh - var(--pb-footer-h))!important;min-height:280px;box-sizing:border-box}
@@ -80,7 +88,7 @@ body{min-height:100dvh!important}
 .comic-cover-wrap{position:relative;width:100%;height:100%;min-width:0;min-height:0;max-height:100%;overflow:hidden}
 .comic-cover-wrap>.comic-cover{display:block;width:100%;height:100%;min-width:0;min-height:0;max-height:100%;object-fit:contain}
 .comic-translation-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
-@media(max-width:700px){:root{--pb-footer-h:clamp(78px,11vh,116px)}.site-guide{grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}.site-guide-copy{grid-column:1/-1}.site-guide nav{justify-content:flex-start}.site-guide-howto p{max-width:80vw}}
+@media(max-width:700px){:root{--pb-footer-h:clamp(96px,16vh,136px)}.site-guide{grid-template-columns:minmax(0,1fr);align-items:start;gap:5px}.site-guide-copy{grid-column:auto}.site-guide-copy h1{font-size:12px}.site-guide-copy p{font-size:10px;line-height:1.3}.site-guide nav{justify-content:flex-start;font-size:10px}.site-guide-howto{font-size:10px}.site-guide-howto p{max-width:90vw}}
 @media(orientation:portrait) and (pointer:coarse){
  .viewport{position:relative!important;inset:auto!important;height:calc(100dvh - var(--pb-footer-h))!important;min-height:220px!important;width:100vw!important;display:block!important;overflow:hidden!important}
  .stage{position:absolute!important;left:50%!important;top:50%!important;width:min(calc(100dvh - var(--pb-footer-h)),177.778vw)!important;height:min(100vw,calc((100dvh - var(--pb-footer-h))*0.5625))!important;transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center center!important}
@@ -88,25 +96,22 @@ body{min-height:100dvh!important}
 @media(orientation:landscape){.viewport{height:calc(100dvh - var(--pb-footer-h))!important}}
 """
 html = html.replace("</style>", seo_css + "\n</style>", 1)
-html = html.replace("POT BREAKER RE v1.0.89", "POT BREAKER RE v1.0.91")
+html = html.replace("POT BREAKER RE v1.0.89", "POT BREAKER RE v1.0.97")
+html = html.replace("POT BREAKER RE v1.0.54", "POT BREAKER RE v1.0.97")
+html = html.replace("<title>POT BREAKER RE v1.0.97 · CBZP</title>", "<title>폿브레이커 RE | 기묘와 크다 부장의 사무실 미로</title>")
 html = html.replace("</body>", site_info + "\n</body>", 1)
 
 
 language_css = """
-.legend{pointer-events:auto!important;display:flex;align-items:center;justify-content:center;gap:8px;width:min(94%,900px);max-width:94%;box-sizing:border-box;white-space:normal;flex-wrap:wrap}
+.legend{pointer-events:auto!important;display:flex;align-items:center;justify-content:center;gap:8px;width:min(94%,900px);max-width:94%;box-sizing:border-box;white-space:normal;flex-wrap:wrap;text-align:center;line-height:1.25;font-size:clamp(9px,1cqw,12px)!important;background:#fffbd2ed;border-radius:14px;padding:6px 10px}
 .locale-control{display:inline-flex;align-items:center;pointer-events:auto;position:relative;z-index:20}
 .locale-control select{pointer-events:auto;appearance:auto;max-width:104px;padding:4px 20px 4px 9px;border:1px solid #ffffffed;border-radius:999px;background:#fffef4;color:#293b60;font:700 clamp(9px,1cqw,12px)/1.2 system-ui,sans-serif;box-shadow:0 2px 7px #34486b36;touch-action:manipulation}
 .locale-control select:focus-visible{outline:3px solid #f0bd48;outline-offset:2px}
 .locale-control .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:700px){.legend{width:96%;max-width:96%;gap:5px}.locale-control select{max-width:90px;padding:4px 16px 4px 7px}}
 """
-language_css += "\n.menu .locale-control{position:absolute;right:4%;bottom:4%;z-index:6}\n"
+language_css += "\n.menu .locale-control{position:absolute;right:3%;top:3%;bottom:auto;z-index:6}\n"
 html = html.replace("</style>", language_css + "\n</style>", 1)
-language_picker = """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label>"""
-menu_anchor = '<button class="menu-ranking" id="openRanking">🏆 랭킹</button>'
-if menu_anchor not in html:
-    raise SystemExit("Menu insertion point for language selector not found")
-html = html.replace(menu_anchor, menu_anchor + language_picker, 1)
 language_picker = """<label class="locale-control"><span class="sr-only">언어 선택</span><select id="pb-locale" aria-label="언어 변경"><option value="ko">한국어</option><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option></select></label>"""
 menu_anchor = '<button class="menu-ranking" id="openRanking">🏆 랭킹</button>'
 if menu_anchor not in html:
@@ -118,7 +123,7 @@ language_script = r"""<script>
 const dictionaries = {
 en: {
 "폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE | Gimyo vs. Manager Keuda",
-"POT BREAKER RE v1.0.91":"POT BREAKER RE v1.0.91",
+"POT BREAKER RE v1.0.97":"POT BREAKER RE v1.0.97",
 "기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"A four-panel comic: Gimyo starts at CBZP, dodges flying pots, and is chased by Manager Keuda.",
 "기묘와 크다 부장의 사무실 미로 추격전":"Office Maze Chase: Gimyo vs. Manager Keuda",
 "CBZP 인턴 고양이 기묘가 이동 파티션으로 이루어진 사무실에서 크다 부장을 피해 화분을 던지는 1인용 브라우저 게임입니다.":"Play as Gimyo, a CBZP cat intern. Dodge Manager Keuda and throw pots in this browser maze game.",
@@ -144,7 +149,44 @@ en: {
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"Use the circular pad to move · Hold to keep moving",
 "화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"Pots: attack · Dash: 3 tiles (3s cooldown)",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"PC: Arrows / WASD · Space (throw) · Shift (dash)",
-"언어 변경":"Change language","언어 선택":"Select language","게임 안내":"Game Guide"
+"언어 변경":"Change language","언어 선택":"Select language","게임 안내":"Game Guide",
+"대시 버튼: 3칸 돌진 · 3초 재사용 대기":"Dash: move 3 tiles · 3-second cooldown",
+"감 과장 출동!":"Manager Gam is here!",
+"화분 투하!":"Pots incoming!",
+"크다":"Keuda",
+"기묘":"Gimyo",
+"회복 화분! HP +1":"Healing pot! HP +1",
+"회복 화분을 찾았지만 HP가 가득 찼습니다.":"You found a healing pot, but your HP is already full.",
+"화분 폭발!":"Pot exploded!",
+"화분 회복!":"Healing pot!",
+"화분 풀충전!":"Pots refilled!",
+"필드 화분 리셋!":"Field pots reset!",
+"감 과장 명중!":"Manager Gam hit!",
+"방향 패드를 눌러 이동 · 누르고 있으면 계속 이동":"Press the directional pad to move · Hold to keep moving",
+"방향 패드를 눌러 이동":"Press the directional pad to move",
+"화면을 원하는 방향으로 밀기: 누르고 있으면 계속 이동":"Press the directional pad to move · Hold to keep moving",
+"감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동":"Manager Gam's pot: one of heal, damage, refill, or field reset · Dash cooldown: Gimyo 3s / Keuda 5s · Press the directional pad to move",
+"? 화분 4종":"4 random pot effects",
+"하트 ±1":"±1 heart",
+"화분 풀충전":"refill pots",
+"필드 리셋":"reset the field",
+"각 25%":"25% each",
+"기묘: 대시 3초":"Gimyo: 3s dash",
+"크다: 대시 5초":"Keuda: 5s dash",
+"화면을 밀어 방향 조작":"Use the directional pad",
+"누르고 있으면 계속 이동":"Hold to keep moving",
+"? 화분 폭발!":"Mystery pot exploded!",
+"? 화분 회복!":"Mystery pot restored HP!",
+"? 화분 풀충전!":"Mystery pot refilled pots!",
+"? 필드 화분 리셋!":"Mystery field pot reset!",
+"감 과장 출동! ? 화분 투하!":"Manager Gam is here! Mystery pots incoming!",
+"POT BREAKER RE 메인 화면":"POT BREAKER RE main screen",
+"CBZP 사무실 배경의 POT BREAKER RE 메인 화면. 아래에는 뒤돌아선 기묘와 크다 부장이 보입니다.":"POT BREAKER RE's main screen with the CBZP office in the background; Gimyo and Manager Keuda are seen from behind below.",
+"기묘와 크다 부장이 화분을 던지고 피하는 사무실 게임":"An office game where Gimyo and Manager Keuda throw and dodge flowerpots.",
+"위로 이동":"Move up",
+"왼쪽 이동":"Move left",
+"오른쪽 이동":"Move right",
+"아래로 이동":"Move down"
 },
 zh: {
 "폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE｜奇妙与克达部长",
@@ -170,7 +212,44 @@ zh: {
 "♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"♥ 回复 · 甘科长：4种随机花盆效果（心值±1、花盆补满、重置场地，各25%）· 奇妙冲刺：3秒 / 克达冲刺：5秒 · 使用圆形方向键移动，按住可持续移动",
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"使用圆形方向键移动 · 按住可持续移动","화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"花盆：攻击 · 冲刺：移动3格（冷却3秒）",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"电脑：方向键 / WASD · 空格（投掷）· Shift（冲刺）",
-"언어 변경":"切换语言","언어 선택":"选择语言","게임 안내":"游戏说明","기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"四格漫画：奇妙来到 CBZP 实习，在办公室躲避花盆并被克达部长追赶。"
+"언어 변경":"切换语言","언어 선택":"选择语言","게임 안내":"游戏说明","기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"四格漫画：奇妙来到 CBZP 实习，在办公室躲避花盆并被克达部长追赶。",
+"대시 버튼: 3칸 돌진 · 3초 재사용 대기":"冲刺：移动3格 · 冷却3秒",
+"감 과장 출동!":"甘科长登场！",
+"화분 투하!":"花盆来袭！",
+"크다":"克达",
+"기묘":"奇妙",
+"회복 화분! HP +1":"恢复花盆！HP +1",
+"회복 화분을 찾았지만 HP가 가득 찼습니다.":"找到了恢复花盆，但生命值已满。",
+"화분 폭발!":"花盆爆炸！",
+"화분 회복!":"花盆恢复！",
+"화분 풀충전!":"花盆补满！",
+"필드 화분 리셋!":"场地花盆已重置！",
+"감 과장 명중!":"甘科长命中！",
+"방향 패드를 눌러 이동 · 누르고 있으면 계속 이동":"按方向键移动 · 按住可持续移动",
+"방향 패드를 눌러 이동":"按方向键移动",
+"화면을 원하는 방향으로 밀기: 누르고 있으면 계속 이동":"按方向键移动 · 按住可持续移动",
+"감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동":"甘科长花盆效果随机一种：恢复、受伤、补充花盆或重置场地 · 冲刺冷却：奇妙3秒 / 克达5秒 · 按方向键移动",
+"? 화분 4종":"4种随机花盆效果",
+"하트 ±1":"心值±1",
+"화분 풀충전":"花盆补满",
+"필드 리셋":"重置场地",
+"각 25%":"各25%",
+"기묘: 대시 3초":"奇妙：冲刺3秒",
+"크다: 대시 5초":"克达：冲刺5秒",
+"화면을 밀어 방향 조작":"按方向键移动",
+"누르고 있으면 계속 이동":"按住可持续移动",
+"? 화분 폭발!":"神秘花盆爆炸！",
+"? 화분 회복!":"神秘花盆恢复！",
+"? 화분 풀충전!":"神秘花盆补满！",
+"? 필드 화분 리셋!":"神秘花盆重置场地！",
+"감 과장 출동! ? 화분 투하!":"甘科长来了！神秘花盆掉落！",
+"POT BREAKER RE 메인 화면":"POT BREAKER RE 主画面",
+"CBZP 사무실 배경의 POT BREAKER RE 메인 화면. 아래에는 뒤돌아선 기묘와 크다 부장이 보입니다.":"POT BREAKER RE 主画面以 CBZP 办公室为背景，下方可见奇妙和克达部长的背影。",
+"기묘와 크다 부장이 화분을 던지고 피하는 사무실 게임":"奇妙与克达部长在办公室里投掷并躲避花盆的游戏。",
+"위로 이동":"向上移动",
+"왼쪽 이동":"向左移动",
+"오른쪽 이동":"向右移动",
+"아래로 이동":"向下移动"
 },
 ja: {
 "폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE｜キミョとクダ部長",
@@ -196,15 +275,62 @@ ja: {
 "♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"♥ 回復 · カム課長：植木鉢の効果4種（ハート±1、植木鉢補充、フィールドリセット・各25%）· キミョのダッシュ：3秒 / クダのダッシュ：5秒 · 円形パッドで移動、長押しで連続移動",
 "원형 조작부를 눌러 방향 이동 · 누르고 있으면 계속 이동":"円形パッドで移動 · 長押しで連続移動","화분: 공격 · 대시 버튼: 3칸 돌진 (3초 재사용)":"植木鉢：攻撃 · ダッシュ：3マス移動（クールダウン3秒）",
 "PC: 방향키 / WASD · Space(공격) · Shift(대시)":"PC：矢印キー / WASD · Space（投げる）· Shift（ダッシュ）",
-"언어 변경":"言語を変更","언어 선택":"言語を選択","게임 안내":"ゲームガイド","기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"4コマ漫画：キミョがCBZPに出勤し、植木鉢を避けながらクダ部長に追われます。"
+"언어 변경":"言語を変更","언어 선택":"言語を選択","게임 안내":"ゲームガイド","기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"4コマ漫画：キミョがCBZPに出勤し、植木鉢を避けながらクダ部長に追われます。",
+"대시 버튼: 3칸 돌진 · 3초 재사용 대기":"ダッシュ：3マス移動 · クールダウン3秒",
+"감 과장 출동!":"カム課長が登場！",
+"화분 투하!":"植木鉢が降ってくる！",
+"크다":"クダ",
+"기묘":"キミョ",
+"회복 화분! HP +1":"回復の植木鉢！HP +1",
+"회복 화분을 찾았지만 HP가 가득 찼습니다.":"回復の植木鉢を見つけましたが、HPは満タンです。",
+"화분 폭발!":"植木鉢が爆発！",
+"화분 회복!":"植木鉢で回復！",
+"화분 풀충전!":"植木鉢を補充！",
+"필드 화분 리셋!":"フィールドの植木鉢をリセット！",
+"감 과장 명중!":"カム課長に命中！",
+"방향 패드를 눌러 이동 · 누르고 있으면 계속 이동":"方向パッドで移動 · 長押しで連続移動",
+"방향 패드를 눌러 이동":"方向パッドで移動",
+"화면을 원하는 방향으로 밀기: 누르고 있으면 계속 이동":"方向パッドで移動 · 長押しで連続移動",
+"감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동":"カム課長の植木鉢：回復・ダメージ・補充・フィールド初期化のいずれか · ダッシュ待機：キミョ3秒 / クダ5秒 · 方向パッドで移動",
+"? 화분 4종":"植木鉢の効果は4種類",
+"하트 ±1":"ハート±1",
+"화분 풀충전":"植木鉢を補充",
+"필드 리셋":"フィールド初期化",
+"각 25%":"各25%",
+"기묘: 대시 3초":"キミョ：ダッシュ3秒",
+"크다: 대시 5초":"クダ：ダッシュ5秒",
+"화면을 밀어 방향 조작":"方向パッドで移動",
+"누르고 있으면 계속 이동":"長押しで連続移動",
+"? 화분 폭발!":"謎の植木鉢が爆発！",
+"? 화분 회복!":"謎の植木鉢で回復！",
+"? 화분 풀충전!":"謎の植木鉢を補充！",
+"? 필드 화분 리셋!":"謎の植木鉢でフィールドを初期化！",
+"감 과장 출동! ? 화분 투하!":"カム課長が登場！謎の植木鉢が降ってくる！",
+"POT BREAKER RE 메인 화면":"POT BREAKER RE メイン画面",
+"CBZP 사무실 배경의 POT BREAKER RE 메인 화면. 아래에는 뒤돌아선 기묘와 크다 부장이 보입니다.":"CBZPオフィスを背景にしたPOT BREAKER REのメイン画面。下には後ろ姿のキミョとクダ部長が見えます。",
+"기묘와 크다 부장이 화분을 던지고 피하는 사무실 게임":"キミョとクダ部長がオフィスで植木鉢を投げ合い、避けるゲームです。",
+"위로 이동":"上へ移動",
+"왼쪽 이동":"左へ移動",
+"오른쪽 이동":"右へ移動",
+"아래로 이동":"下へ移動"
 }
 };
-const selector=document.getElementById("pb-locale");
-if(!selector)return;
+const selectors=[...document.querySelectorAll(".locale-control select")];
+if(!selectors.length)return;
 const textOriginal=new WeakMap(),textRendered=new WeakMap(),attrOriginal=new WeakMap(),attrRendered=new WeakMap();
-let locale="ko",busy=false;
-try{const saved=localStorage.getItem("potbreaker-locale");if(["ko","en","zh","ja"].includes(saved))locale=saved}catch{}
-const translate=value=>locale==="ko"?value:(dictionaries[locale]?.[value]||value);
+const routeLocale=location.pathname.match(/^\/(en|zh|ja)\/?$/)?.[1];
+let locale=routeLocale||"ko",busy=false;
+if(!routeLocale){try{const saved=localStorage.getItem("potbreaker-locale");if(["ko","en","zh","ja"].includes(saved))locale=saved}catch{}}
+const translate=value=>{
+ if(locale==="ko")return value;
+ const dictionary=dictionaries[locale]||{};
+ if(Object.prototype.hasOwnProperty.call(dictionary,value))return dictionary[value];
+ let result=value;
+ for(const key of Object.keys(dictionary).sort((a,b)=>b.length-a.length)){
+  if(result.includes(key))result=result.split(key).join(dictionary[key]);
+ }
+ return result;
+};
 function visit(root=document.documentElement){
  if(!root)return;
  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement?.closest("script,style,select,option,textarea")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
@@ -227,9 +353,9 @@ function visit(root=document.documentElement){
  }
 }
 const comicCaptions={
-en:["Gimyo starts as a CBZP intern!","But… something feels strange about the office.","Flowerpots suddenly come flying from somewhere!","Manager Keuda throws another pot at Gimyo!"],
-zh:["奇妙来到 CBZP，开始实习了！","但是……公司的气氛有点奇怪。","突然，不知从哪儿飞来了花盆！","克达部长又朝奇妙扔花盆了！"],
-ja:["キミョ、CBZPでインターン開始！","でも…会社の雰囲気がなんだか変。","突然どこからか植木鉢が飛んできた！","クダ部長がキミョにまた植木鉢を投げた！"]
+en:["Gimyo starts as a CBZP intern!","But… something feels strange about the office.","Flowerpots suddenly come flying from somewhere!","Manager Keuda throws another pot at Gimyo!","Whoosh!"],
+zh:["奇妙来到 CBZP，开始实习了！","但是……公司的气氛有点奇怪。","突然，不知从哪儿飞来了花盆！","克达部长又朝奇妙扔花盆了！","嗖！"],
+ja:["キミョ、CBZPでインターン開始！","でも…会社の雰囲気がなんだか変。","突然どこからか植木鉢が飛んできた！","クダ部長がキミョにまた植木鉢を投げた！","シュッ！"]
 };
 function drawComicTranslations(){
  const img=document.querySelector(".comic-cover");if(!img)return;
@@ -248,8 +374,8 @@ function drawComicTranslations(){
   if(locale==="ko")return;
   const captions=comicCaptions[locale];if(!captions)return;
   const boxes=[
-   {x:.09,y:.155,w:.397,h:.073},{x:.585,y:.155,w:.385,h:.073},
-   {x:.09,y:.545,w:.397,h:.073},{x:.585,y:.545,w:.385,h:.073}
+   {x:.073,y:.178,w:.405,h:.061},{x:.553,y:.178,w:.415,h:.061},
+   {x:.073,y:.500,w:.405,h:.062},{x:.553,y:.557,w:.415,h:.061}
   ];
   const ox=ir.left-wr.left,oy=ir.top-wr.top;
   boxes.forEach((box,index)=>{
@@ -261,6 +387,15 @@ function drawComicTranslations(){
    ctx.fillStyle="#203451";ctx.textAlign="left";ctx.textBaseline="middle";
    ctx.fillText(captions[index],x+5,y+h*.52,w-10);
   });
+  const effect=captions[4];
+  if(effect){
+   const x=ox+ir.width*.137,y=oy+ir.height*.655,w=ir.width*.125,h=ir.height*.105;
+   ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,Math.min(8,h*.16));else ctx.rect(x,y,w,h);
+   ctx.fillStyle="rgba(255,253,245,.94)";ctx.fill();
+   ctx.font="1000 "+Math.min(h*.46,w*.22)+"px system-ui,sans-serif";
+   ctx.fillStyle="#23427a";ctx.textAlign="center";ctx.textBaseline="middle";
+   ctx.fillText(effect,x+w/2,y+h/2,w-8);
+  }
  };
  if(img.complete)draw();else img.addEventListener("load",draw,{once:true});
  if(!canvas.__pbResizeObserver){canvas.__pbResizeObserver=new ResizeObserver(draw);canvas.__pbResizeObserver.observe(wrap)}
@@ -269,9 +404,14 @@ function apply(next){
  locale=["ko","en","zh","ja"].includes(next)?next:"ko";
  try{localStorage.setItem("potbreaker-locale",locale)}catch{}
  document.documentElement.lang=locale;
- busy=true;selector.value=locale;visit();drawComicTranslations();busy=false;
+ const localePath=locale==="ko"?"/":"/"+locale;
+ if(location.pathname!==localePath)history.replaceState(null,"",localePath+location.search+location.hash);
+ const canonical=document.querySelector('link[rel="canonical"]');if(canonical)canonical.href=location.origin+localePath;
+ const ogLocale=document.querySelector('meta[property="og:locale"]');if(ogLocale)ogLocale.content=locale==="ko"?"ko_KR":locale==="en"?"en_US":locale==="zh"?"zh_CN":"ja_JP";
+ busy=true;selectors.forEach(selector=>selector.value=locale);visit();drawComicTranslations();busy=false;
 }
-selector.addEventListener("change",()=>apply(selector.value));
+selectors.forEach(selector=>selector.addEventListener("change",()=>apply(selector.value)));
+window.addEventListener("popstate",()=>apply(location.pathname.match(/^\/(en|zh|ja)\/?$/)?.[1]||"ko"));
 if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.__pbTranslated){
  for(const method of ["fillText","strokeText"]){
   const original=CanvasRenderingContext2D.prototype[method];
@@ -286,7 +426,7 @@ new MutationObserver(records=>{if(busy)return;for(const r of records){if(r.type=
 html = html.replace("</body>", language_script + "\n</body>", 1)
 
 worker = (
-    "// Generated by scripts/build_worker.py. POT BREAKER RE v1.0.91 SEO/AdSense-ready\n"
+    "// Generated by scripts/build_worker.py. POT BREAKER RE v1.0.97 SEO/AdSense-ready\n"
     + "const PAGE=" + json.dumps(html, ensure_ascii=False) + ";\n"
     + "const GAME=" + json.dumps(python_source, ensure_ascii=False) + ";\n"
     + """const SCHEMA=`CREATE TABLE IF NOT EXISTS visits (visitor_id TEXT PRIMARY KEY, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%S','now')));
@@ -296,7 +436,7 @@ CREATE INDEX IF NOT EXISTS game_events_created_at ON game_events(created_at);
 CREATE TABLE IF NOT EXISTS rankings (id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL UNIQUE, nickname TEXT NOT NULL, difficulty TEXT NOT NULL CHECK(difficulty IN ('normal','hard','very_hard')), elapsed_ms INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%S','now')), FOREIGN KEY(run_id) REFERENCES game_runs(run_id));
 CREATE INDEX IF NOT EXISTS rankings_order ON rankings(difficulty,elapsed_ms);`;
 const SITE_ABOUT="<!doctype html><html lang=\"ko\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>게임 소개와 조작법 | 폿브레이커 RE</title><meta name=\"description\" content=\"CBZP 사무실 미로에서 기묘와 크다 부장이 대결하는 폿브레이커 RE의 게임 방법, 난이도, 등장인물을 소개합니다.\"><link rel=\"canonical\" href=\"https://potbreaker.com/about\"><meta property=\"og:type\" content=\"website\"><meta property=\"og:locale\" content=\"ko_KR\"><meta property=\"og:title\" content=\"게임 소개와 조작법 | 폿브레이커 RE\"><meta property=\"og:description\" content=\"기묘와 크다 부장의 사무실 미로 추격전 게임 소개와 조작법.\"><meta property=\"og:url\" content=\"https://potbreaker.com/about\"><style>body{margin:0;background:#f7f2e9;color:#293754;font:18px/1.7 system-ui,'Malgun Gothic',sans-serif}main{max-width:820px;margin:auto;padding:clamp(22px,5vw,64px)}h1,h2{line-height:1.25}a{color:#285c91}nav{display:flex;gap:1em;flex-wrap:wrap}section{margin:2rem 0;padding:1rem 1.3rem;background:#fff;border-radius:16px}li{margin:.35rem 0}</style></head><body><main><header><nav aria-label=\"사이트\"><a href=\"/\">게임으로 돌아가기</a><a href=\"/privacy\">개인정보 및 광고 안내</a></nav></header><article><h1>폿브레이커 RE: 사무실 미로 추격전</h1><p>CBZP(Cloud Bear Zoo Park)의 인턴 고양이 기묘가 사무실 미로를 이동하며 크다 부장과 화분 대결을 펼치는 1인용 브라우저 게임입니다. 이동 파티션 사이에서 위치를 잡고, 화분을 모으고, 상대의 공격을 피하세요.</p><section><h2>게임 방법</h2><ol><li>시작 화면에서 난이도를 선택하고 게임을 시작합니다.</li><li>모바일에서는 화면의 원형 방향 조작부를 눌러 이동하고 대시·투척 버튼으로 행동합니다. 컴퓨터에서는 방향키 또는 WASD로 이동하고 Shift로 대시, Space로 화분을 던집니다.</li><li>기묘의 체력이 0이 되기 전에 크다 부장의 체력을 0으로 만들면 승리합니다.</li></ol><p>방향 조작은 상·하·좌·우로 입력되며, 대시는 재사용 대기시간이 있습니다. 이동 중 파티션과 화분 위치를 살피세요.</p></section><section><h2>등장인물</h2><ul><li><strong>기묘</strong> — 플레이어가 조작하는 CBZP 인턴 고양이.</li><li><strong>크다 부장</strong> — 기묘를 추적하며 화분을 던지는 악어 보스.</li><li><strong>감 과장</strong> — 무작위 효과의 화분을 떨어뜨리는 까마귀.</li></ul></section><section><h2>난이도</h2><p>크다 부장의 체력은 노멀 5, 하드 7, 베리하드 10입니다. 감 과장 화분은 하트 회복, 하트 감소, 화분 충전, 필드 화분 초기화 효과 중 하나를 제공합니다.</p></section><p><a href=\"/\">폿브레이커 RE 플레이하기</a></p></article></main></body></html>";
-const SITE_PRIVACY="<!doctype html><html lang=\"ko\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>개인정보 및 광고 안내 | 폿브레이커 RE</title><meta name=\"description\" content=\"폿브레이커 RE의 게임 기록 처리와 Google 광고 쿠키 사용 안내입니다.\"><link rel=\"canonical\" href=\"https://potbreaker.com/privacy\"><meta property=\"og:type\" content=\"website\"><meta property=\"og:locale\" content=\"ko_KR\"><meta property=\"og:title\" content=\"개인정보 및 광고 안내 | 폿브레이커 RE\"><meta property=\"og:description\" content=\"게임 기록과 광고 기술 사용에 관한 안내.\"><meta property=\"og:url\" content=\"https://potbreaker.com/privacy\"><style>body{margin:0;background:#f7f2e9;color:#293754;font:17px/1.7 system-ui,'Malgun Gothic',sans-serif}main{max-width:820px;margin:auto;padding:clamp(22px,5vw,64px)}h1,h2{line-height:1.25}a{color:#285c91}section{margin:1.5rem 0;padding:1rem 1.3rem;background:#fff;border-radius:16px}</style></head><body><main><nav aria-label=\"사이트\"><a href=\"/\">게임으로 돌아가기</a> · <a href=\"/about\">게임 소개</a></nav><article><h1>개인정보 및 광고 안내</h1><p>이 안내는 POT BREAKER RE에서 처리하는 게임 기록과 광고 기술을 설명합니다.</p><section><h2>게임 기록</h2><p>게임 기록 기능은 무작위 방문자/경기 식별자, 선택 난이도, 승패, 경기 시간과 랭킹 등록 시 사용자가 입력한 닉네임(최대 16자)을 Cloudflare D1에 저장합니다. 기록은 방문 통계, 경기 검증과 랭킹 제공에 사용됩니다. 실명·이메일·전화번호 입력은 게임 기능에 필요하지 않습니다. 현재 데이터베이스에는 기록 자동 만료 기능이 설정되어 있지 않습니다.</p></section><section><h2>광고 쿠키</h2><p>AdSense 게시자 ID와 운영 설정이 등록되기 전에는 Google 광고 스크립트를 불러오지 않습니다. 광고가 활성화되면 Google 및 광고 파트너가 쿠키, 광고 식별자, IP 주소 또는 웹 비콘을 사용해 광고를 제공·측정할 수 있습니다. Google 광고 설정에서 맞춤 광고를 관리할 수 있으며, <a href=\"https://www.aboutads.info/choices/\">aboutads.info 선택 페이지</a>에서도 일부 맞춤 광고를 거부할 수 있습니다.</p><p>EEA, 영국 또는 스위스 사용자에게 맞춤 광고를 제공하려면 Google 인증 CMP 및 해당 동의 요건을 먼저 갖춰야 합니다. 운영 설정은 이를 확인한 뒤에만 활성화해야 합니다.</p></section><section><h2>외부 서비스</h2><p>게임 페이지와 게임 기록 API는 Cloudflare Workers 및 D1을 사용합니다. Google 광고 기능을 활성화하면 Google의 <a href=\"https://policies.google.com/technologies/partner-sites\">파트너 사이트 데이터 사용 안내</a>와 개인정보처리방침이 적용될 수 있습니다.</p></section><p>최종 갱신: 2026-10-29</p></article></main></body></html>";
+const SITE_PRIVACY="<!doctype html><html lang=\"ko\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>개인정보 및 광고 안내 | 폿브레이커 RE</title><meta name=\"description\" content=\"폿브레이커 RE의 게임 기록 처리와 Google 광고 쿠키 사용 안내입니다.\"><link rel=\"canonical\" href=\"https://potbreaker.com/privacy\"><meta property=\"og:type\" content=\"website\"><meta property=\"og:locale\" content=\"ko_KR\"><meta property=\"og:title\" content=\"개인정보 및 광고 안내 | 폿브레이커 RE\"><meta property=\"og:description\" content=\"게임 기록과 광고 기술 사용에 관한 안내.\"><meta property=\"og:url\" content=\"https://potbreaker.com/privacy\"><style>body{margin:0;background:#f7f2e9;color:#293754;font:17px/1.7 system-ui,'Malgun Gothic',sans-serif}main{max-width:820px;margin:auto;padding:clamp(22px,5vw,64px)}h1,h2{line-height:1.25}a{color:#285c91}section{margin:1.5rem 0;padding:1rem 1.3rem;background:#fff;border-radius:16px}</style></head><body><main><nav aria-label=\"사이트\"><a href=\"/\">게임으로 돌아가기</a> · <a href=\"/about\">게임 소개</a></nav><article><h1>개인정보 및 광고 안내</h1><p>이 안내는 POT BREAKER RE에서 처리하는 게임 기록과 광고 기술을 설명합니다.</p><section><h2>게임 기록</h2><p>게임 기록 기능은 무작위 방문자/경기 식별자, 선택 난이도, 승패, 경기 시간과 랭킹 등록 시 사용자가 입력한 닉네임(최대 16자)을 Cloudflare D1에 저장합니다. 기록은 방문 통계, 경기 검증과 랭킹 제공에 사용됩니다. 실명·이메일·전화번호 입력은 게임 기능에 필요하지 않습니다. 현재 데이터베이스에는 기록 자동 만료 기능이 설정되어 있지 않습니다.</p></section><section><h2>광고 쿠키</h2><p>AdSense 게시자 ID와 운영 설정이 등록되기 전에는 Google 광고 스크립트를 불러오지 않습니다. 광고가 활성화되면 Google 및 광고 파트너가 쿠키, 광고 식별자, IP 주소 또는 웹 비콘을 사용해 광고를 제공·측정할 수 있습니다. Google 광고 설정에서 맞춤 광고를 관리할 수 있으며, <a href=\"https://www.aboutads.info/choices/\">aboutads.info 선택 페이지</a>에서도 일부 맞춤 광고를 거부할 수 있습니다.</p><p>EEA, 영국 또는 스위스 사용자에게 맞춤 광고를 제공하려면 Google 인증 CMP 및 해당 동의 요건을 먼저 갖춰야 합니다. 운영 설정은 이를 확인한 뒤에만 활성화해야 합니다.</p></section><section><h2>외부 서비스</h2><p>게임 페이지와 게임 기록 API는 Cloudflare Workers 및 D1을 사용합니다. Google 광고 기능을 활성화하면 Google의 <a href=\"https://policies.google.com/technologies/partner-sites\">파트너 사이트 데이터 사용 안내</a>와 개인정보처리방침이 적용될 수 있습니다.</p></section><p>최종 갱신: 2026-10-28</p></article></main></body></html>";
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"}});
 const validDifficulty=value=>["normal","hard","very_hard"].includes(value);
 export default {async fetch(request,env){
@@ -360,7 +500,15 @@ const headers={"cache-control":"public, max-age=300","x-content-type-options":"n
 const publisherId=typeof env.ADSENSE_PUBLISHER_ID==="string"&&/^ca-pub-\d{16}$/.test(env.ADSENSE_PUBLISHER_ID)?env.ADSENSE_PUBLISHER_ID:"";
 const text=(body,type="text/plain; charset=utf-8",status=200,extra={})=>new Response(request.method==="HEAD"?null:body,{status,headers:{"content-type":type,...headers,...extra}});
 if(path==="/robots.txt")return text("User-agent: *\nAllow: /\nSitemap: https://potbreaker.com/sitemap.xml\n");
-if(path==="/sitemap.xml")return text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://potbreaker.com/</loc></url><url><loc>https://potbreaker.com/about</loc></url><url><loc>https://potbreaker.com/privacy</loc></url></urlset>',"application/xml; charset=utf-8");
+if(path==="/sitemap.xml"){
+ const variants=[["ko","/"],["en","/en"],["zh","/zh"],["ja","/ja"]];
+ const alternates=variants.map(([lang,url])=>`<xhtml:link rel="alternate" hreflang="${lang}" href="https://potbreaker.com${url}"/>`).join("");
+ const urls=variants.map(([lang,url])=>`<url><loc>https://potbreaker.com${url}</loc>${alternates}</url>`).join("");
+ return text('<?xml version="1.0" encoding="UTF-8"?>'+
+  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">'+urls+
+  '<url><loc>https://potbreaker.com/about</loc></url><url><loc>https://potbreaker.com/privacy</loc></url></urlset>',
+  "application/xml; charset=utf-8");
+}
 if(path==="/ads.txt"){
  if(!publisherId)return text("AdSense publisher ID is not configured.\n","text/plain; charset=utf-8",404);
  return text("google.com, "+publisherId.replace("ca-pub-","pub-")+", DIRECT, f08c47fec0942fa0\n");
@@ -373,14 +521,21 @@ if(path==="/about"||path==="/privacy"){
  const html=doc.replace("</head>",verification+adLoader+"</head>");
  return text(html,"text/html; charset=utf-8",200,{"cache-control":"public, max-age=300"});
 }
-const page=path==="/"||path==="/index.html";
+const localeMatch=path.match(/^\/(en|zh|ja)\/?$/);
+const page=path==="/"||path==="/index.html"||!!localeMatch;
 if(!page&&path!=="/game.py")return new Response("Not Found",{status:404});
 const responseHeaders={"content-type":page?"text/html; charset=utf-8":"text/plain; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff"};
 if(path==="/game.py")responseHeaders["x-robots-tag"]="noindex";
 const verification=publisherId?'<meta name="google-adsense-account" content="'+publisherId+'">':"";
 const adsReady=path==="/about"&&publisherId&&env.ADSENSE_ENABLED==="true"&&env.ADSENSE_PRIVACY_READY==="true"&&env.ADSENSE_CONSENT_READY==="true";
 const adLoader=adsReady?'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+publisherId+'" crossorigin="anonymous"></script>':"";
-const body=page?PAGE.replace("</head>",verification+"</head>"):GAME;
+const pageLocale=localeMatch?.[1]||"ko";
+const localePath=pageLocale==="ko"?"/":"/"+pageLocale;
+const ogLocale=pageLocale==="ko"?"ko_KR":pageLocale==="en"?"en_US":pageLocale==="zh"?"zh_CN":"ja_JP";
+const localizedPage=PAGE.replace('<html lang="ko">',`<html lang="${pageLocale}">`)
+ .replace('<link rel="canonical" href="https://potbreaker.com/">',`<link rel="canonical" href="https://potbreaker.com${localePath}">`)
+ .replace('<meta property="og:locale" content="ko_KR">',`<meta property="og:locale" content="${ogLocale}">`);
+const body=page?localizedPage.replace("</head>",verification+"</head>"):GAME;
 return new Response(request.method==="HEAD"?null:body,{status:200,headers:responseHeaders});
 }};"""
 )
