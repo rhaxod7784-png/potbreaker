@@ -86,7 +86,8 @@ const headers={"cache-control":"public, max-age=300","x-content-type-options":"n
 const publisherId=typeof env.ADSENSE_PUBLISHER_ID==="string"&&/^ca-pub-\d{16}$/.test(env.ADSENSE_PUBLISHER_ID)?env.ADSENSE_PUBLISHER_ID:"";
 const ADSENSE_SCRIPT = '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7687564326575687"\n     crossorigin="anonymous"></script>';
 const text=(body,type="text/plain; charset=utf-8",status=200,extra={})=>new Response(request.method==="HEAD"?null:body,{status,headers:{"content-type":type,...headers,...extra}});
-if(path==="/robots.txt")return text(["User-agent: *","Allow: /","Sitemap: https://potbreaker.com/sitemap.xml",""].join(String.fromCharCode(10)));
+if(path==="/robots.txt")return text(["User-agent: *","Allow: /","Sitemap: https://potbreaker.com/sitemap.txt",""].join(String.fromCharCode(10)));
+if(path==="/sitemap.txt")return text(["/","/about","/privacy","/en","/en/about","/en/privacy","/zh","/zh/about","/zh/privacy","/ja","/ja/about","/ja/privacy"].map(url=>"https://potbreaker.com"+url).join(String.fromCharCode(10))+String.fromCharCode(10));
 if(path==="/sitemap.xml"){
  const slugs=["","about","privacy"];
  const urls=slugs.map(slug=>{
