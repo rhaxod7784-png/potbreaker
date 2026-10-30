@@ -10,8 +10,18 @@ import json
 
 root = Path(__file__).resolve().parents[1]
 html = (root / "web" / "index.html").read_text(encoding="utf-8")
-python_source = (root / "web" / "game.py").read_text(encoding="utf-8")
-python_source += "\n\n" + (root / "web" / "game_engine.py").read_text(encoding="utf-8")
+pot_source = (root / "web" / "game.py").read_text(encoding="utf-8")
+demo_marker = "\nif __name__ == '__main__':"
+demo = ""
+if demo_marker in pot_source:
+    pot_source, demo_body = pot_source.split(demo_marker, 1)
+    demo = demo_marker + demo_body
+python_source = "\n\n".join([
+    pot_source,
+    (root / "web" / "game_modules.py").read_text(encoding="utf-8"),
+    (root / "web" / "game_engine.py").read_text(encoding="utf-8"),
+    demo,
+])
 html = html.replace("PotBreaker(None, \\\"'+selectedDifficulty+'\\\")", "GameEngine(\\\"potbreaker\\\", None, \\\"'+selectedDifficulty+'\\\")")
 html = html.replace("화면을 원하는 방향으로 밀기: 누르고 있으면 계속 이동", "방향 패드를 눌러 이동 · 누르고 있으면 계속 이동")
 html = html.replace("♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 화면을 밀어 방향 조작 · 누르고 있으면 계속 이동", "감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동")
