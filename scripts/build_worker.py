@@ -577,5 +577,15 @@ worker = worker.replace('<url><loc>https://potbreaker.com/about</loc></url>',
                         extra_urls+'<url><loc>https://potbreaker.com/about</loc></url>', 1)
 
 
+# Repair existing v1.0.97 static HTML constants: raw quotes would break JS parsing.
+# Preserve the exact HTML text while serializing it as a JavaScript string.
+import re
+for _var, _next in (("SITE_ABOUT", "SITE_PRIVACY"), ("SITE_PRIVACY", "json")):
+    _pattern = r'const ' + _var + r'="(.*?)";\\nconst ' + _next
+    _match = re.search(_pattern, worker, re.S)
+    if _match:
+        _replacement = 'const ' + _var + '=' + json.dumps(_match.group(1), ensure_ascii=False) + ';\\nconst ' + _next
+        worker = worker[:_match.start()] + _replacement + worker[_match.end():]
+
 (root / "cloudflare" / "worker.js").write_text(worker, encoding="utf-8")
 print("Built cloudflare/worker.js", len(worker.encode("utf-8")), "bytes")
