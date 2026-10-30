@@ -172,7 +172,7 @@ menu.addEventListener("click",()=>{options.hidden=!options.hidden;menu.setAttrib
 document.addEventListener("click",e=>{if(!e.target.closest(".menu")){options.hidden=true;menu.setAttribute("aria-expanded","false")}});
 const $=id=>document.getElementById(id);
 let run=null,latestVersion=-1,busy=false,tapping=Promise.resolve(),pollTimer=null,deadline=0,finishShown=false,currentDifficulty="normal";
-let pyodideRuntime=null,pyEngine=null;
+let pyodideRuntime=null,pyEngine=null,localTimer=null;
 function show(view){["home","intro","play","end","rankings"].forEach(id=>$(id).hidden=id!==view);window.scrollTo({top:0,behavior:"instant"});}
 function errors(res){return res.json().then(body=>{if(!res.ok)throw Error(body.error||"network");return body})}
 async function ensurePyEngine(){
@@ -186,11 +186,15 @@ async function ensurePyEngine(){
  if(pyEngine)pyEngine.destroy();
  pyEngine=pyodideRuntime.runPython('GameEngine("ginkgo", None, "'+currentDifficulty+'")');
 }
+function paintStates(phases){
+ if(!phases)return;
+ phases.forEach((phase,i)=>{const cell=$("tree-"+i);if(cell)cell.className="tree "+(phase===0?"leaf0":phase===1?"leaf1":phase===2?"fruit2":"fruit3")});
+}
 function update(snapshot){
  if(!run||snapshot.version<latestVersion)return;
  latestVersion=snapshot.version;
  if(pyEngine)snapshot={...snapshot,...JSON.parse(pyEngine.sync(JSON.stringify({...snapshot,now_ms:Date.now()})))};
- if(snapshot.cells){snapshot.cells.forEach((phase,i)=>{const cell=$("tree-"+i);if(cell)cell.className="tree "+(phase===0?"leaf0":phase===1?"leaf1":phase===2?"fruit2":"fruit3")});}
+ paintStates(snapshot.cells);
  $("score").textContent=snapshot.score;
  $("combo").textContent=snapshot.combo;
  $("timer").textContent=(Math.max(0,snapshot.remaining_ms)/1000).toFixed(1);
@@ -217,7 +221,9 @@ async function begin(){
   const response=await fetch("/api/ginkgo/start",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({difficulty:currentDifficulty})});
   const data=await errors(response);
   run=data.run_id;latestVersion=-1;finishShown=false;deadline=Date.now()+data.remaining_ms;paintBoard();show("play");update(data);
-  clearInterval(pollTimer);pollTimer=setInterval(poll,currentDifficulty==="very_hard"?250:350);
+  clearInterval(pollTimer);clearInterval(localTimer);
+  pollTimer=setInterval(poll,currentDifficulty==="very_hard"?250:350);
+  localTimer=setInterval(()=>{if(pyEngine&&!finishShown){pyEngine.step(0.05);const local=JSON.parse(pyEngine.state());paintStates(local.cells)}},50);
  }catch(e){$("begin-status").textContent=tr.network+" ("+(e?.message||"")+")"}
  finally{busy=false;$("begin").disabled=false}
 }
@@ -244,7 +250,7 @@ function tap(index){
  });
 }
 function finishGame(state){
- if(finishShown)return;finishShown=true;clearInterval(pollTimer);
+ if(finishShown)return;finishShown=true;clearInterval(pollTimer);clearInterval(localTimer);
  $("final-score").textContent=state.score;
  $("final-combo").textContent=state.max_combo;
  $("result-status").textContent="";
