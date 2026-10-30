@@ -1,4 +1,22 @@
 """Reusable field, combat, and actor components for PotBreaker."""
+import math
+from collections import deque
+
+# When imported for local Python use, resolve the shared constants from the
+# engine module. The Worker build concatenates these files into one namespace.
+try:
+    from .game import (
+        WIDTH, HEIGHT, DIRECTIONS, PAD_SPAWN_SECONDS, PAD_LIFETIME_SECONDS,
+        PAD_LIMIT, PARTITION_MOVE_SECONDS, FIELD_POT_COUNT, SPECIAL_POT_EFFECTS,
+        CROW_FIRST_APPEAR_SECONDS, CROW_RESPAWN_SECONDS, VISION_RANGE,
+        PLAYER_DASH_COOLDOWN, BOSS_DASH_COOLDOWN, PLAYER_DASH_MOVE_INTERVAL,
+        PLAYER_MOVE_INTERVAL, PLAYER_HP, PLAYER_POT_CAP, BOSS_POT_CAP,
+        HIT_INVULNERABILITY, CROW_FLIGHT_SECONDS, CROW_DROP_SECONDS,
+        MYSTERY_POTS_PER_DROP, MYSTERY_POT_LIFETIME, MYSTERY_POT_EFFECTS,
+    )
+except ImportError:
+    # In the bundled Pyodide source, constants already exist in this module.
+    pass
 class _FeatureModule:
     def __init__(self, game):
         object.__setattr__(self, "game", game)
