@@ -41,21 +41,21 @@ class PotBreaker:
     def __init__(self, seed=None, difficulty='normal'):
         self.rng = random.Random(seed)
         if 'FieldModule' not in globals():
-            from .game_modules import FieldModule, CombatModule, ActorModule, FEATURE_METHODS
+            from . import game_modules as _game_modules
             globals().update({
-                'FieldModule': FieldModule,
-                'CombatModule': CombatModule,
-                'ActorModule': ActorModule,
-                'FEATURE_METHODS': FEATURE_METHODS,
+                'FieldModule': _game_modules.FieldModule,
+                'CombatModule': _game_modules.CombatModule,
+                'ActorModule': _game_modules.ActorModule,
+                'FEATURE_METHODS': _game_modules.FEATURE_METHODS,
             })
+        feature_classes = globals()
         self.difficulty = difficulty if difficulty in ('normal', 'hard', 'very_hard') else 'normal'
         self.player_pot_cap = 3 if self.difficulty == 'normal' else 2
         self.boss_hp_cap = {'normal': 5, 'hard': 7, 'very_hard': 10}[self.difficulty]
         self._feature_modules = {
-            'field': FieldModule(self),
-            'combat': CombatModule(self),
-            'actor': ActorModule(self),
-        }
+            'field': feature_classes['FieldModule'](self),
+            'combat': feature_classes['CombatModule'](self),
+            'actor': feature_classes['ActorModule'](self),
         self.reset()
 
     def __getattr__(self, name):
