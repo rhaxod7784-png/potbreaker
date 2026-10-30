@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feat/potbreaker-seo-adsense
+      - feat/ginkgo-tree-breaker-v0-6
   workflow_dispatch:
 
 permissions:
@@ -20,8 +21,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Generate Worker bundle
-        run: python scripts/build_worker.py
+      - name: Validate and generate Worker bundle
+        run: |
+          python -m py_compile scripts/build_worker.py
+          python scripts/build_worker.py
+          node --check cloudflare/worker.js
+          python -m pytest tests/test_potbreaker_re.py -q
       - name: Commit generated Worker
         run: |
           if git diff --quiet -- cloudflare/worker.js; then
