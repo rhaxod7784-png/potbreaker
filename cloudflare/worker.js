@@ -57,6 +57,18 @@ function ginkgoAdvance(s,tick){
  }
  return s;
 }
+function ginkgoScoreTap(s,index,now){
+ if(now<s.lock_until)return false;
+ const cell=s.cells[index];
+ if(cell.phase===2){
+  s.combo++;s.score+=s.combo;s.max_combo=Math.max(s.max_combo,s.combo);
+  cell.phase=0;cell.sex=ginkgoSex(s);
+ }else{
+  s.combo=0;
+  if(cell.phase===3)s.lock_until=now+500;
+ }
+ return true;
+}
 function ginkgoSnapshot(run,now){
  const state=JSON.parse(run.state_json),interval=GINKGO_INTERVAL[run.difficulty];
  ginkgoAdvance(state,Math.floor(Math.min(Math.max(0,now-run.started_ms),60000)/interval));
@@ -71,7 +83,7 @@ async function ginkgoMonthlyCleanup(db,now=Date.now()){
  if(prior?.month===month)return;
  await db.prepare(`DELETE FROM ginkgo_rankings WHERE id IN (
    SELECT id FROM (
-    SELECT id, DENSE_RANK() OVER (PARTITION BY difficulty ORDER BY score DESC,max_combo DESC) as place
+    SELECT id, RANK() OVER (PARTITION BY difficulty ORDER BY score DESC,max_combo DESC) as place
     FROM ginkgo_rankings
    ) WHERE place > 3
  )`).run();
@@ -118,9 +130,7 @@ async function ginkgoAPI(request,env){
    if(now>=run.deadline_ms||run.finished)return ginkgoJSON({error:"game_ended"},409);
    const snapshot=ginkgoSnapshot(run,now),s=snapshot.state;
    if(now<s.lock_until)return ginkgoJSON({error:"temporarily_locked",locked_until:s.lock_until,remaining_ms:snapshot.remaining_ms},409);
-   const cell=s.cells[index];
-   if(cell.phase===2){s.combo++;s.score+=s.combo;s.max_combo=Math.max(s.max_combo,s.combo);cell.phase=0;cell.sex=ginkgoSex(s);}
-   else {s.combo=0;if(cell.phase===3)s.lock_until=now+500;}
+   ginkgoScoreTap(s,index,now);
    const changed=await db.prepare("UPDATE ginkgo_runs SET state_json=?,version=version+1 WHERE run_id=? AND version=? AND finished=0 AND deadline_ms>?").bind(JSON.stringify(s),id,run.version,now).run();
    if(!changed.meta?.changes)return ginkgoJSON({error:"state_conflict"},409);
    return ginkgoJSON({score:s.score,combo:s.combo,max_combo:s.max_combo,cells:s.cells.map(c=>c.phase),locked_until:s.lock_until,remaining_ms:snapshot.remaining_ms,version:run.version+1});
