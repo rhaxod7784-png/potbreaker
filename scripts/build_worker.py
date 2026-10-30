@@ -441,6 +441,13 @@ ginkgo_comic_alt={
  "ja":"ギミョの通勤からイチョウ伐採の仕事までを描く4コマ漫画",
  "zh":"描绘吉喵上班途中接到银杏树清除工作的四格漫画"
 }
+ginkgo_cover_alt={
+ "ko":"가을 은행나무 길을 바라보는 기묘와 크다 부장",
+ "en":"Gimyo and Manager Keuda looking down a golden ginkgo avenue",
+ "ja":"黄金色のイチョウ並木を眺めるギミョとクダ部長",
+ "zh":"吉喵和克达部长望着金黄色的银杏大道"
+}
+ginkgo_cover_image="data:image/webp;base64,"+base64.b64encode((root/"web"/"assets"/"ginkgo-cover.webp").read_bytes()).decode("ascii")
 ginkgo_comic_images={}
 for key in ginkgo_locales:
  image_path=root/"web"/"assets"/f"ginkgo-{key}.webp"
@@ -448,7 +455,7 @@ for key in ginkgo_locales:
 ginkgo_pages={}
 for key,(lang,title,desc,guide_title,guide_body,og_locale,urlpath) in ginkgo_locales.items():
  page=ginkgo_source
- for tag,val in {"LANG":lang,"TITLE":title,"DESCRIPTION":desc,"GUIDE_TITLE":guide_title,"GUIDE_BODY":guide_body,"OG_LOCALE":og_locale,"CANONICAL":"https://potbreaker.com"+urlpath,"COMIC_ALT":ginkgo_comic_alt[key]}.items():
+ for tag,val in {"LANG":lang,"TITLE":title,"DESCRIPTION":desc,"GUIDE_TITLE":guide_title,"GUIDE_BODY":guide_body,"OG_LOCALE":og_locale,"CANONICAL":"https://potbreaker.com"+urlpath,"COMIC_ALT":ginkgo_comic_alt[key],"COVER_ALT":ginkgo_cover_alt[key]}.items():
   page=page.replace("{{"+tag+"}}",val)
  if "{{" in page.replace("{{COMIC_IMAGE}}",""):
   raise SystemExit("Ginkgo localization placeholders unresolved")
@@ -581,13 +588,13 @@ return new Response(request.method==="HEAD"?null:body,{status:200,headers:respon
 )
 
 # Add Ginkgo pages and server-verified gameplay to the existing generated Worker.
-worker=worker.replace("const PAGE=", "const GINKGO_COMIC_IMAGES="+json.dumps(ginkgo_comic_images)+";\nconst GINKGO_PAGES="+json.dumps(ginkgo_pages,ensure_ascii=False)+";\nconst PAGE=",1)
+worker=worker.replace("const PAGE=", "const GINKGO_COVER_IMAGE="+json.dumps(ginkgo_cover_image)+";\nconst GINKGO_COMIC_IMAGES="+json.dumps(ginkgo_comic_images)+";\nconst GINKGO_PAGES="+json.dumps(ginkgo_pages,ensure_ascii=False)+";\nconst PAGE=",1)
 worker=worker.replace("const SCHEMA=`",ginkgo_api+"\nconst SCHEMA=`",1)
 worker=worker.replace('if(path.startsWith("/api/")){','if(path.startsWith("/api/ginkgo/"))return ginkgoAPI(request,env);\nif(path.startsWith("/api/")){',1)
 ginkgo_route=r"""const ginkgoLocale=path.match(/^\/ginkgo(?:\/(en|ja|zh))?\/?$/);
 if(ginkgoLocale){
  const locale=ginkgoLocale[1]||"ko";
- let page=GINKGO_PAGES[locale].replaceAll("{{COMIC_IMAGE}}",GINKGO_COMIC_IMAGES[locale]);
+ let page=GINKGO_PAGES[locale].replaceAll("{{COMIC_IMAGE}}",GINKGO_COMIC_IMAGES[locale]).replace("{{COVER_IMAGE}}",GINKGO_COVER_IMAGE);
  if(publisherId)page=page.replace("</head>",'<meta name="google-adsense-account" content="'+publisherId+'"></head>');
  return text(page,"text/html; charset=utf-8",200,{"cache-control":"no-store"});
 }
