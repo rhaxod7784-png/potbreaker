@@ -5,6 +5,7 @@ Unlike the original v1.0.0 builder, this does not expect an inline Python script
 inside HTML. The browser fetches /game.py from the same Worker origin.
 """
 from pathlib import Path
+import ast
 import base64
 import json
 
@@ -22,6 +23,7 @@ python_source = "\n\n".join([
     (root / "web" / "game_engine.py").read_text(encoding="utf-8"),
     demo,
 ])
+ast.parse(python_source, filename="bundled_game.py")
 html = html.replace("PotBreaker(None, \\\"'+selectedDifficulty+'\\\")", "GameEngine(\\\"potbreaker\\\", None, \\\"'+selectedDifficulty+'\\\")")
 html = html.replace("화면을 원하는 방향으로 밀기: 누르고 있으면 계속 이동", "방향 패드를 눌러 이동 · 누르고 있으면 계속 이동")
 html = html.replace("♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 화면을 밀어 방향 조작 · 누르고 있으면 계속 이동", "감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동")
