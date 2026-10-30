@@ -1,0 +1,60 @@
+name: Ginkgo Tree Breaker build and checks
+on:
+  push:
+    branches:
+      - feat/ginkgo-tree-breaker-v0-6-20261030
+  pull_request:
+    paths:
+      - web/ginkgo.html
+      - cloudflare/ginkgo-api.js
+      - scripts/build_worker.py
+      - wrangler.toml
+      - tests/test_ginkgo_static.py
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ginkgo-build:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Python syntax and static regressions
+        run: |
+          python -m py_compile scripts/build_worker.py
+          python -m unittest discover -s tests -p 'test_ginkgo_static.py' -v
+      - name: Build Worker from exact branch assets
+        run: python scripts/build_worker.py
+      - name: Check generated Worker JavaScript
+        run: |
+          node --check cloudflare/ginkgo-api.js
+          node --check cloudflare/worker.js
+          python - <<'PY'
+          from pathlib import Path
+          s=Path("cloudflare/worker.js").read_text(encoding="utf-8")
+          for name in ["GINKGO_PAGES", "ginkgoAPI(request,env)", "ginkgoSitemap", "ginkgoCronCleanup", "pb-game-mode", "POTBREAKER_DB"]:
+              assert name in s, f"Missing {name}"
+          for path in ["/ginkgo", "/ginkgo/en", "/ginkgo/ja", "/ginkgo/zh"]:
+              assert path in s, path
+          print("Ginkgo routes, worker API, mode menu and SEO entries found.")
+          PY
+      - name: Store generated Worker on feature branch
+        if: github.event_name == 'push'
+        run: |
+          if git diff --quiet -- cloudflare/worker.js web/index.html; then
+            echo "No generated changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cloudflare/worker.js
+          git commit -m "build(ginkgo): refresh generated Worker bundle"
+          git push origin HEAD:${{ github.ref_name }}
