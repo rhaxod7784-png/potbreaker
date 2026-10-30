@@ -21,7 +21,7 @@ class TestGinkgoStatic(unittest.TestCase):
     def test_rules_and_anticheat(self):
         src=(ROOT/"cloudflare/ginkgo-api.js").read_text(encoding="utf-8")
         for x in ('GINKGO_TOTAL','GINKGO_INTERVAL','max_combo','deadline_ms',
-                  'temporarily_locked','DENSE_RANK()','ginkgoMonthlyCleanup',
+                  'temporarily_locked','RANK()','ginkgoMonthlyCleanup',
                   'state_conflict','version=version+1','ginkgoCronCleanup'):
             self.assertIn(x,src)
         self.assertIn('return ginkgoJSON({error:"still_playing"},409)',src)
