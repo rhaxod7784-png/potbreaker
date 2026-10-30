@@ -56,6 +56,7 @@ class PotBreaker:
             'field': feature_classes['FieldModule'](self),
             'combat': feature_classes['CombatModule'](self),
             'actor': feature_classes['ActorModule'](self),
+        }
         self.reset()
 
     def __getattr__(self, name):
