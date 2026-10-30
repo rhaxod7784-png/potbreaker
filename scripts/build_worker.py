@@ -539,5 +539,45 @@ const body=page?localizedPage.replace("</head>",verification+"</head>"):GAME;
 return new Response(request.method==="HEAD"?null:body,{status:200,headers:responseHeaders});
 }};"""
 )
+
+# GINKGO TREE BREAKER v0.6: preserve the original game and add a separate mode.
+# Navigation is injected at build time to avoid modifying the illustrated source.
+ginkgo_page = (root / "web" / "ginkgo.html").read_text(encoding="utf-8")
+mode_style = """<style id="cbzp-mode-picker-style">
+#cbzp-mode-picker{position:fixed;top:10px;left:12px;z-index:99999;font-family:system-ui,'Malgun Gothic',sans-serif;color:#362819}
+#cbzp-mode-picker summary{list-style:none;cursor:pointer;background:#fff8e9;border:2px solid #8a6c3c;border-radius:18px;padding:9px 13px;font-weight:900;box-shadow:0 3px 7px #39281b55}
+#cbzp-mode-picker summary::-webkit-details-marker{display:none}
+#cbzp-mode-picker nav{background:#fff9e9;border:2px solid #8a6c3c;border-radius:13px;padding:7px;min-width:220px;box-shadow:0 8px 20px #39281b55}
+#cbzp-mode-picker a{display:block;padding:10px;text-decoration:none;color:#362819;border-radius:8px;font-weight:900}
+#cbzp-mode-picker a:hover,#cbzp-mode-picker a:focus-visible{background:#ffe598}
+</style>"""
+mode_markup = """<details id="cbzp-mode-picker"><summary aria-label="게임 선택">☰ 게임 선택 ▾</summary><nav aria-label="POT BREAKER 게임 모드"><a href="/">🪴 POT BREAKER RE</a><a href="/ginkgo">🍂 GINKGO TREE BREAKER</a></nav></details>"""
+# PAGE is a full HTML response; the menu does not replace the existing title art.
+if "</head>" in html and "</body>" in html:
+    html = html.replace("</head>", mode_style + "</head>", 1)
+    html = html.replace("</body>", mode_markup + "</body>", 1)
+    worker = worker.replace("const PAGE="+json.dumps((root / "web" / "index.html").read_text(encoding="utf-8"), ensure_ascii=False),
+                            "const PAGE="+json.dumps(html, ensure_ascii=False), 1)
+# Add dedicated localized game routes before existing catch-all rules.
+worker = worker.replace("export default {async fetch(request,env){",
+    "const GINKGO_PAGE=" + json.dumps(ginkgo_page, ensure_ascii=False) + ";\\nexport default {async fetch(request,env){", 1)
+worker = worker.replace("const path=new URL(request.url).pathname;",
+    """const path=new URL(request.url).pathname;
+const ginkgoMatch=path.match(/^\\/(en|ja|zh)\\/ginkgo\\/?$/);
+if(path==="/ginkgo"||path==="/ginkgo/"||ginkgoMatch){
+ if(!["GET","HEAD"].includes(request.method))return new Response("Method Not Allowed",{status:405});
+ const lang=ginkgoMatch?.[1]||"ko";
+ const loc=lang==="ko"?"/ginkgo":"/"+lang+"/ginkgo";
+ const doc=GINKGO_PAGE.replace('<html lang="ko">','<html lang="'+(lang==="zh"?"zh-CN":lang)+'">')
+   .replace('href="https://potbreaker.com/ginkgo"','href="https://potbreaker.com'+loc+'"')
+   .replace('content="https://potbreaker.com/ginkgo"','content="https://potbreaker.com'+loc+'"');
+ return new Response(request.method==="HEAD"?null:doc,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"public, max-age=120","x-content-type-options":"nosniff"}});
+}
+""", 1)
+# Keep sitemap XML valid and add all four localized game pages.
+extra_urls = "".join('<url><loc>https://potbreaker.com'+p+'</loc></url>' for p in ("/ginkgo","/en/ginkgo","/ja/ginkgo","/zh/ginkgo"))
+worker = worker.replace('<url><loc>https://potbreaker.com/about</loc></url>',
+                        extra_urls+'<url><loc>https://potbreaker.com/about</loc></url>', 1)
+
 (root / "cloudflare" / "worker.js").write_text(worker, encoding="utf-8")
 print("Built cloudflare/worker.js", len(worker.encode("utf-8")), "bytes")
