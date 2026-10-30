@@ -37,6 +37,19 @@ jobs:
         run: |
           node --check cloudflare/ginkgo-api.js
           node --check cloudflare/worker.js
+          node tests/test_ginkgo_rules.cjs
+          python - <<'PY'
+          import re,subprocess,tempfile
+          from pathlib import Path
+          html=Path("web/ginkgo.html").read_text(encoding="utf-8")
+          scripts=re.findall(r"<script[^>]*>(.*?)</script>",html,re.S|re.I)
+          assert scripts, "No inline game script"
+          for code in scripts:
+              with tempfile.NamedTemporaryFile(mode="w",suffix=".cjs",encoding="utf-8") as fp:
+                  fp.write(code);fp.flush()
+                  subprocess.run(["node","--check",fp.name],check=True)
+          print("Inline client scripts compile.")
+          PY
           python - <<'PY'
           from pathlib import Path
           s=Path("cloudflare/worker.js").read_text(encoding="utf-8")
