@@ -469,7 +469,7 @@ for key,(lang,title,desc,guide_title,guide_body,og_locale,urlpath) in ginkgo_loc
  page=ginkgo_source
  for tag,val in {"LANG":lang,"TITLE":title,"DESCRIPTION":desc,"GUIDE_TITLE":guide_title,"GUIDE_BODY":guide_body,"OG_LOCALE":og_locale,"CANONICAL":"https://potbreaker.com"+urlpath,"COMIC_ALT":ginkgo_comic_alt[key],"COVER_ALT":ginkgo_cover_alt[key]}.items():
   page=page.replace("{{"+tag+"}}",val)
- if "{{" in page.replace("{{COMIC_IMAGE}}",""):
+ if "{{" in page.replace("{{COMIC_IMAGE}}","").replace("{{COVER_IMAGE}}",""):
   raise SystemExit("Ginkgo localization placeholders unresolved")
  ginkgo_pages[key]=page
 ginkgo_api=(root/"cloudflare"/"ginkgo-api.js").read_text(encoding="utf-8")
