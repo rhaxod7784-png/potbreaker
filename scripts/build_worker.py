@@ -573,7 +573,7 @@ return new Response(request.method==="HEAD"?null:body,{status:200,headers:respon
 worker=worker.replace("const PAGE=", "const GINKGO_PAGES="+json.dumps(ginkgo_pages,ensure_ascii=False)+";\nconst PAGE=",1)
 worker=worker.replace("const SCHEMA=`",ginkgo_api+"\nconst SCHEMA=`",1)
 worker=worker.replace('if(path.startsWith("/api/")){','if(path.startsWith("/api/ginkgo/"))return ginkgoAPI(request,env);\nif(path.startsWith("/api/")){',1)
-ginkgo_route=r"""const ginkgoLocale=path.match(/^\\/ginkgo(?:\\/(en|ja|zh))?\\/?$/);
+ginkgo_route=r"""const ginkgoLocale=path.match(/^\/ginkgo(?:\/(en|ja|zh))?\/?$/);
 if(ginkgoLocale){
  const locale=ginkgoLocale[1]||"ko";
  let page=GINKGO_PAGES[locale];
