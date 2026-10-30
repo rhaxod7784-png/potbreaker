@@ -32,6 +32,7 @@ jobs:
           python -m py_compile scripts/build_worker.py web/game.py web/game_modules.py web/game_engine.py
           python -m unittest discover -s tests -p 'test_ginkgo_static.py' -v
           python -m unittest discover -s tests -p 'test_potbreaker_re.py' -v
+          python -m unittest discover -s tests -p 'test_game_engine.py' -v
       - name: Build Worker from exact branch assets
         run: python scripts/build_worker.py
       - name: Check generated Worker JavaScript
