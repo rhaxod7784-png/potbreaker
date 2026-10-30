@@ -40,6 +40,14 @@ def distance(a, b):
 class PotBreaker:
     def __init__(self, seed=None, difficulty='normal'):
         self.rng = random.Random(seed)
+        if 'FieldModule' not in globals():
+            from .game_modules import FieldModule, CombatModule, ActorModule, FEATURE_METHODS
+            globals().update({
+                'FieldModule': FieldModule,
+                'CombatModule': CombatModule,
+                'ActorModule': ActorModule,
+                'FEATURE_METHODS': FEATURE_METHODS,
+            })
         self.difficulty = difficulty if difficulty in ('normal', 'hard', 'very_hard') else 'normal'
         self.player_pot_cap = 3 if self.difficulty == 'normal' else 2
         self.boss_hp_cap = {'normal': 5, 'hard': 7, 'very_hard': 10}[self.difficulty]
