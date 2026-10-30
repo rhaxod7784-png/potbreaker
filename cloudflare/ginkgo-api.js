@@ -67,7 +67,7 @@ async function ginkgoMonthlyCleanup(db,now=Date.now()){
  if(prior?.month===month)return;
  await db.prepare(`DELETE FROM ginkgo_rankings WHERE id IN (
    SELECT id FROM (
-    SELECT id, DENSE_RANK() OVER (PARTITION BY difficulty ORDER BY score DESC,max_combo DESC) as place
+    SELECT id, RANK() OVER (PARTITION BY difficulty ORDER BY score DESC,max_combo DESC) as place
     FROM ginkgo_rankings
    ) WHERE place > 3
  )`).run();
