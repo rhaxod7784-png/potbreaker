@@ -101,7 +101,8 @@ class GinkgoMode:
         remaining = max(0, min(60000, int(data.get("remaining_ms", 60000))))
         self.elapsed = 60.0 - remaining / 1000.0
         self.tick_count = min(120, int(self.elapsed / self.interval))
-        lock_remaining_ms = max(0, int(data.get("locked_until", 0)) - int(data.get("now_ms", 0)))\n        self.lock_until = self.elapsed + lock_remaining_ms / 1000.0
+        lock_remaining_ms = max(0, int(data.get("locked_until", 0)) - int(data.get("now_ms", 0)))
+        self.lock_until = self.elapsed + lock_remaining_ms / 1000.0
         self.phase = "finished" if data.get("done") or remaining <= 0 else "playing"
         return self.state()
 
