@@ -5,6 +5,7 @@ Unlike the original v1.0.0 builder, this does not expect an inline Python script
 inside HTML. The browser fetches /game.py from the same Worker origin.
 """
 from pathlib import Path
+import base64
 import json
 
 root = Path(__file__).resolve().parents[1]
@@ -434,12 +435,22 @@ ginkgo_locales={
  "ja":("ja","ギンコツリー・ブレイカー | ポットブレイカー テーマ2","60秒間で腐る前のギンナンをタップ。ノーマル・ハード・ベリーハード、連続成功スコアとランキング。","ギンコツリー・ブレイカーの遊び方","60秒の間に黄色いギンナンをタップして得点。連続成功で得点が増加。葉や腐ったギンナンをタップすると連続記録がリセットされます。腐ったギンナンには0.5秒のタップ制限があります。","ja_JP","/ginkgo/ja"),
  "zh":("zh","银杏树破坏者 | POT BREAKER 主题2","60秒内点击未腐烂的银杏果。三种难度、连续成功加分和排行榜。","银杏树破坏者玩法","60秒内点击黄色银杏果得分，连续成功会逐次增加得分。点击树叶或腐烂的银杏果会重置连击，腐烂的果实还会让点击暂停0.5秒。三种难度的阶段时间为1秒、0.7秒和0.5秒。","zh_CN","/ginkgo/zh")
 }
+ginkgo_comic_alt={
+ "ko":"기묘의 출근길에서 은행나무 제거 작업까지 이어지는 깅코트리 브레이커 4컷 만화",
+ "en":"Four-panel comic showing Gimyo's commute and the ginkgo tree removal job",
+ "ja":"ギミョの通勤からイチョウ伐採の仕事までを描く4コマ漫画",
+ "zh":"描绘吉喵上班途中接到银杏树清除工作的四格漫画"
+}
+ginkgo_comic_images={}
+for key in ginkgo_locales:
+ image_path=root/"web"/"assets"/f"ginkgo-{key}.webp"
+ ginkgo_comic_images[key]="data:image/webp;base64,"+base64.b64encode(image_path.read_bytes()).decode("ascii")
 ginkgo_pages={}
 for key,(lang,title,desc,guide_title,guide_body,og_locale,urlpath) in ginkgo_locales.items():
  page=ginkgo_source
- for tag,val in {"LANG":lang,"TITLE":title,"DESCRIPTION":desc,"GUIDE_TITLE":guide_title,"GUIDE_BODY":guide_body,"OG_LOCALE":og_locale,"CANONICAL":"https://potbreaker.com"+urlpath}.items():
+ for tag,val in {"LANG":lang,"TITLE":title,"DESCRIPTION":desc,"GUIDE_TITLE":guide_title,"GUIDE_BODY":guide_body,"OG_LOCALE":og_locale,"CANONICAL":"https://potbreaker.com"+urlpath,"COMIC_ALT":ginkgo_comic_alt[key]}.items():
   page=page.replace("{{"+tag+"}}",val)
- if "{{" in page:
+ if "{{" in page.replace("{{COMIC_IMAGE}}",""):
   raise SystemExit("Ginkgo localization placeholders unresolved")
  ginkgo_pages[key]=page
 ginkgo_api=(root/"cloudflare"/"ginkgo-api.js").read_text(encoding="utf-8")
@@ -570,13 +581,13 @@ return new Response(request.method==="HEAD"?null:body,{status:200,headers:respon
 )
 
 # Add Ginkgo pages and server-verified gameplay to the existing generated Worker.
-worker=worker.replace("const PAGE=", "const GINKGO_PAGES="+json.dumps(ginkgo_pages,ensure_ascii=False)+";\nconst PAGE=",1)
+worker=worker.replace("const PAGE=", "const GINKGO_COMIC_IMAGES="+json.dumps(ginkgo_comic_images)+";\nconst GINKGO_PAGES="+json.dumps(ginkgo_pages,ensure_ascii=False)+";\nconst PAGE=",1)
 worker=worker.replace("const SCHEMA=`",ginkgo_api+"\nconst SCHEMA=`",1)
 worker=worker.replace('if(path.startsWith("/api/")){','if(path.startsWith("/api/ginkgo/"))return ginkgoAPI(request,env);\nif(path.startsWith("/api/")){',1)
 ginkgo_route=r"""const ginkgoLocale=path.match(/^\/ginkgo(?:\/(en|ja|zh))?\/?$/);
 if(ginkgoLocale){
  const locale=ginkgoLocale[1]||"ko";
- let page=GINKGO_PAGES[locale];
+ let page=GINKGO_PAGES[locale].replace("{{COMIC_IMAGE}}",GINKGO_COMIC_IMAGES[locale]);
  if(publisherId)page=page.replace("</head>",'<meta name="google-adsense-account" content="'+publisherId+'"></head>');
  return text(page,"text/html; charset=utf-8",200,{"cache-control":"no-store"});
 }

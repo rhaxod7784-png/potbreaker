@@ -38,14 +38,10 @@ button,input,select{font:inherit}button{cursor:pointer;touch-action:manipulation
 .action.secondary{background:linear-gradient(#fff2b0,#e7bf69);border-color:#745232;box-shadow:0 5px 0 #745232}
 .action:disabled{filter:grayscale(1);opacity:.55;cursor:not-allowed}
 .comic-title{margin:26px 0 15px;font-size:clamp(18px,3vw,28px);font-weight:1000}
-.comics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;text-align:left}
-.comic{position:relative;min-height:160px;overflow:hidden;border:3px solid #513421;border-radius:16px;padding:14px;background:linear-gradient(145deg,#83cafe 5%,#fff6c4 68%,#f0c95d);box-shadow:0 5px 0 #63432b}
-.comic:nth-child(2){background:linear-gradient(145deg,#f6efe4,#d7f6d1)}
-.comic:nth-child(3){background:linear-gradient(145deg,#f4ce70,#fff1ad)}
-.comic:nth-child(4){background:linear-gradient(145deg,#f9cc6f,#f7db84,#a8e69c)}
-.comic strong{display:inline-block;border:2px solid #40261b;border-radius:10px;padding:5px 10px;background:#fff0bd;font-size:clamp(12px,1.8vw,19px)}
-.comic .art{font-size:clamp(25px,5vw,54px);margin:7px 0;text-align:center;text-shadow:0 3px 0 #fff}
-.comic p{margin:5px 0;padding:9px 11px;border:2px solid #553c2b;background:#fffef8;border-radius:25px;font-weight:900;font-size:clamp(12px,1.8vw,17px)}
+.comics{display:flex;justify-content:center;width:min(100%,800px);margin:16px auto}
+.comic{margin:0;width:100%;overflow:hidden;border:4px solid #513421;border-radius:18px;background:#fff6cf;box-shadow:0 6px 0 #63432b}
+.comic-image{display:block;width:100%;height:auto;object-fit:contain}
+@media(max-width:680px){.comics{width:100%;margin:10px auto}.comic{border-width:2px;border-radius:10px}}
 .play-area{padding-top:0}
 .hud{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px auto;max-width:880px}
 .stat{background:#fffaf0;border:2px solid #634531;border-radius:12px;padding:7px 13px;min-width:78px;font-size:clamp(11px,2.1vw,18px);font-weight:1000}
@@ -99,12 +95,7 @@ footer{max-width:880px;margin:24px auto;padding-bottom:15px;display:flex;gap:18p
 <p class="status" id="start-status" aria-live="polite"></p>
 </section>
 <h2 class="comic-title" data-i18n="story">🍁 기묘의 이상한 출근길 — 4컷 만화</h2>
-<div class="comics">
-<article class="comic"><strong data-i18n="scene1">① 출근길</strong><div class="art">🐈 🏗️ 🌳</div><p data-i18n="line1">은행나무 교체 공사? 오, 좋다!</p></article>
-<article class="comic"><strong data-i18n="scene2">② 하청이라고요?</strong><div class="art">🐈 📋 🐊</div><p data-i18n="line2">오늘부터 네가 뽑아.</p></article>
-<article class="comic"><strong data-i18n="scene3">③ 진짜 뽑아야 해?</strong><div class="art">🐈 🌱 😰</div><p data-i18n="line3">많이 뽑을수록 좋다고...?</p></article>
-<article class="comic"><strong data-i18n="scene4">④ 깅코트리 브레이커!</strong><div class="art">🐈 💥 🌳 🐊</div><p data-i18n="line4">그렇게 은행나무를 뽑게 된 기묘.</p></article>
-</div>
+<figure class="comics comic"><img class="comic-image" src="{{COMIC_IMAGE}}" alt="{{COMIC_ALT}}" width="1254" height="1254" decoding="async" fetchpriority="low"></figure>
 </section>
 <section id="play" class="play-area" hidden aria-label="Ginkgo Tree Breaker game">
 <div class="hud"><div class="stat">🏆 <span data-i18n="score">점수</span> <b id="score">0</b></div><div class="stat time">⏱️ <b id="timer">60.0</b>s</div><div class="stat">🔥 <span data-i18n="combo">연속</span> <b id="combo">0</b></div></div>
