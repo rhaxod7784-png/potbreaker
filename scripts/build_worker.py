@@ -587,7 +587,7 @@ worker=worker.replace('if(path.startsWith("/api/")){','if(path.startsWith("/api/
 ginkgo_route=r"""const ginkgoLocale=path.match(/^\/ginkgo(?:\/(en|ja|zh))?\/?$/);
 if(ginkgoLocale){
  const locale=ginkgoLocale[1]||"ko";
- let page=GINKGO_PAGES[locale].replace("{{COMIC_IMAGE}}",GINKGO_COMIC_IMAGES[locale]);
+ let page=GINKGO_PAGES[locale].replaceAll("{{COMIC_IMAGE}}",GINKGO_COMIC_IMAGES[locale]);
  if(publisherId)page=page.replace("</head>",'<meta name="google-adsense-account" content="'+publisherId+'"></head>');
  return text(page,"text/html; charset=utf-8",200,{"cache-control":"no-store"});
 }
