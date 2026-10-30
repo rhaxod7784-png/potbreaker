@@ -7,6 +7,12 @@ parameters so browser screens can reuse one Python runtime and engine entry.
 import json
 import random
 
+try:
+    from .game import PotBreaker
+except ImportError:
+    # In the bundled Pyodide source, PotBreaker is already in this namespace.
+    pass
+
 
 class GinkgoMode:
     COLS = 13
