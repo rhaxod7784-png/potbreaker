@@ -581,10 +581,10 @@ worker = worker.replace('<url><loc>https://potbreaker.com/about</loc></url>',
 # Preserve the exact HTML text while serializing it as a JavaScript string.
 import re
 for _var, _next in (("SITE_ABOUT", "SITE_PRIVACY"), ("SITE_PRIVACY", "json")):
-    _pattern = r'const ' + _var + r'="(.*?)";\\nconst ' + _next
+    _pattern = r'const ' + _var + r'="(.*?)";\nconst ' + _next
     _match = re.search(_pattern, worker, re.S)
     if _match:
-        _replacement = 'const ' + _var + '=' + json.dumps(_match.group(1), ensure_ascii=False) + ';\\nconst ' + _next
+        _replacement = 'const ' + _var + '=' + json.dumps(_match.group(1), ensure_ascii=False) + ';\nconst ' + _next
         worker = worker[:_match.start()] + _replacement + worker[_match.end():]
 
 (root / "cloudflare" / "worker.js").write_text(worker, encoding="utf-8")
