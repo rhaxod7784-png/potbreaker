@@ -27,10 +27,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Python syntax and static regressions
+      - name: Python syntax and regression checks
         run: |
-          python -m py_compile scripts/build_worker.py
+          python -m py_compile scripts/build_worker.py web/game.py web/game_modules.py web/game_engine.py
           python -m unittest discover -s tests -p 'test_ginkgo_static.py' -v
+          python -m unittest discover -s tests -p 'test_potbreaker_re.py' -v
       - name: Build Worker from exact branch assets
         run: python scripts/build_worker.py
       - name: Check generated Worker JavaScript
