@@ -43,9 +43,21 @@ class PotBreaker:
         self.difficulty = difficulty if difficulty in ('normal', 'hard', 'very_hard') else 'normal'
         self.player_pot_cap = 3 if self.difficulty == 'normal' else 2
         self.boss_hp_cap = {'normal': 5, 'hard': 7, 'very_hard': 10}[self.difficulty]
-        self._feature_modules = {\n            'field': FieldModule(self),\n            'combat': CombatModule(self),\n            'actor': ActorModule(self),\n        }\n        self.reset()
+        self._feature_modules = {
+            'field': FieldModule(self),
+            'combat': CombatModule(self),
+            'actor': ActorModule(self),
+        }
+        self.reset()
 
-    def __getattr__(self, name):\n        module_name = FEATURE_METHODS.get(name)\n        if module_name is not None:\n            return getattr(object.__getattribute__(self, '_feature_modules')[module_name], name)\n        raise AttributeError(name)\n\n    def reset(self):
+    def __getattr__(self, name):
+        module_name = FEATURE_METHODS.get(name)
+        if module_name is not None:
+            modules = object.__getattribute__(self, '_feature_modules')
+            return getattr(modules[module_name], name)
+        raise AttributeError(name)
+
+    def reset(self):
         self.phase, self.clock = 'playing', 0.0
         # Keep the player clear of the touch controls at the lower screen corners.
         self.player = list(self.rng.choice([(3, 3), (3, HEIGHT - 4),
