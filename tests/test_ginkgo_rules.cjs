@@ -5,9 +5,9 @@ vm.createContext(ctx);
 vm.runInContext(fs.readFileSync("cloudflare/ginkgo-api.js","utf8")+";globalThis.G={ginkgoInit,ginkgoAdvance,ginkgoScoreTap,GINKGO_TOTAL,GINKGO_INTERVAL};",ctx);
 const G=ctx.G;
 assert.equal(G.GINKGO_TOTAL,91);
-assert.equal(G.GINKGO_INTERVAL.normal,1000);
-assert.equal(G.GINKGO_INTERVAL.hard,700);
-assert.equal(G.GINKGO_INTERVAL.very_hard,500);
+assert.equal(G.GINKGO_INTERVAL.normal,3000);
+assert.equal(G.GINKGO_INTERVAL.hard,2000);
+assert.equal(G.GINKGO_INTERVAL.very_hard,1000);
 const s=G.ginkgoInit();
 assert.equal(s.cells.length,91);
 for(let tick=1;tick<=120;tick++){

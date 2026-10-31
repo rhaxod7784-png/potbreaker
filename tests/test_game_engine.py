@@ -18,12 +18,12 @@ class GinkgoModeTests(unittest.TestCase):
     def test_female_and_male_tree_transitions(self):
         female = self.make_game()
         female.mode.cells[0] = {"phase": 1, "sex": 1}
-        female.step(1.0)
+        female.step(female.mode.interval)
         self.assertEqual(json.loads(female.state())["cells"][0], 2)
 
         male = self.make_game()
         male.mode.cells[0] = {"phase": 1, "sex": 0}
-        male.step(1.0)
+        male.step(male.mode.interval)
         self.assertEqual(json.loads(male.state())["cells"][0], 0)
 
     def test_success_combo_and_leaf_reset_keep_earned_score(self):
