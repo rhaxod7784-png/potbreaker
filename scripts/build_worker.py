@@ -606,6 +606,7 @@ worker=worker.replace("const PAGE=", "const GINKGO_COVER_IMAGE="+json.dumps(gink
 worker=worker.replace("const SCHEMA=`",ginkgo_api+"\nconst SCHEMA=`",1)
 worker=worker.replace('if(path.startsWith("/api/")){','if(path.startsWith("/api/ginkgo/"))return ginkgoAPI(request,env);\nif(path.startsWith("/api/")){',1)
 ginkgo_route=r"""const ginkgoLocale=path.match(/^\/ginkgo(?:\/(en|ja|zh))?\/?$/);
+if(path==="/ginkgo/game.py")return text(GAME,"text/plain; charset=utf-8",200,{"cache-control":"no-store"});
 if(ginkgoLocale){
  const locale=ginkgoLocale[1]||"ko";
  let page=GINKGO_PAGES[locale].replaceAll("{{COMIC_IMAGE}}",GINKGO_COMIC_IMAGES[locale]).replace("{{COVER_IMAGE}}",GINKGO_COVER_IMAGE);

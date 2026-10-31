@@ -37,6 +37,7 @@ class TestGinkgoStatic(unittest.TestCase):
                   'ginkgoAPI(request,env)','ginkgoCronCleanup','pb-game-mode'):
             self.assertIn(x,src)
         self.assertIn('ginkgoLocale=path.match(',src)
+        self.assertIn('path==="/ginkgo/game.py"',src)
         self.assertIn('google-adsense-account',src)
     def test_cron(self):
         config=(ROOT/"wrangler.toml").read_text(encoding="utf-8")

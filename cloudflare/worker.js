@@ -240,6 +240,7 @@ if(path==="/about"||path==="/privacy"){
  return text(html,"text/html; charset=utf-8",200,{"cache-control":"public, max-age=300"});
 }
 const ginkgoLocale=path.match(/^\/ginkgo(?:\/(en|ja|zh))?\/?$/);
+if(path==="/ginkgo/game.py")return text(GAME,"text/plain; charset=utf-8",200,{"cache-control":"no-store"});
 if(ginkgoLocale){
  const locale=ginkgoLocale[1]||"ko";
  let page=GINKGO_PAGES[locale].replaceAll("{{COMIC_IMAGE}}",GINKGO_COMIC_IMAGES[locale]).replace("{{COVER_IMAGE}}",GINKGO_COVER_IMAGE);
