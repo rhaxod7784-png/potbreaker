@@ -218,7 +218,7 @@ async function ensurePyEngine(){
  if(!window.loadPyodide)throw new Error("Pyodide unavailable");
  if(!pyodideRuntime){
   pyodideRuntime=await loadPyodide({indexURL:"https://cdn.jsdelivr.net/pyodide/v0.27.7/full/"});
-  const response=await fetch("/game.py",{cache:"no-store"});
+  const response=await fetch("/ginkgo/game.py",{cache:"no-store"});
   if(!response.ok)throw new Error("shared game engine unavailable");
   await pyodideRuntime.runPythonAsync(await response.text());
  }

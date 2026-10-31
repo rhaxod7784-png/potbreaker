@@ -15,6 +15,7 @@ class TestGinkgoStatic(unittest.TestCase):
         self.assertIn('aria-expanded="false"',html)
         self.assertIn('id="board"',html)
         self.assertIn('id="begin"',html)
+        self.assertIn('fetch("/ginkgo/game.py"',html)
         self.assertIn('$("open-intro").addEventListener("click",()=>show("intro"));',html)
         self.assertIn('$("intro-back").addEventListener("click",()=>show("home"));',html)
         self.assertIn('$("begin").addEventListener("click",begin);',html)
