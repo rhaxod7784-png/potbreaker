@@ -151,7 +151,10 @@ async function ginkgoAPI(request,env){
    return ginkgoJSON({ok:true,score:s.score,max_combo:s.max_combo});
   }
   return ginkgoJSON({error:"not_found"},404);
- }catch(e){return ginkgoJSON({error:"server_error"},500);}
+ }catch(e){
+  console.error("[ginkgo-api] request failed",{path,method,error:e?.stack||String(e)});
+  return ginkgoJSON({error:"server_error"},500);
+ }
 }
 async function ginkgoCronCleanup(env,at=Date.now()){
  if(!env.POTBREAKER_DB)return;
