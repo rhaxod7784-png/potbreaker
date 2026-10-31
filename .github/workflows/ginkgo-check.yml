@@ -9,6 +9,7 @@ on:
       - cloudflare/ginkgo-api.js
       - scripts/build_worker.py
       - wrangler.toml
+      - wrangler.qa.toml
       - tests/test_ginkgo_static.py
   workflow_dispatch:
 
@@ -61,34 +62,6 @@ jobs:
               assert path in s, path
           print("Ginkgo routes, worker API, mode menu and SEO entries found.")
           PY
-      - name: Integration smoke test against isolated Cloudflare QA Worker (network-dependent)
-        continue-on-error: true
-        run: |
-          python - <<'PY'
-          import json,urllib.request,urllib.error
-          base="https://potbreaker-ginkgo-qa-20261030.rhaxod7784.workers.dev"
-          def get(path):
-              with urllib.request.urlopen(base+path,timeout=15) as r:
-                  return r.status,r.read().decode()
-          def post(path,body):
-              req=urllib.request.Request(base+path,data=json.dumps(body).encode(),headers={"content-type":"application/json"},method="POST")
-              with urllib.request.urlopen(req,timeout=15) as r:
-                  return r.status,json.load(r)
-          status,body=get("/health")
-          assert status==200 and json.loads(body)["db"] is True
-          for p in ["/ginkgo","/ginkgo/en","/ginkgo/ja","/ginkgo/zh"]:
-              code,html=get(p)
-              assert code==200 and "<title>" in html and 'lang="' in html, p
-          status,run=post("/api/ginkgo/start",{"difficulty":"very_hard"})
-          assert status==200 and len(run["cells"])==91
-          status,state=get("/api/ginkgo/state?run="+run["run_id"])
-          assert status==200 and len(json.loads(state)["cells"])==91
-          code,tap=post("/api/ginkgo/tap",{"run_id":run["run_id"],"index":0})
-          assert code==200 and tap["score"]>=0
-          code,ranking=get("/api/ginkgo/rankings?difficulty=normal")
-          assert code==200 and "rankings" in json.loads(ranking)
-          print("Deployed QA Worker: health, 4 locales, D1 start/state/tap/rankings passed.")
-          PY
       - name: Store generated Worker on feature branch
         if: github.event_name == 'push'
         run: |
@@ -102,7 +75,7 @@ jobs:
           git commit -m "build(ginkgo): refresh generated Worker bundle"
           git push origin HEAD:${{ github.ref_name }}
 
-  deploy-ginkgo-production:
+  deploy-ginkgo-qa:
     needs: ginkgo-build
     if: github.event_name == 'push' && github.actor != 'github-actions[bot]' && github.ref == 'refs/heads/feat/ginkgo-tree-breaker-v0-6-20261030'
     runs-on: ubuntu-latest
@@ -115,9 +88,43 @@ jobs:
           python-version: '3.12'
       - name: Build Worker bundle from this commit
         run: python scripts/build_worker.py
-      - name: Deploy verified Ginkgo build to production
+      - name: Deploy Ginkgo preview to isolated QA Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: da88e3ea20008b97a8ee3a994a69e006
-          command: deploy --config wrangler.toml
+          command: deploy --config wrangler.qa.toml
+
+  qa-smoke:
+    needs: deploy-ginkgo-qa
+    if: github.event_name == 'push' && github.actor != 'github-actions[bot]' && github.ref == 'refs/heads/feat/ginkgo-tree-breaker-v0-6-20261030'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deployed QA Worker routes and game API
+        run: |
+          python - <<'PY'
+          import json,urllib.request
+          base="https://potbreaker-ginkgo-qa-20261030.rhaxod7784.workers.dev"
+          def get(path):
+              with urllib.request.urlopen(base+path,timeout=20) as r:
+                  return r.status,r.read().decode()
+          def post(path,body):
+              req=urllib.request.Request(base+path,data=json.dumps(body).encode(),headers={"content-type":"application/json"},method="POST")
+              with urllib.request.urlopen(req,timeout=20) as r:
+                  return r.status,json.load(r)
+          status,health=get("/health")
+          assert status==200 and json.loads(health)["db"] is True
+          for path in ["/ginkgo","/ginkgo/en","/ginkgo/ja","/ginkgo/zh"]:
+              code,html=get(path)
+              assert code==200 and "<title>" in html and 'lang="' in html, path
+              assert 'POT BREAKER' in html or '폿 브레이커' in html, path
+          status,run=post("/api/ginkgo/start",{"difficulty":"very_hard"})
+          assert status==200 and len(run["cells"])==91
+          status,state=get("/api/ginkgo/state?run="+run["run_id"])
+          assert status==200 and len(json.loads(state)["cells"])==91
+          code,tap=post("/api/ginkgo/tap",{"run_id":run["run_id"],"index":0})
+          assert code==200 and tap["score"]>=0
+          code,ranking=get("/api/ginkgo/rankings?difficulty=normal")
+          assert code==200 and "rankings" in json.loads(ranking)
+          print("Deployed QA Worker routes and game API passed.")
+          PY

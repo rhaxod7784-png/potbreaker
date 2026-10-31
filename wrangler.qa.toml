@@ -1,0 +1,13 @@
+name = "potbreaker-ginkgo-qa-20261030"
+main = "cloudflare/worker.js"
+compatibility_date = "2026-10-30"
+workers_dev = true
+
+[[d1_databases]]
+binding = "POTBREAKER_DB"
+database_name = "ginkgo-breaker-preview-20261030"
+database_id = "67d8bf6d-6ff3-418b-a4a3-161040fb811b"
+migrations_dir = "cloudflare/migrations"
+
+[triggers]
+crons = ["0 15 28-31 * *"]
