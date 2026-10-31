@@ -14,6 +14,8 @@ class TestGinkgoStatic(unittest.TestCase):
         self.assertIn('id="mode-menu"',html)
         self.assertIn('aria-expanded="false"',html)
         self.assertIn('id="board"',html)
+        self.assertIn('id="begin"',html)
+        self.assertIn('$("begin").addEventListener("click",begin);',html)
         self.assertIn('name="difficulty"',html)
         self.assertIn('id="rankings"',html)
         for loc in ('ko','en','ja','zh'):

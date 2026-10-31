@@ -311,7 +311,7 @@ async function rankings(){
   }
  }catch(e){$("rank-status").textContent=tr.blocked}
 }
-$("start").addEventListener("click",begin);
+$("begin").addEventListener("click",begin);
 $("ranks-from-home").addEventListener("click",rankings);
 $("rank-difficulty").addEventListener("change",()=>{currentDifficulty=$("rank-difficulty").value;rankings()});
 $("back").addEventListener("click",()=>{run=null;finishShown=false;show("home")});
