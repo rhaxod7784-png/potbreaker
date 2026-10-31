@@ -79,6 +79,8 @@ jobs:
     needs: ginkgo-build
     if: github.event_name == 'push' && github.actor != 'github-actions[bot]' && github.ref == 'refs/heads/feat/ginkgo-tree-breaker-v0-6-20261030'
     runs-on: ubuntu-latest
+    outputs:
+      deployed: ${{ steps.qa-token.outputs.available }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -88,16 +90,31 @@ jobs:
           python-version: '3.12'
       - name: Build Worker bundle from this commit
         run: python scripts/build_worker.py
+      - name: Check QA deployment credential
+        id: qa-token
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: bash
+        run: |
+          if [[ -n "$CF_API_TOKEN" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Deploy Ginkgo preview to isolated QA Worker
+        if: steps.qa-token.outputs.available == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: da88e3ea20008b97a8ee3a994a69e006
           command: deploy --config wrangler.qa.toml
+      - name: Keep the current QA preview when no token is configured
+        if: steps.qa-token.outputs.available != 'true'
+        run: echo "Cloudflare token is absent; QA deployment is skipped."
 
   qa-smoke:
     needs: deploy-ginkgo-qa
-    if: github.event_name == 'push' && github.actor != 'github-actions[bot]' && github.ref == 'refs/heads/feat/ginkgo-tree-breaker-v0-6-20261030'
+    if: github.event_name == 'push' && github.actor != 'github-actions[bot]' && github.ref == 'refs/heads/feat/ginkgo-tree-breaker-v0-6-20261030' && needs.deploy-ginkgo-qa.outputs.deployed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check deployed QA Worker routes and game API
