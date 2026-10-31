@@ -463,8 +463,10 @@ ginkgo_cover_alt={
 }
 ginkgo_cover_image="data:image/webp;base64,"+base64.b64encode((root/"web"/"assets"/"ginkgo-cover.webp").read_bytes()).decode("ascii")
 ginkgo_comic_images={}
+ginkgo_comic_image_locales={"ko":"zh","en":"en","ja":"ja","zh":"ko"}
 for key in ginkgo_locales:
- image_path=root/"web"/"assets"/f"ginkgo-{key}.webp"
+ image_locale=ginkgo_comic_image_locales[key]
+ image_path=root/"web"/"assets"/f"ginkgo-{image_locale}.webp"
  ginkgo_comic_images[key]="data:image/webp;base64,"+base64.b64encode(image_path.read_bytes()).decode("ascii")
 ginkgo_pages={}
 for key,(lang,title,desc,guide_title,guide_body,og_locale,urlpath) in ginkgo_locales.items():
