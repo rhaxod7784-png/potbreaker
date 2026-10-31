@@ -167,6 +167,11 @@ body{background:#83c4f3}
 .intro-panel .action{min-height:clamp(28px,5.5cqh,50px)}
 .intro-panel .action.secondary{color:#273858;background:#fffdf7;border:2px solid #c2d8ee;box-shadow:0 3px 0 #90b4d1}
 .play-area{inset:1.5%;width:97%;height:97%;padding:1%;border:3px solid #fff;border-radius:22px;background:#f3eada;box-shadow:0 5px 0 #6f5e4840}
+/* Floating, non-layout feedback for the brief rotten-fruit input lock. */
+.tree.fruit2{border:clamp(2px,.3cqw,4px) solid #e6403b;box-shadow:0 0 0 1px #fff6dd,0 3px 0 #ffffff65 inset,0 2px 4px #572a2344}
+.play-area .lock-message{position:absolute;z-index:30;top:10%;left:50%;width:max-content;max-width:82%;margin:0;padding:6px 12px;border:1px solid #fff8e7;border-radius:999px;background:#2d3340df;color:#fff5d6;box-shadow:0 4px 12px #2a283244;font-size:clamp(9px,1.15cqw,14px);font-weight:900;text-align:center;opacity:0;visibility:hidden;transform:translate(-50%,-6px);pointer-events:none;transition:opacity .16s ease,transform .16s ease,visibility .16s}
+.play-area .lock-message.is-visible{opacity:1;visibility:visible;transform:translate(-50%,0)}
+
 .hud{width:100%;max-width:none;margin:8% auto 1%;gap:1%}
 .board-wrap{flex:1 1 0;width:100%;height:auto;max-height:none;min-height:0;padding:.55%;border:3px solid #fff;border-radius:16px;background:linear-gradient(135deg,#f8df82,#dcae58);box-shadow:0 5px 0 #6f5e4844}
 .board{width:100%;height:100%;max-height:100%;aspect-ratio:auto;grid-template-rows:repeat(7,minmax(0,1fr));gap:clamp(1px,.32cqw,4px)}
@@ -265,7 +270,7 @@ const menu=document.querySelector("#mode-menu"),options=document.querySelector("
 menu.addEventListener("click",()=>{options.hidden=!options.hidden;menu.setAttribute("aria-expanded",String(!options.hidden))});
 document.addEventListener("click",e=>{if(!e.target.closest(".menu")){options.hidden=true;menu.setAttribute("aria-expanded","false")}});
 const $=id=>document.getElementById(id);
-let run=null,latestVersion=-1,busy=false,tapping=Promise.resolve(),pollTimer=null,deadline=0,finishShown=false,currentDifficulty="normal";
+let run=null,latestVersion=-1,busy=false,tapping=Promise.resolve(),pollTimer=null,deadline=0,finishShown=false,currentDifficulty="normal",feedbackHideTimer=null;
 let pyodideRuntime=null,pyEngine=null,localTimer=null;
 function show(view){["home","intro","play","end","rankings"].forEach(id=>$(id).hidden=id!==view);window.scrollTo({top:0,behavior:"instant"});}
 function errors(res){return res.json().then(body=>{if(!res.ok)throw Error(body.error||"network");return body})}
@@ -280,6 +285,12 @@ async function ensurePyEngine(){
  if(pyEngine)pyEngine.destroy();
  pyEngine=pyodideRuntime.runPython('GameEngine("ginkgo", None, "'+currentDifficulty+'")');
 }
+function showFeedback(message,timeout=0){
+ const el=$("lock-message");clearTimeout(feedbackHideTimer);
+ if(!message){el.classList.remove("is-visible");feedbackHideTimer=setTimeout(()=>{if(!el.classList.contains("is-visible"))el.textContent=""},220);return}
+ el.textContent=message;el.classList.add("is-visible");
+ if(timeout)feedbackHideTimer=setTimeout(()=>showFeedback(""),timeout);
+}
 function paintStates(phases){
  if(!phases)return;
  phases.forEach((phase,i)=>{const cell=$("tree-"+i);if(cell)cell.className="tree "+(phase===0?"leaf0":phase===1?"leaf1":phase===2?"fruit2":"fruit3")});
@@ -293,7 +304,7 @@ function update(snapshot){
  $("combo").textContent=snapshot.combo;
  $("timer").textContent=(Math.max(0,snapshot.remaining_ms)/1000).toFixed(1);
  deadline=Date.now()+snapshot.remaining_ms;
- $("lock-message").textContent=Date.now()<snapshot.locked_until?tr.locked:"";
+ showFeedback(Date.now()<snapshot.locked_until?tr.locked:"");
  if(snapshot.done)finishGame(snapshot);
 }
 function paintBoard(){
@@ -327,7 +338,7 @@ async function poll(){
  try{
   const r=await fetch("/api/ginkgo/state?run="+encodeURIComponent(run),{cache:"no-store"});
   update(await errors(r));
- }catch(e){$("lock-message").textContent=tr.network}
+ }catch(e){showFeedback(tr.network,1400)}
  finally{pollBusy=false}
 }
 function tap(index){
@@ -339,8 +350,8 @@ function tap(index){
    let r=await fetch("/api/ginkgo/tap",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({run_id:run,index})});
    if(r.status===409){const e=await r.json();if(e.error==="state_conflict"){r=await fetch("/api/ginkgo/tap",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({run_id:run,index})});}}
    if(r.ok)update(await r.json());
-   else{const e=await r.json();if(e.error==="temporarily_locked")$("lock-message").textContent=tr.locked;if(e.error==="game_ended")await poll();}
-  }catch(e){$("lock-message").textContent=tr.network}
+   else{const e=await r.json();if(e.error==="temporarily_locked")showFeedback(tr.locked,700);if(e.error==="game_ended")await poll();}
+  }catch(e){showFeedback(tr.network,1400)}
  });
 }
 function finishGame(state){

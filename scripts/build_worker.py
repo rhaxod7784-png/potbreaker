@@ -466,7 +466,7 @@ ginkgo_cover_alt={
 }
 ginkgo_cover_image="data:image/webp;base64,"+base64.b64encode((root/"web"/"assets"/"ginkgo-cover.webp").read_bytes()).decode("ascii")
 ginkgo_comic_images={}
-ginkgo_comic_image_locales={"ko":"zh","en":"en","ja":"ja","zh":"ko"}
+ginkgo_comic_image_locales={"ko":"zh","en":"ja","ja":"en","zh":"ko"}
 for key in ginkgo_locales:
  image_locale=ginkgo_comic_image_locales[key]
  image_path=root/"web"/"assets"/f"ginkgo-{image_locale}.webp"
