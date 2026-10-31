@@ -18,11 +18,21 @@ except ImportError:
     # In the bundled Pyodide source, constants already exist in this module.
     pass
 class _FeatureModule:
-    def __init__(self, game):
+    MODULE_NAME = "feature"
+
+    def __init__(self, game=None):
         object.__setattr__(self, "game", game)
+        object.__setattr__(self, "name", self.MODULE_NAME)
+
+    def bind(self, game):
+        object.__setattr__(self, "game", game)
+        return self
 
     def __getattr__(self, name):
-        return getattr(self.game, name)
+        game = object.__getattribute__(self, "game")
+        if game is None:
+            raise AttributeError(f"{name} requires this feature to be bound to a game instance")
+        return getattr(game, name)
 
     def __setattr__(self, name, value):
         if name == "game":
@@ -31,6 +41,8 @@ class _FeatureModule:
             setattr(self.game, name, value)
 
 class FieldModule(_FeatureModule):
+    MODULE_NAME = "field"
+
     def _free(self, x, y):
         return 0 <= x < WIDTH and 0 <= y < HEIGHT and (x, y) not in self.walls and (x, y) not in self.moving_walls
     def _free_step(self, x, y, dx, dy):
@@ -195,6 +207,8 @@ class FieldModule(_FeatureModule):
                 break
 
 class CombatModule(_FeatureModule):
+    MODULE_NAME = "combat"
+
     def _spawn_mystery_pots(self, x, y):
         cx, cy = round(x), round(y)
         for _ in range(MYSTERY_POTS_PER_DROP):
@@ -352,6 +366,8 @@ class CombatModule(_FeatureModule):
                 continue
 
 class ActorModule(_FeatureModule):
+    MODULE_NAME = "actor"
+
     def _move_player(self, mx, my):
         magnitude = math.hypot(mx, my)
         if magnitude < .001:

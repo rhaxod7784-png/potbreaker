@@ -1,6 +1,7 @@
 """Build illustrated POT BREAKER RE v1.0.91 for Cloudflare Workers.
 
-Inputs: web/index.html (images + UI bundled), web/game.py (Python core), web/game_modules.py (reusable feature components), and web/game_engine.py (mode dispatcher).
+Inputs: web/index.html (images + UI bundled), the PotBreaker core, reusable
+feature components, Ginkgo components, and the mode-composing game engine.
 Unlike the original v1.0.0 builder, this does not expect an inline Python script
 inside HTML. The browser fetches /game.py from the same Worker origin.
 """
@@ -20,6 +21,8 @@ if demo_marker in pot_source:
 python_source = "\n\n".join([
     pot_source,
     (root / "web" / "game_modules.py").read_text(encoding="utf-8"),
+    (root / "web" / "game_components.py").read_text(encoding="utf-8"),
+    (root / "web" / "ginkgo_modules.py").read_text(encoding="utf-8"),
     (root / "web" / "game_engine.py").read_text(encoding="utf-8"),
     demo,
 ])

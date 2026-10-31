@@ -38,7 +38,7 @@ def distance(a, b):
 
 
 class PotBreaker:
-    def __init__(self, seed=None, difficulty='normal'):
+    def __init__(self, seed=None, difficulty='normal', components=None):
         self.rng = random.Random(seed)
         if 'FieldModule' not in globals():
             from . import game_modules as _game_modules
@@ -52,11 +52,21 @@ class PotBreaker:
         self.difficulty = difficulty if difficulty in ('normal', 'hard', 'very_hard') else 'normal'
         self.player_pot_cap = 3 if self.difficulty == 'normal' else 2
         self.boss_hp_cap = {'normal': 5, 'hard': 7, 'very_hard': 10}[self.difficulty]
-        self._feature_modules = {
-            'field': feature_classes['FieldModule'](self),
-            'combat': feature_classes['CombatModule'](self),
-            'actor': feature_classes['ActorModule'](self),
+        feature_classes_by_name = {
+            'field': feature_classes['FieldModule'],
+            'combat': feature_classes['CombatModule'],
+            'actor': feature_classes['ActorModule'],
         }
+        components = components or {}
+        if not isinstance(components, dict) or not set(components).issubset(feature_classes_by_name):
+            raise ValueError("PotBreaker components must map field, combat, or actor to module instances")
+        self._feature_modules = {}
+        for name, module_class in feature_classes_by_name.items():
+            module = components[name] if name in components else module_class(self)
+            if not isinstance(module, module_class):
+                raise TypeError(f"{name} must be an instance of {module_class.__name__}")
+            module.bind(self)
+            self._feature_modules[name] = module
         self.reset()
 
     def __getattr__(self, name):
