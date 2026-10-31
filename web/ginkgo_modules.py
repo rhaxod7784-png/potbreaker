@@ -1,5 +1,5 @@
 """Composable Ginkgo features built from reusable game component instances."""
-import random
+import secrets
 
 try:
     from .game_components import GameComponent, ComponentAssemblyMode
@@ -58,15 +58,27 @@ class GinkgoBoardModule(GameComponent):
         self.seed = seed
         self.reset({})
 
+    def _next(self):
+        x = self.rng_state
+        x ^= (x << 13) & 0xFFFFFFFF
+        x &= 0xFFFFFFFF
+        x ^= x >> 17
+        x ^= (x << 5) & 0xFFFFFFFF
+        self.rng_state = x & 0xFFFFFFFF
+        return self.rng_state / 4294967296.0
+
     def _new_sex(self):
-        return 1 if self.rng.random() < 0.5 else 0
+        return 0 if self._next() < 0.5 else 1
 
     def reset(self, context):
-        self.rng = random.Random(self.seed)
+        seed = self.seed if self.seed is not None else secrets.randbits(32)
+        self.rng_state = int(seed) & 0xFFFFFFFF
+        if not self.rng_state:
+            self.rng_state = 987654321
         self.last_tick = 0
         self.cells = []
         for _ in range(self.TOTAL):
-            phase = self.rng.randrange(4)
+            phase = int(self._next() * 4)
             sex = 1 if phase >= 2 else self._new_sex()
             self.cells.append({"phase": phase, "sex": sex})
 

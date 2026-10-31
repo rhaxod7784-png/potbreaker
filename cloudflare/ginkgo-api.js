@@ -10,7 +10,8 @@ function ginkgoRand() {const x=new Uint32Array(1);crypto.getRandomValues(x);retu
 function ginkgoNext(s){let x=s.rng>>>0;x^=(x<<13);x^=x>>>17;x^=(x<<5);s.rng=x>>>0;return (s.rng>>>0)/4294967296;}
 function ginkgoSex(s){return ginkgoNext(s)<.5?0:1;} // 0 male / 1 female
 function ginkgoInit(){
- const s={rng:ginkgoRand()||987654321,tick:0,score:0,combo:0,max_combo:0,lock_until:0,cells:[]};
+ const seed=ginkgoRand()||987654321;
+ const s={rng:seed,seed,tick:0,score:0,combo:0,max_combo:0,lock_until:0,cells:[]};
  for(let i=0;i<GINKGO_TOTAL;i++){
   const phase=Math.floor(ginkgoNext(s)*4);
   s.cells.push({phase,sex:phase>=2?1:ginkgoSex(s)});
@@ -87,7 +88,7 @@ async function ginkgoAPI(request,env){
    const run_id=crypto.randomUUID(),deadline_ms=now+60000;
    const state=ginkgoInit();
    await db.prepare("INSERT INTO ginkgo_runs(run_id,difficulty,started_ms,deadline_ms,state_json) VALUES(?,?,?,?,?)").bind(run_id,difficulty,now,deadline_ms,JSON.stringify(state)).run();
-   return ginkgoJSON({run_id,difficulty,remaining_ms:60000,score:0,combo:0,max_combo:0,cells:state.cells.map(c=>c.phase),done:false,version:0});
+   return ginkgoJSON({run_id,difficulty,seed:state.seed,remaining_ms:60000,score:0,combo:0,max_combo:0,cells:state.cells.map(c=>c.phase),done:false,version:0});
   }
   if(path==="/api/ginkgo/state"&&method==="GET"){
    const id=url.searchParams.get("run");
