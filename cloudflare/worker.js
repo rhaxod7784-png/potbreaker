@@ -7,31 +7,10 @@ const GAME="\"\"\"POT BREAKER RE v1.0.91 — single-player deterministic Python 
 // Ginkgo Tree Breaker v0.6: authoritative game state and ranking (Cloudflare Workers/D1).
 const GINKGO_COLS=13,GINKGO_ROWS=7,GINKGO_TOTAL=GINKGO_COLS*GINKGO_ROWS;
 const GINKGO_INTERVAL={normal:3000,hard:2000,very_hard:1000};
-const GINKGO_SCHEMA=`
-CREATE TABLE IF NOT EXISTS ginkgo_runs (
- run_id TEXT PRIMARY KEY,
- difficulty TEXT NOT NULL,
- started_ms INTEGER NOT NULL,
- deadline_ms INTEGER NOT NULL,
- state_json TEXT NOT NULL,
- version INTEGER NOT NULL DEFAULT 0,
- finished INTEGER NOT NULL DEFAULT 0,
- created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-CREATE TABLE IF NOT EXISTS ginkgo_rankings (
- id INTEGER PRIMARY KEY AUTOINCREMENT,
- run_id TEXT NOT NULL UNIQUE,
- nickname TEXT NOT NULL,
- difficulty TEXT NOT NULL,
- score INTEGER NOT NULL,
- max_combo INTEGER NOT NULL,
- created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
+const GINKGO_SCHEMA=`CREATE TABLE IF NOT EXISTS ginkgo_runs (run_id TEXT PRIMARY KEY,difficulty TEXT NOT NULL,started_ms INTEGER NOT NULL,deadline_ms INTEGER NOT NULL,state_json TEXT NOT NULL,version INTEGER NOT NULL DEFAULT 0,finished INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE TABLE IF NOT EXISTS ginkgo_rankings (id INTEGER PRIMARY KEY AUTOINCREMENT,run_id TEXT NOT NULL UNIQUE,nickname TEXT NOT NULL,difficulty TEXT NOT NULL,score INTEGER NOT NULL,max_combo INTEGER NOT NULL,created_at TEXT NOT NULL DEFAULT (datetime('now')));
 CREATE INDEX IF NOT EXISTS ginkgo_rankings_order ON ginkgo_rankings(difficulty,score DESC,max_combo DESC);
-CREATE TABLE IF NOT EXISTS ginkgo_cleanup (
- month TEXT PRIMARY KEY
-);
-`;
+CREATE TABLE IF NOT EXISTS ginkgo_cleanup (month TEXT PRIMARY KEY);`;
 const ginkgoJSON=(payload,status=200)=>new Response(JSON.stringify(payload),{status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff","access-control-allow-origin":"https://potbreaker.com"}});
 function ginkgoRand() {const x=new Uint32Array(1);crypto.getRandomValues(x);return x[0]>>>0;}
 function ginkgoNext(s){let x=s.rng>>>0;x^=(x<<13);x^=x>>>17;x^=(x<<5);s.rng=x>>>0;return (s.rng>>>0)/4294967296;}
