@@ -101,3 +101,23 @@ jobs:
           git add cloudflare/worker.js
           git commit -m "build(ginkgo): refresh generated Worker bundle"
           git push origin HEAD:${{ github.ref_name }}
+
+  deploy-ginkgo-production:
+    needs: ginkgo-build
+    if: github.event_name == 'push' && github.actor != 'github-actions[bot]' && github.ref == 'refs/heads/feat/ginkgo-tree-breaker-v0-6-20261030'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build Worker bundle from this commit
+        run: python scripts/build_worker.py
+      - name: Deploy verified Ginkgo build to production
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: da88e3ea20008b97a8ee3a994a69e006
+          command: deploy --config wrangler.toml
