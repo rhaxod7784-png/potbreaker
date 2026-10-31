@@ -92,10 +92,49 @@ body{background:linear-gradient(145deg,#fff6c9 0%,#f6d865 50%,#ffeeb6 100%)}
 .intro-help{font-size:12px;line-height:1.5;color:#685638}.intro-panel .status{margin:2px 0}
 @media(max-width:760px){.cover-frame{aspect-ratio:1.18/1;border-width:2px;border-radius:13px}.cover-actions{gap:8px}.cover-copy h1{-webkit-text-stroke:1.2px #51341d;text-shadow:2px 3px 0 #67442c}.cover-start{min-width:160px}.intro-screen{align-items:flex-start}.intro-layout{grid-template-columns:1fr;gap:10px}.intro-art{max-height:none}.intro-comic-image{max-height:none}.intro-panel{padding:15px}.intro-panel .difficulties{grid-template-columns:repeat(3,minmax(0,1fr))}.intro-panel .difficulties label{font-size:11px;gap:4px;padding:8px 5px}}
 
+
+/* Shared Pot Breaker landscape shell: 16:9 stage, rotated for portrait touch screens. */
+html,body{width:100%;height:100%;min-height:0;margin:0;overflow:hidden}
+body{background:#83c4f3}
+.viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(circle at 50% 0%,#dff8ff 0,#a5d9fc 45%,#70b8ee 100%)}
+.stage{position:relative;flex:0 0 auto;width:min(100vw,177.778dvh);height:min(100dvh,56.25vw);aspect-ratio:16/9;overflow:hidden;isolation:isolate;background:#f6eedf;box-shadow:0 2vh 7vh #2b467669}
+.topbar{position:absolute;z-index:30;left:1.5%;right:1.5%;top:1.5%;height:8%;padding:0 1.2%;display:flex;align-items:center;justify-content:space-between;background:#ffffffdb;border:2px solid #fff;border-radius:16px;box-shadow:0 4px 14px #40577b24}
+.topbar .menu-button,.topbar .lang-picker{border:2px solid #bfd7ef;border-radius:12px;background:#fffdf9;color:#303d67;box-shadow:0 3px 0 #9ab5d0;padding:6px 10px}
+.topbar .brand-mini{font-size:clamp(7px,1cqw,12px);color:#303d67}
+.container{position:absolute;inset:11% 2% 2%;width:96%;max-width:none;height:87%;margin:0;padding:0;overflow:hidden;text-align:center}
+.cover-screen,.intro-screen,.play-area,#rankings,#end{position:absolute;inset:0;width:100%;height:100%;min-height:0;margin:0;overflow:hidden}
+.cover-screen:not([hidden]),.intro-screen:not([hidden]),.play-area:not([hidden]),#rankings:not([hidden]),#end:not([hidden]){display:flex}
+.cover-screen{align-items:center;justify-content:center;gap:3%;padding:2.2%;background:linear-gradient(115deg,#e7f8ff,#b0dffc 64%,#98cafa);border:3px solid white;border-radius:24px}
+.cover-frame{order:2;flex:0 0 58%;width:58%;max-width:none;aspect-ratio:16/9;margin:0;border:0;border-radius:16px;box-shadow:0 8px 18px #30456832}
+.cover-actions{order:1;flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;width:auto;gap:2%;margin:0}
+.cover-copy{flex:0 1 auto;text-align:left}.cover-copy h1{font-size:clamp(22px,5cqw,64px);color:#303d67;-webkit-text-stroke:0;text-shadow:0 3px 0 #fff,0 7px 12px #40577b25}.cover-copy h1 span:last-child{color:#5578bd}.cover-copy p{font-size:clamp(9px,1.5cqw,18px);line-height:1.35}
+.cover-start,.action{border:2px solid #fff;border-radius:999px;color:#fff;background:linear-gradient(145deg,#648ddc,#446ab6);box-shadow:0 5px 0 #38528499;padding:clamp(7px,1.2cqw,14px) clamp(12px,2cqw,24px);font-size:clamp(10px,1.5cqw,20px)}
+.action.secondary{color:#303d67;background:#fffdf9;border-color:#bfdbf6;box-shadow:0 4px 0 #9ab5d0}
+.intro-screen{align-items:center;justify-content:center;padding:1.5%;background:linear-gradient(115deg,#f1faff,#a7d5f9);border:3px solid white;border-radius:24px}
+.intro-layout{width:100%;height:100%;display:grid;grid-template-columns:minmax(0,66%) minmax(0,1fr);gap:1.5%;align-items:center}
+.intro-art{width:100%;height:100%;max-height:100%;margin:0;display:grid;place-items:center;overflow:hidden;border:3px solid white;border-radius:14px;background:#fffcf5c9}
+.intro-comic-image{width:100%;height:100%;max-height:none;object-fit:contain}
+.intro-panel{max-height:100%;overflow:auto;padding:2%;border:2px solid white;border-radius:18px;background:#fffcf5ed;box-shadow:0 5px 14px #456f9530}
+.intro-panel h1{font-size:clamp(14px,2.5cqw,30px)}.intro-copy,.intro-help{font-size:clamp(8px,1.2cqw,14px);line-height:1.4}
+.intro-panel .difficulties{display:grid;grid-template-columns:1fr;gap:4px;margin:7px 0}
+.intro-panel .difficulties label{font-size:clamp(8px,1.05cqw,13px);padding:4px 6px}
+.intro-panel .action{width:100%;margin:3px 0}
+.play-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1%;background:#f3eada;border:3px solid white;border-radius:24px}
+.hud{width:min(100%,90cqw);margin:0 auto 1%;gap:1%}.stat{min-width:0;padding:4px 8px;font-size:clamp(9px,1.15cqw,15px)}.stat b{font-size:clamp(12px,1.8cqw,22px)}
+.board-wrap{width:min(88cqw,92%);height:auto;max-height:80%;padding:.6%;border:3px solid white;border-radius:14px;box-shadow:0 6px 0 #7b694e44}
+.board{height:100%;max-height:100%;aspect-ratio:13/7;gap:clamp(1px,.3cqw,4px)}
+.seo-copy,footer{display:none}
+@media(orientation:portrait) and (pointer:coarse){
+ .viewport{position:fixed;inset:0;width:100vw;height:100dvh;display:block}
+ .stage{position:absolute;left:50%;top:50%;width:min(100dvh,177.778vw);height:min(100vw,56.25dvh);transform:translate(-50%,-50%) rotate(90deg);transform-origin:center center}
+}
+@media(orientation:landscape) and (pointer:coarse){.viewport{width:100vw;height:100dvh}.stage{width:min(100vw,177.778dvh);height:min(100dvh,56.25vw)}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
 </head>
 <body>
+<div class="viewport"><div class="stage" id="ginkgo-stage">
 <header class="topbar">
 <div class="menu"><button class="menu-button" id="mode-menu" aria-expanded="false" aria-controls="mode-options" type="button">☰ <span data-i18n="choose">게임 선택</span></button>
 <nav id="mode-options" class="menu-list" aria-label="Game modes" hidden>
@@ -122,9 +161,9 @@ body{background:linear-gradient(145deg,#fff6c9 0%,#f6d865 50%,#ffeeb6 100%)}
 <h1 data-i18n="intro_title">기묘의 이상한 출근길</h1>
 <p class="intro-copy" data-i18n="intro_copy">은행이 썩기 전에 터치해 없애세요. 60초 동안 점수를 모아 랭킹에 도전합니다.</p>
 <div class="difficulties">
-<label><input type="radio" name="difficulty" value="normal" checked> NORMAL <small>1.0s</small></label>
-<label><input type="radio" name="difficulty" value="hard"> HARD <small>0.7s</small></label>
-<label><input type="radio" name="difficulty" value="very_hard"> VERY HARD <small>0.5s</small></label>
+<label><input type="radio" name="difficulty" value="normal" checked> NORMAL <small>3s</small></label>
+<label><input type="radio" name="difficulty" value="hard"> HARD <small>2s</small></label>
+<label><input type="radio" name="difficulty" value="very_hard"> VERY HARD <small>1s</small></label>
 </div>
 <button class="action cover-start" id="begin" data-i18n="enter">은행나무로 출근 ▶</button>
 <button class="action secondary" id="intro-back" data-i18n="back">처음으로</button>

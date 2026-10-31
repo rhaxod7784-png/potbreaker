@@ -444,10 +444,10 @@ html = html.replace("</body>", language_script + "\n</body>", 1)
 # Theme 2: independent Ginkgo Tree Breaker documents with crawlable localized headings.
 ginkgo_source=(root / "web" / "ginkgo.html").read_text(encoding="utf-8")
 ginkgo_locales={
- "ko":("ko","깅코트리 브레이커 | 폿 브레이커 테마 2","은행나무의 노란 은행을 썩기 전에 터치하세요. 60초 게임, 세 가지 난이도, 연속 성공 점수와 랭킹을 지원합니다.","깅코트리 브레이커 게임 방법","60초 동안 노란 은행 열매를 터치해 점수를 얻습니다. 연속 성공할 때마다 점수가 1점씩 증가합니다. 초록잎, 노란잎 또는 썩은 은행을 터치하면 연속 점수가 초기화되고, 썩은 은행은 0.5초 동안 터치할 수 없습니다. 노멀은 1초, 하드는 0.7초, 베리하드는 0.5초마다 나무 상태가 변합니다.","ko_KR","/ginkgo"),
- "en":("en","Ginkgo Tree Breaker | Pot Breaker Theme 2","Tap the ripe ginkgo fruit before it rots in this free 60-second game. Three difficulty levels, combo scoring and rankings.","How to play Ginkgo Tree Breaker","Tap yellow ginkgo fruit in 60 seconds to earn points. Each consecutive success increases the next score by one. Tapping leaves or rotten fruit resets your combo, and rotten fruit locks taps for 0.5 seconds. Tree phases advance every 1, 0.7 or 0.5 seconds based on difficulty.","en_US","/ginkgo/en"),
+ "ko":("ko","깅코트리 브레이커 | 폿 브레이커 테마 2","은행나무의 노란 은행을 썩기 전에 터치하세요. 60초 게임, 세 가지 난이도, 연속 성공 점수와 랭킹을 지원합니다.","깅코트리 브레이커 게임 방법","60초 동안 노란 은행 열매를 터치해 점수를 얻습니다. 연속 성공할 때마다 점수가 1점씩 증가합니다. 초록잎, 노란잎 또는 썩은 은행을 터치하면 연속 점수가 초기화되고, 썩은 은행은 0.5초 동안 터치할 수 없습니다. 노멀은 3초, 하드는 2초, 베리하드는 1초마다 나무 상태가 변합니다.","ko_KR","/ginkgo"),
+ "en":("en","Ginkgo Tree Breaker | Pot Breaker Theme 2","Tap the ripe ginkgo fruit before it rots in this free 60-second game. Three difficulty levels, combo scoring and rankings.","How to play Ginkgo Tree Breaker","Tap yellow ginkgo fruit in 60 seconds to earn points. Each consecutive success increases the next score by one. Tapping leaves or rotten fruit resets your combo, and rotten fruit locks taps for 0.5 seconds. Tree phases advance every 3, 2 or 1 seconds based on difficulty.","en_US","/ginkgo/en"),
  "ja":("ja","ギンコツリー・ブレイカー | ポットブレイカー テーマ2","60秒間で腐る前のギンナンをタップ。ノーマル・ハード・ベリーハード、連続成功スコアとランキング。","ギンコツリー・ブレイカーの遊び方","60秒の間に黄色いギンナンをタップして得点。連続成功で得点が増加。葉や腐ったギンナンをタップすると連続記録がリセットされます。腐ったギンナンには0.5秒のタップ制限があります。","ja_JP","/ginkgo/ja"),
- "zh":("zh","银杏树破坏者 | POT BREAKER 主题2","60秒内点击未腐烂的银杏果。三种难度、连续成功加分和排行榜。","银杏树破坏者玩法","60秒内点击黄色银杏果得分，连续成功会逐次增加得分。点击树叶或腐烂的银杏果会重置连击，腐烂的果实还会让点击暂停0.5秒。三种难度的阶段时间为1秒、0.7秒和0.5秒。","zh_CN","/ginkgo/zh")
+ "zh":("zh","银杏树破坏者 | POT BREAKER 主题2","60秒内点击未腐烂的银杏果。三种难度、连续成功加分和排行榜。","银杏树破坏者玩法","60秒内点击黄色银杏果得分，连续成功会逐次增加得分。点击树叶或腐烂的银杏果会重置连击，腐烂的果实还会让点击暂停0.5秒。三种难度的阶段时间为3秒、2秒和1秒。","zh_CN","/ginkgo/zh")
 }
 ginkgo_comic_alt={
  "ko":"기묘의 출근길에서 은행나무 제거 작업까지 이어지는 깅코트리 브레이커 4컷 만화",

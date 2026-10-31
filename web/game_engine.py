@@ -18,7 +18,7 @@ class GinkgoMode:
     COLS = 13
     ROWS = 7
     TOTAL = COLS * ROWS
-    INTERVALS = {"normal": 1.0, "hard": 0.7, "very_hard": 0.5}
+    INTERVALS = {"normal": 3.0, "hard": 2.0, "very_hard": 1.0}
 
     def __init__(self, seed=None, difficulty="normal"):
         self.difficulty = difficulty if difficulty in self.INTERVALS else "normal"
