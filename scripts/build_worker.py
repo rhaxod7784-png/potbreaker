@@ -1,15 +1,33 @@
 """Build illustrated POT BREAKER RE v1.0.91 for Cloudflare Workers.
 
-Inputs: web/index.html (images + UI bundled) and web/game.py (Python core).
+Inputs: web/index.html (images + UI bundled), the PotBreaker core, reusable
+feature components, Ginkgo components, and the mode-composing game engine.
 Unlike the original v1.0.0 builder, this does not expect an inline Python script
 inside HTML. The browser fetches /game.py from the same Worker origin.
 """
 from pathlib import Path
+import ast
+import base64
 import json
 
 root = Path(__file__).resolve().parents[1]
 html = (root / "web" / "index.html").read_text(encoding="utf-8")
-python_source = (root / "web" / "game.py").read_text(encoding="utf-8")
+pot_source = (root / "web" / "game.py").read_text(encoding="utf-8")
+demo_marker = "\nif __name__ == '__main__':"
+demo = ""
+if demo_marker in pot_source:
+    pot_source, demo_body = pot_source.split(demo_marker, 1)
+    demo = demo_marker + demo_body
+python_source = "\n\n".join([
+    pot_source,
+    (root / "web" / "game_modules.py").read_text(encoding="utf-8"),
+    (root / "web" / "game_components.py").read_text(encoding="utf-8"),
+    (root / "web" / "ginkgo_modules.py").read_text(encoding="utf-8"),
+    (root / "web" / "game_engine.py").read_text(encoding="utf-8"),
+    demo,
+])
+ast.parse(python_source, filename="bundled_game.py")
+html = html.replace("PotBreaker(None, \\\"'+selectedDifficulty+'\\\")", "GameEngine(\\\"potbreaker\\\", None, \\\"'+selectedDifficulty+'\\\")")
 html = html.replace("화면을 원하는 방향으로 밀기: 누르고 있으면 계속 이동", "방향 패드를 눌러 이동 · 누르고 있으면 계속 이동")
 html = html.replace("♥ 회복 · 감 과장: ? 화분 4종 (하트 ±1 · 화분 풀충전 · 필드 리셋, 각 25%) · 기묘: 대시 3초 / 크다: 대시 5초 · 화면을 밀어 방향 조작 · 누르고 있으면 계속 이동", "감 과장 화분: 회복 · 피해 · 화분 충전 · 필드 초기화 중 하나 · 대시 재사용: 기묘 3초 / 크다 5초 · 방향 패드를 눌러 이동")
 touch_block = "let touchDirection=[0,0],touchActive=false,dpadOrder=0;\nconst keyDirections={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};\nconst dpadDirections={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};\nconst dpadPointers=new Map();\nconst dpad=document.getElementById('dpad');\nfor(const [direction,glyph] of [['up','▲'],['right','▶'],['down','▼'],['left','◀']]){const icon=document.createElement('span');icon.className='dpad-icon '+direction;icon.textContent=glyph;dpad.appendChild(icon)}\nfunction refreshDpad(){\n let last=null;for(const p of dpadPointers.values())if(p.direction&&(!last||p.order>last.order))last=p;\n dpad.classList.remove('active-up','active-down','active-left','active-right');\n touchActive=!!last;touchDirection=last?dpadDirections[last.direction]:[0,0];\n if(last)dpad.classList.add('active-'+last.direction);\n}\nfunction directionAt(e){\n const rect=dpad.getBoundingClientRect(),dx=(e.clientX-(rect.left+rect.width/2))/(rect.width/2),dy=(e.clientY-(rect.top+rect.height/2))/(rect.height/2),radius=Math.hypot(dx,dy);\n if(radius>1.2||radius<.10)return null;\n const hit=document.elementFromPoint(e.clientX,e.clientY)?.closest?.('#dpad .dpad-button');\n if(hit?.dataset.direction)return hit.dataset.direction;\n return Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');\n}\nfunction setPointerDirection(e,p){\n const direction=directionAt(e);if(direction===p.direction)return;\n if(p.button)p.button.classList.remove('pressed');\n p.direction=direction;p.button=direction?dpad.querySelector('.dpad-button.'+direction):null;p.order=++dpadOrder;\n if(p.button)p.button.classList.add('pressed');refreshDpad();\n}\nfunction clearDpadPointer(id){\n const p=dpadPointers.get(id);if(!p)return;\n if(p.button)p.button.classList.remove('pressed');dpadPointers.delete(id);refreshDpad();\n}\nfunction moveDpadPointer(e){const p=dpadPointers.get(e.pointerId);if(p)setPointerDirection(e,p)}\ndpad.addEventListener('pointerdown',e=>{\n if(!active||paused)return;e.preventDefault();\n const direction=directionAt(e);if(!direction)return;\n const prior=dpadPointers.get(e.pointerId);if(prior&&prior.button)prior.button.classList.remove('pressed');\n const p={button:null,direction:null,order:++dpadOrder};dpadPointers.set(e.pointerId,p);setPointerDirection(e,p);\n try{dpad.setPointerCapture(e.pointerId)}catch{}\n});\nwindow.addEventListener('pointermove',moveDpadPointer);\nwindow.addEventListener('pointerup',e=>clearDpadPointer(e.pointerId));\nwindow.addEventListener('pointercancel',e=>clearDpadPointer(e.pointerId));\nfunction resetTouch(){for(const p of dpadPointers.values())if(p.button)p.button.classList.remove('pressed');dpadPointers.clear();touchActive=false;touchDirection=[0,0];dpad.classList.remove('active-up','active-down','active-left','active-right')}\n"
@@ -425,11 +443,59 @@ new MutationObserver(records=>{if(busy)return;for(const r of records){if(r.type=
 </script>"""
 html = html.replace("</body>", language_script + "\n</body>", 1)
 
+
+# Theme 2: independent Ginkgo Tree Breaker documents with crawlable localized headings.
+ginkgo_source=(root / "web" / "ginkgo.html").read_text(encoding="utf-8")
+ginkgo_locales={
+ "ko":("ko","깅코트리 브레이커 | 폿 브레이커 테마 2","은행나무의 노란 은행을 썩기 전에 터치하세요. 60초 게임, 세 가지 난이도, 연속 성공 점수와 랭킹을 지원합니다.","깅코트리 브레이커 게임 방법","60초 동안 노란 은행 열매를 터치해 점수를 얻습니다. 연속 성공할 때마다 점수가 1점씩 증가합니다. 초록잎, 노란잎 또는 썩은 은행을 터치하면 연속 점수가 초기화되고, 썩은 은행은 0.5초 동안 터치할 수 없습니다. 노멀은 3초, 하드는 2초, 베리하드는 1초마다 나무 상태가 변합니다.","ko_KR","/ginkgo"),
+ "en":("en","Ginkgo Tree Breaker | Pot Breaker Theme 2","Tap the ripe ginkgo fruit before it rots in this free 60-second game. Three difficulty levels, combo scoring and rankings.","How to play Ginkgo Tree Breaker","Tap yellow ginkgo fruit in 60 seconds to earn points. Each consecutive success increases the next score by one. Tapping leaves or rotten fruit resets your combo, and rotten fruit locks taps for 0.5 seconds. Tree phases advance every 3, 2 or 1 seconds based on difficulty.","en_US","/ginkgo/en"),
+ "ja":("ja","ギンコツリー・ブレイカー | ポットブレイカー テーマ2","60秒間で腐る前のギンナンをタップ。ノーマル・ハード・ベリーハード、連続成功スコアとランキング。","ギンコツリー・ブレイカーの遊び方","60秒の間に黄色いギンナンをタップして得点。連続成功で得点が増加。葉や腐ったギンナンをタップすると連続記録がリセットされます。腐ったギンナンには0.5秒のタップ制限があります。","ja_JP","/ginkgo/ja"),
+ "zh":("zh","银杏树破坏者 | POT BREAKER 主题2","60秒内点击未腐烂的银杏果。三种难度、连续成功加分和排行榜。","银杏树破坏者玩法","60秒内点击黄色银杏果得分，连续成功会逐次增加得分。点击树叶或腐烂的银杏果会重置连击，腐烂的果实还会让点击暂停0.5秒。三种难度的阶段时间为3秒、2秒和1秒。","zh_CN","/ginkgo/zh")
+}
+ginkgo_comic_alt={
+ "ko":"기묘의 출근길에서 은행나무 제거 작업까지 이어지는 깅코트리 브레이커 4컷 만화",
+ "en":"Four-panel comic showing Gimyo's commute and the ginkgo tree removal job",
+ "ja":"ギミョの通勤からイチョウ伐採の仕事までを描く4コマ漫画",
+ "zh":"描绘吉喵上班途中接到银杏树清除工作的四格漫画"
+}
+ginkgo_cover_alt={
+ "ko":"가을 은행나무 길을 바라보는 기묘와 크다 부장",
+ "en":"Gimyo and Manager Keuda looking down a golden ginkgo avenue",
+ "ja":"黄金色のイチョウ並木を眺めるギミョとクダ部長",
+ "zh":"吉喵和克达部长望着金黄色的银杏大道"
+}
+ginkgo_cover_image="data:image/webp;base64,"+base64.b64encode((root/"web"/"assets"/"ginkgo-cover.webp").read_bytes()).decode("ascii")
+ginkgo_comic_images={}
+ginkgo_comic_image_locales={"ko":"zh","en":"ja","ja":"en","zh":"ko"}
+for key in ginkgo_locales:
+ image_locale=ginkgo_comic_image_locales[key]
+ image_path=root/"web"/"assets"/f"ginkgo-{image_locale}.webp"
+ ginkgo_comic_images[key]="data:image/webp;base64,"+base64.b64encode(image_path.read_bytes()).decode("ascii")
+ginkgo_pages={}
+for key,(lang,title,desc,guide_title,guide_body,og_locale,urlpath) in ginkgo_locales.items():
+ page=ginkgo_source
+ for tag,val in {"LANG":lang,"TITLE":title,"DESCRIPTION":desc,"GUIDE_TITLE":guide_title,"GUIDE_BODY":guide_body,"OG_LOCALE":og_locale,"CANONICAL":"https://potbreaker.com"+urlpath,"COMIC_ALT":ginkgo_comic_alt[key],"COVER_ALT":ginkgo_cover_alt[key]}.items():
+  page=page.replace("{{"+tag+"}}",val)
+ if "{{" in page.replace("{{COMIC_IMAGE}}","").replace("{{COVER_IMAGE}}",""):
+  raise SystemExit("Ginkgo localization placeholders unresolved")
+ ginkgo_pages[key]=page
+ginkgo_api=(root/"cloudflare"/"ginkgo-api.js").read_text(encoding="utf-8")
+# The existing game stays untouched; add a small top-left mode switcher.
+game_modes_css="""
+#pb-game-mode{position:fixed;top:9px;left:9px;z-index:50;pointer-events:auto;font:900 12px/1.3 system-ui,sans-serif;color:#343027}
+#pb-game-mode summary{cursor:pointer;list-style:none;background:#fff7d8f5;border:2px solid #6c482f;border-radius:12px;padding:7px 10px;box-shadow:0 3px 0 #765436}
+#pb-game-mode nav{display:grid;min-width:185px;background:#fffced;border:2px solid #6c482f;border-radius:12px;margin-top:8px;padding:6px;box-shadow:0 9px 22px #32201059}
+#pb-game-mode nav a{padding:10px;color:#3f3226;text-decoration:none;border-radius:7px;font-weight:900}
+#pb-game-mode nav a:hover,#pb-game-mode nav a:focus-visible{background:#f8e5a4}
+"""
+html=html.replace("</style>",game_modes_css+"\n</style>",1)
+html=html.replace("<body>",'<body><details id="pb-game-mode"><summary aria-label="게임 선택">☰ <span>게임 선택 / Choose game</span></summary><nav aria-label="Game selection"><a href="/" aria-current="page">🪴 POT BREAKER RE</a><a href="/ginkgo">🍂 GINKGO TREE BREAKER</a></nav></details>',1)
+
 worker = (
     "// Generated by scripts/build_worker.py. POT BREAKER RE v1.0.91 SEO/AdSense-ready\n"
     + "const PAGE=" + json.dumps(html, ensure_ascii=False) + ";\n"
     + "const GAME=" + json.dumps(python_source, ensure_ascii=False) + ";\n"
-    + """const SCHEMA=`CREATE TABLE IF NOT EXISTS visits (visitor_id TEXT PRIMARY KEY, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%S','now')));
+    + r"""const SCHEMA=`CREATE TABLE IF NOT EXISTS visits (visitor_id TEXT PRIMARY KEY, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%S','now')));
 CREATE TABLE IF NOT EXISTS game_runs (run_id TEXT PRIMARY KEY, visitor_id TEXT, difficulty TEXT NOT NULL CHECK(difficulty IN ('normal','hard','very_hard')), status TEXT NOT NULL DEFAULT 'playing' CHECK(status IN ('playing','win','lose')), elapsed_ms INTEGER, started_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%S','now')), finished_at TEXT);
 CREATE TABLE IF NOT EXISTS game_events (id INTEGER PRIMARY KEY AUTOINCREMENT, visitor_id TEXT, run_id TEXT, event_type TEXT NOT NULL, difficulty TEXT, elapsed_ms INTEGER, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%S','now')));
 CREATE INDEX IF NOT EXISTS game_events_created_at ON game_events(created_at);
@@ -539,5 +605,32 @@ const body=page?localizedPage.replace("</head>",verification+"</head>"):GAME;
 return new Response(request.method==="HEAD"?null:body,{status:200,headers:responseHeaders});
 }};"""
 )
+
+# Add Ginkgo pages and server-verified gameplay to the existing generated Worker.
+worker=worker.replace("const PAGE=", "const GINKGO_COVER_IMAGE="+json.dumps(ginkgo_cover_image)+";\nconst GINKGO_COMIC_IMAGES="+json.dumps(ginkgo_comic_images)+";\nconst GINKGO_PAGES="+json.dumps(ginkgo_pages,ensure_ascii=False)+";\nconst PAGE=",1)
+worker=worker.replace("const SCHEMA=`",ginkgo_api+"\nconst SCHEMA=`",1)
+worker=worker.replace('if(path.startsWith("/api/")){','if(path.startsWith("/api/ginkgo/"))return ginkgoAPI(request,env);\nif(path.startsWith("/api/")){',1)
+ginkgo_route=r"""const ginkgoLocale=path.match(/^\/ginkgo(?:\/(en|ja|zh))?\/?$/);
+if(path==="/ginkgo/game.py")return text(GAME,"text/plain; charset=utf-8",200,{"cache-control":"no-store"});
+if(ginkgoLocale){
+ const locale=ginkgoLocale[1]||"ko";
+ let page=GINKGO_PAGES[locale].replaceAll("{{COMIC_IMAGE}}",GINKGO_COMIC_IMAGES[locale]).replace("{{COVER_IMAGE}}",GINKGO_COVER_IMAGE);
+ if(publisherId)page=page.replace("</head>",'<meta name="google-adsense-account" content="'+publisherId+'"></head>');
+ return text(page,"text/html; charset=utf-8",200,{"cache-control":"no-store"});
+}
+"""
+worker=worker.replace("const localeMatch=path.match(",ginkgo_route+"const localeMatch=path.match(",1)
+ginkgo_sitemap="""const ginkgoVariants=[["ko","/ginkgo"],["en","/ginkgo/en"],["ja","/ginkgo/ja"],["zh-CN","/ginkgo/zh"]];
+ const ginkgoLinks=ginkgoVariants.map(([lang,url])=>'<xhtml:link rel="alternate" hreflang="'+lang+'" href="https://potbreaker.com'+url+'"/>').join("");
+ const ginkgoSitemap=ginkgoVariants.map(([lang,url])=>'<url><loc>https://potbreaker.com'+url+'</loc>'+ginkgoLinks+'</url>').join("");
+ """
+worker=worker.replace('const variants=[["ko","/"]',ginkgo_sitemap+'const variants=[["ko","/"]',1)
+worker=worker.replace("'+urls+\n", "'+urls+ginkgoSitemap+\n",1)
+assert "ginkgoSitemap" in worker and "ginkgoLocale" in worker
+# Cron: at 15:00 UTC on the final day of each month it is 00:00 next month in Korea.
+if not worker.endswith("}};"):
+ raise SystemExit("Worker fetch export ending changed; do not risk partial patch")
+worker=worker[:-3]+"},async scheduled(controller,env){await ginkgoCronCleanup(env,controller.scheduledTime);}};"
+
 (root / "cloudflare" / "worker.js").write_text(worker, encoding="utf-8")
 print("Built cloudflare/worker.js", len(worker.encode("utf-8")), "bytes")

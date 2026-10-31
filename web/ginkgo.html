@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f8d14f">
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESCRIPTION}}">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="{{CANONICAL}}">
+<link rel="alternate" hreflang="ko" href="https://potbreaker.com/ginkgo">
+<link rel="alternate" hreflang="en" href="https://potbreaker.com/ginkgo/en">
+<link rel="alternate" hreflang="ja" href="https://potbreaker.com/ginkgo/ja">
+<link rel="alternate" hreflang="zh-CN" href="https://potbreaker.com/ginkgo/zh">
+<link rel="alternate" hreflang="x-default" href="https://potbreaker.com/ginkgo">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{CANONICAL}}">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESCRIPTION}}">
+<meta property="og:locale" content="{{OG_LOCALE}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{font-family:system-ui,'Noto Sans KR','Malgun Gothic',sans-serif;color:#342a20;background:#fbe9ad;font-synthesis:none}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(circle at 10% 12%,#fff7cd 0,transparent 34%),radial-gradient(circle at 95% 5%,#bdeed8 0,transparent 28%),linear-gradient(125deg,#ffe58b,#fff3c7 45%,#f4dc8c);background-attachment:fixed}
+button,input,select{font:inherit}button{cursor:pointer;touch-action:manipulation}button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #1f7d74;outline-offset:3px}
+.topbar{z-index:30;display:flex;justify-content:space-between;align-items:center;padding:10px clamp(10px,3vw,32px);position:sticky;top:0;background:#fffbebdb;backdrop-filter:blur(12px);border-bottom:3px solid #644630}
+.menu{position:relative}.menu-button,.lang-button{border:2px solid #563b2a;border-radius:15px;background:#fff8d8;box-shadow:0 3px 0 #563b2a;padding:8px 13px;font-weight:900;color:#42321e}
+.menu-list{position:absolute;top:calc(100% + 9px);left:0;min-width:245px;background:white;border:3px solid #563b2a;border-radius:14px;padding:8px;box-shadow:0 10px 25px #5f461d4b}
+.menu-list a{display:block;padding:12px 9px;color:#463219;text-decoration:none;border-radius:8px;font-weight:900}.menu-list a[aria-current]{background:#fff1b8}
+.brand-mini{font-size:12px;font-weight:1000;color:#7b552b;letter-spacing:.02em}.lang-picker{border:2px solid #563b2a;background:#fffdf5;border-radius:12px;padding:9px 12px;font-weight:900;color:#463219}
+.container{max-width:1080px;margin:0 auto;padding:clamp(10px,3vw,24px);text-align:center}
+.heading{padding:12px 0 18px;position:relative}.heading small{font-weight:1000;letter-spacing:.12em;color:#684727}.heading h1{font-weight:1000;font-size:clamp(33px,7vw,78px);margin:6px 0;line-height:1.13;color:#f7b221;-webkit-text-stroke:2px #51341d;text-shadow:4px 5px 0 #67442c,7px 8px 0 #fff7c0}.heading h1 span{color:#7ec94d}.heading p{font-weight:800;line-height:1.5;margin:12px auto}
+.leaves{position:absolute;pointer-events:none;font-size:clamp(30px,6vw,70px);top:4px;left:5%}.leaves.right{left:auto;right:6%;transform:rotate(35deg)}
+.surface{background:#fff9de;border:3px solid #503623;box-shadow:0 7px 0 #523826;border-radius:23px;padding:clamp(13px,2.5vw,24px)}
+.difficulties{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:16px 0}
+.difficulties label{cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 16px;background:#fff9dc;border:2px solid #6a492e;border-radius:13px;font-weight:1000}
+.difficulties label:has(input:checked){background:#a4da5c;box-shadow:inset 0 0 0 2px #305c27}
+.action{background:linear-gradient(#9fe16c,#58b74a);color:#1d3920;font-weight:1000;padding:12px 22px;border:3px solid #3b5430;border-radius:16px;box-shadow:0 5px 0 #355d37;margin:5px}
+.action.secondary{background:linear-gradient(#fff2b0,#e7bf69);border-color:#745232;box-shadow:0 5px 0 #745232}
+.action:disabled{filter:grayscale(1);opacity:.55;cursor:not-allowed}
+.comic-title{margin:26px 0 15px;font-size:clamp(18px,3vw,28px);font-weight:1000}
+.comics{display:flex;justify-content:center;width:min(100%,800px);margin:16px auto}
+.comic{margin:0;width:100%;overflow:hidden;border:4px solid #513421;border-radius:18px;background:#fff6cf;box-shadow:0 6px 0 #63432b}
+.comic-image{display:block;width:100%;height:auto;object-fit:contain}
+@media(max-width:680px){.comics{width:100%;margin:10px auto}.comic{border-width:2px;border-radius:10px}}
+.play-area{padding-top:0}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px auto;max-width:880px}
+.stat{background:#fffaf0;border:2px solid #634531;border-radius:12px;padding:7px 13px;min-width:78px;font-size:clamp(11px,2.1vw,18px);font-weight:1000}
+.stat b{font-size:clamp(18px,3vw,29px)}.stat.time{background:#ffe293}
+.board-wrap{width:min(100%,880px);margin:auto;padding:7px;border:4px solid #704722;border-radius:22px;background:linear-gradient(#f6d77e,#d4a862);box-shadow:0 10px 0 #714b2b}
+.board{display:grid;grid-template-columns:repeat(13,1fr);gap:3px;aspect-ratio:13/7;touch-action:manipulation}
+.cell{border:1px solid #b79b52;position:relative;border-radius:7px;background:linear-gradient(160deg,#fff7c2,#f5de7e);padding:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.cell:after{content:'';position:absolute;bottom:9%;left:25%;right:25%;height:3px;background:#a7824d77;border-radius:50%}
+.trunk{position:absolute;bottom:15%;left:46%;height:32%;width:10%;border-radius:3px;background:linear-gradient(90deg,#7b5330,#a98051);z-index:1}
+.tree{position:absolute;z-index:2;top:7%;height:64%;width:76%;border:2px solid #516a31;border-radius:60% 60% 41% 41%;box-shadow:0 3px 0 #ffffff65 inset;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:1000}
+.tree.leaf0{background:radial-gradient(circle at 40% 30%,#d0f783,#78c34c 70%,#4a9d42)}.tree.leaf1{background:radial-gradient(circle at 40% 30%,#fff5a8,#ffc62f 68%,#d99e22);border-color:#9f6d14}
+.tree.fruit2,.tree.fruit3{height:45%;width:47%;top:30%;border-radius:50% 45% 58% 48%;background:radial-gradient(circle at 34% 27%,#fff2aa,#dfaa36 67%,#ba7320);border-color:#8d6a22}
+.tree.fruit2:after{content:'•';color:#e8c260;text-shadow:-7px 3px #f8d15b,7px 3px #ffe399;font-size:clamp(9px,2vw,23px)}
+.tree.fruit3{background:radial-gradient(circle at 35% 20%,#9f8664,#62503f 74%,#392f29);border-color:#382d25}
+.tree.fruit3:after{content:'×';font-size:clamp(12px,2vw,24px);color:#f2d5ac}
+.cell:active{transform:scale(.93)}.cell:disabled{cursor:default}
+.locked{filter:grayscale(.5)}.lock-message{margin:9px auto;color:#763e22;font-weight:900;min-height:1.8em}
+.end-grid{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:16px}
+.end-grid .stat{min-width:130px}.nickname{border:2px solid #634531;border-radius:12px;padding:10px 12px;width:min(90%,280px);font-weight:700}
+table{border-collapse:collapse;width:100%;font-weight:700}td,th{padding:10px 8px;border-bottom:1px solid #d9bf89;text-align:left}td:nth-child(3),td:nth-child(4),th:nth-child(3),th:nth-child(4){text-align:right}
+.status{min-height:1.4em;color:#7e432c;font-weight:800}
+.seo-copy{max-width:880px;margin:28px auto 10px;text-align:left;line-height:1.65}.seo-copy h2{font-size:21px}
+footer{max-width:880px;margin:24px auto;padding-bottom:15px;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;font-size:13px}footer a{color:#533a26}
+[hidden]{display:none!important}
+@media(max-width:680px){.comics{grid-template-columns:repeat(2,1fr);gap:7px}.comic{min-height:130px;padding:8px}.comics .art{margin:2px 0}.board{gap:1px}.cell{border-radius:3px}.tree{border-width:1px}.trunk{width:11%}.hud{gap:4px}.stat{min-width:0;padding:5px 7px}.heading h1{-webkit-text-stroke:1.3px #51341d;text-shadow:2px 3px 0 #67442c}.topbar{padding:7px}.brand-mini{display:none}}
+@media(max-width:380px){.tree.fruit2:after{display:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+
+/* Theme 2 follows the existing Pot Breaker cover → comic intro → game entry flow. */
+:root{background:#fae9ab}
+body{background:linear-gradient(145deg,#fff6c9 0%,#f6d865 50%,#ffeeb6 100%)}
+.cover-screen{width:100%;margin:0 auto}
+.cover-frame{position:relative;overflow:hidden;width:min(100%,1080px);margin:8px auto 0;aspect-ratio:16/9;border:4px solid #513421;border-radius:22px;background:#f5d75b;box-shadow:0 9px 0 #63432b}
+.cover-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top}
+.cover-actions{width:min(100%,1080px);margin:14px auto 4px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.cover-copy{flex:1 1 100%;text-align:center}.cover-copy small{font-weight:1000;letter-spacing:.1em;color:#674824}.cover-copy h1{font-size:clamp(30px,6vw,68px);line-height:1.08;margin:5px 0;color:#f4bc24;-webkit-text-stroke:2px #51341d;text-shadow:3px 4px 0 #67442c,6px 7px 0 #fff7c0}
+.cover-copy h1 span:last-child{color:#80c950}.cover-copy p{font-weight:900;margin:7px 0 3px}
+.cover-start{min-width:190px;border-radius:999px;padding:15px 25px;font-size:clamp(17px,2.2vw,24px);background:linear-gradient(#ffe877,#ffbd34);color:#49351d;border-color:#78512a;box-shadow:0 5px 0 #79502a}
+.intro-screen{width:100%;min-height:calc(100dvh - 80px);display:flex;align-items:center;justify-content:center}
+.intro-layout{width:min(100%,1240px);display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,310px);align-items:center;gap:24px;text-align:left}
+.intro-art{margin:0;width:100%;max-height:78dvh;display:grid;place-items:center;overflow:hidden;border-radius:14px;background:#fff8dc}
+.intro-comic-image{display:block;width:100%;height:auto;max-height:78dvh;object-fit:contain}
+.intro-panel{padding:22px 20px;text-align:left}.episode{margin:0 0 8px;color:#79613b;letter-spacing:.14em;font-size:12px;font-weight:1000}
+.intro-panel h1{font-size:clamp(22px,2.4vw,32px);line-height:1.2;margin:7px 0}
+.intro-copy{font-weight:800;line-height:1.55}.intro-panel .difficulties{display:grid;grid-template-columns:1fr;gap:7px;margin:13px 0}
+.intro-panel .difficulties label{justify-content:flex-start;padding:9px 10px}
+.intro-panel .action{width:100%;margin:7px 0}.intro-panel .action.secondary{font-size:15px;padding:9px}
+.intro-help{font-size:12px;line-height:1.5;color:#685638}.intro-panel .status{margin:2px 0}
+@media(max-width:760px){.cover-frame{aspect-ratio:1.18/1;border-width:2px;border-radius:13px}.cover-actions{gap:8px}.cover-copy h1{-webkit-text-stroke:1.2px #51341d;text-shadow:2px 3px 0 #67442c}.cover-start{min-width:160px}.intro-screen{align-items:flex-start}.intro-layout{grid-template-columns:1fr;gap:10px}.intro-art{max-height:none}.intro-comic-image{max-height:none}.intro-panel{padding:15px}.intro-panel .difficulties{grid-template-columns:repeat(3,minmax(0,1fr))}.intro-panel .difficulties label{font-size:11px;gap:4px;padding:8px 5px}}
+
+
+/* Shared Pot Breaker landscape shell: 16:9 stage, rotated for portrait touch screens. */
+html,body{width:100%;height:100%;min-height:0;margin:0;overflow:hidden}
+body{background:#83c4f3}
+.viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(circle at 50% 0%,#dff8ff 0,#a5d9fc 45%,#70b8ee 100%)}
+.stage{position:relative;flex:0 0 auto;width:min(100vw,177.778dvh);height:min(100dvh,56.25vw);aspect-ratio:16/9;container-type:size;container-name:game-stage;overflow:hidden;isolation:isolate;background:#f6eedf;box-shadow:0 2vh 7vh #2b467669}
+.topbar{position:absolute;z-index:30;left:1.5%;right:1.5%;top:1.5%;height:8%;padding:0 1.2%;display:flex;align-items:center;justify-content:space-between;background:#ffffffdb;border:2px solid #fff;border-radius:16px;box-shadow:0 4px 14px #40577b24}
+.topbar .menu-button,.topbar .lang-picker{border:2px solid #bfd7ef;border-radius:12px;background:#fffdf9;color:#303d67;box-shadow:0 3px 0 #9ab5d0;padding:6px 10px}
+.topbar .brand-mini{font-size:clamp(7px,1cqw,12px);color:#303d67}
+.container{position:absolute;inset:11% 2% 2%;width:96%;max-width:none;height:87%;margin:0;padding:0;overflow:hidden;text-align:center}
+.cover-screen,.intro-screen,.play-area,#rankings,#end{position:absolute;inset:0;width:100%;height:100%;min-height:0;margin:0;overflow:hidden}
+.cover-screen:not([hidden]),.intro-screen:not([hidden]),.play-area:not([hidden]),#rankings:not([hidden]),#end:not([hidden]){display:flex}
+.cover-screen{align-items:center;justify-content:center;gap:3%;padding:2.2%;background:linear-gradient(115deg,#e7f8ff,#b0dffc 64%,#98cafa);border:3px solid white;border-radius:24px}
+.cover-frame{order:2;flex:0 0 58%;width:58%;max-width:none;aspect-ratio:16/9;margin:0;border:0;border-radius:16px;box-shadow:0 8px 18px #30456832}
+.cover-actions{order:1;flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;width:auto;gap:2%;margin:0}
+.cover-copy{flex:0 1 auto;text-align:left}.cover-copy h1{font-size:clamp(22px,5cqw,64px);color:#303d67;-webkit-text-stroke:0;text-shadow:0 3px 0 #fff,0 7px 12px #40577b25}.cover-copy h1 span:last-child{color:#5578bd}.cover-copy p{font-size:clamp(9px,1.5cqw,18px);line-height:1.35}
+.cover-start,.action{border:2px solid #fff;border-radius:999px;color:#fff;background:linear-gradient(145deg,#648ddc,#446ab6);box-shadow:0 5px 0 #38528499;padding:clamp(7px,1.2cqw,14px) clamp(12px,2cqw,24px);font-size:clamp(10px,1.5cqw,20px)}
+.action.secondary{color:#303d67;background:#fffdf9;border-color:#bfdbf6;box-shadow:0 4px 0 #9ab5d0}
+.intro-screen{align-items:center;justify-content:center;padding:1.5%;background:linear-gradient(115deg,#f1faff,#a7d5f9);border:3px solid white;border-radius:24px}
+.intro-layout{width:100%;height:100%;display:grid;grid-template-columns:minmax(0,66%) minmax(0,1fr);gap:1.5%;align-items:center}
+.intro-art{width:100%;height:100%;max-height:100%;margin:0;display:grid;place-items:center;overflow:hidden;border:3px solid white;border-radius:14px;background:#fffcf5c9}
+.intro-comic-image{width:100%;height:100%;max-height:none;object-fit:contain}
+.intro-panel{max-height:100%;overflow:auto;padding:2%;border:2px solid white;border-radius:18px;background:#fffcf5ed;box-shadow:0 5px 14px #456f9530}
+.intro-panel h1{font-size:clamp(14px,2.5cqw,30px)}.intro-copy,.intro-help{font-size:clamp(8px,1.2cqw,14px);line-height:1.4}
+.intro-panel .difficulties{display:grid;grid-template-columns:1fr;gap:4px;margin:7px 0}
+.intro-panel .difficulties label{font-size:clamp(8px,1.05cqw,13px);padding:4px 6px}
+.intro-panel .action{width:100%;margin:3px 0}
+.play-area{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1%;background:#f3eada;border:3px solid white;border-radius:24px}
+.hud{width:min(100%,90cqw);margin:0 auto 1%;gap:1%}.stat{min-width:0;padding:4px 8px;font-size:clamp(9px,1.15cqw,15px)}.stat b{font-size:clamp(12px,1.8cqw,22px)}
+.board-wrap{width:100%;height:auto;max-height:none;min-height:0;flex:1 1 auto;padding:.6%;border:3px solid white;border-radius:14px;box-shadow:0 6px 0 #7b694e44}
+.board{width:100%;height:100%;max-height:100%;aspect-ratio:auto;grid-template-rows:repeat(7,minmax(0,1fr));gap:clamp(1px,.3cqw,4px)}
+#play #lock-message:empty{display:none}
+.seo-copy,footer{display:none}
+@media(orientation:portrait) and (pointer:coarse){
+ .viewport{position:fixed;inset:0;width:100vw;height:100dvh;display:block;overflow:hidden}
+ .stage{position:absolute;left:50%;top:50%;width:min(100dvh,177.778vw);height:min(100vw,56.25dvh);transform:translate(-50%,-50%) rotate(90deg);transform-origin:center center}
+ .intro-layout{grid-template-columns:minmax(0,66%) minmax(0,1fr);gap:1.5%;height:100%}
+ .intro-panel{max-height:100%;overflow:auto;padding:2%}
+ .intro-panel .difficulties{grid-template-columns:1fr}
+ .intro-panel .difficulties label{justify-content:flex-start;font-size:clamp(8px,1.05cqw,13px);padding:4px 6px}
+}
+@media(orientation:landscape) and (pointer:coarse){.viewport{width:100vw;height:100dvh}.stage{width:min(100vw,177.778dvh);height:min(100dvh,56.25vw)}}
+
+
+/* Pot Breaker visual system: full-screen cover, warm gold CTA, compact floating controls. */
+:root{color:#302a27;background:#83c4f3}
+body{background:#83c4f3}
+.stage{background:#f6eedf}
+.topbar{left:1.2%;right:1.2%;top:1.4%;height:8%;padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;backdrop-filter:none}
+.topbar .menu-button,.topbar .lang-picker{min-height:clamp(28px,5.4cqh,48px);padding:clamp(4px,.8cqw,9px) clamp(8px,1.35cqw,16px);border:2px solid #c2d8ee;border-radius:14px;background:#fffdf8;color:#273858;box-shadow:0 3px 0 #90b4d1,0 5px 12px #1d436222;font-weight:900}
+.topbar .brand-mini{color:#fffdf2;font-size:clamp(7px,1cqw,12px);font-weight:1000;letter-spacing:.1em;text-shadow:0 1px 4px #19355c,0 0 7px #19355c}
+.menu-list{top:calc(100% + 6px);border:2px solid #fff;border-radius:14px;background:#fffdf7;box-shadow:0 5px 16px #18395b44}
+.container{inset:0;width:100%;height:100%;padding:0}
+.cover-screen{display:block!important;padding:0;border:0;border-radius:0;background:#f6eedf}
+.cover-frame{position:absolute;inset:0;order:initial;width:100%;height:100%;max-width:none;aspect-ratio:auto;margin:0;border:0;border-radius:0;box-shadow:none;background:#78c6f5}
+.cover-image{width:100%;height:100%;object-fit:cover;object-position:center 58%;filter:saturate(1.04)}
+.cover-actions{position:absolute;inset:0;order:initial;display:block;width:100%;height:100%;margin:0;pointer-events:none}
+.cover-copy{position:absolute;left:12%;right:12%;top:9%;text-align:center;pointer-events:none}
+.cover-copy small{display:inline-block;margin-bottom:.3%;padding:.25em .8em;border-radius:999px;color:#fff9df;background:#453527b8;font-size:clamp(8px,1.15cqw,14px);font-weight:1000;letter-spacing:.12em;text-shadow:none}
+.cover-copy h1{margin:0;color:#f4cf70;font-family:"Gungsuh","궁서","궁서체","Nanum Myeongjo","Batang",serif;font-size:clamp(28px,7.1cqw,86px);font-weight:700;line-height:1.08;letter-spacing:.025em;-webkit-text-stroke:clamp(.35px,.08cqw,1px) #3b2d22;text-shadow:0 3px 10px #1d2b3f99}
+.cover-copy h1 span:last-child{color:inherit}
+.cover-copy p{display:none}
+.cover-start,.action{pointer-events:auto;border:3px solid #583a22;border-radius:999px;color:#302b31;background:linear-gradient(180deg,#ffe57b 0%,#ffc63d 76%,#f2a92b 100%);box-shadow:0 5px 0 #633f23,0 8px 14px #263c5360;padding:clamp(8px,1.4cqw,16px) clamp(20px,3.4cqw,42px);font-weight:1000;text-shadow:0 1px #fff8d8;transition:transform .12s,filter .12s}
+.cover-start:hover,.action:hover{filter:brightness(1.04);transform:translateY(-1px)}
+.cover-actions #open-intro{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);min-width:clamp(150px,24cqw,280px);font-size:clamp(14px,2.2cqw,26px)}
+.cover-actions #open-intro:hover{transform:translate(-50%,calc(-50% - 1px))}
+.cover-actions #ranks-from-home{position:absolute;left:2.2%;bottom:3%;color:#273858;background:#fffdf2;border:2px solid #fff;box-shadow:0 4px 0 #9ab8d0,0 6px 13px #18395b38;padding:clamp(6px,1cqw,11px) clamp(11px,1.8cqw,21px);font-size:clamp(10px,1.35cqw,16px)}
+.intro-screen{padding:2%;border:0;border-radius:0;background:linear-gradient(145deg,#a8dcfb,#77bdf0)}
+.intro-layout{width:100%;height:100%;grid-template-columns:minmax(0,66%) minmax(0,1fr);gap:1.5%}
+.intro-art{border:3px solid #fff;border-radius:18px;background:#f6eedf;box-shadow:0 5px 0 #6489a355}
+.intro-panel{padding:2.1%;border:2px solid #fff;border-radius:20px;background:#fffdf7;box-shadow:0 5px 0 #6489a355,0 9px 20px #385b7824;color:#302a27}
+.intro-panel .episode{color:#795529}
+.intro-panel .action{min-height:clamp(28px,5.5cqh,50px)}
+.intro-panel .action.secondary{color:#273858;background:#fffdf7;border:2px solid #c2d8ee;box-shadow:0 3px 0 #90b4d1}
+.play-area{inset:1.5%;width:97%;height:97%;padding:1%;border:3px solid #fff;border-radius:22px;background:#f3eada;box-shadow:0 5px 0 #6f5e4840}
+/* Floating, non-layout feedback for the brief rotten-fruit input lock. */
+.tree.fruit2{border:clamp(2px,.3cqw,4px) solid #e6403b;box-shadow:0 0 0 1px #fff6dd,0 3px 0 #ffffff65 inset,0 2px 4px #572a2344}
+.play-area .lock-message{position:absolute;z-index:30;top:10%;left:50%;width:max-content;max-width:82%;margin:0;padding:6px 12px;border:1px solid #fff8e7;border-radius:999px;background:#2d3340df;color:#fff5d6;box-shadow:0 4px 12px #2a283244;font-size:clamp(9px,1.15cqw,14px);font-weight:900;text-align:center;opacity:0;visibility:hidden;transform:translate(-50%,-6px);pointer-events:none;transition:opacity .16s ease,transform .16s ease,visibility .16s}
+.play-area .lock-message.is-visible{opacity:1;visibility:visible;transform:translate(-50%,0)}
+
+.hud{width:100%;max-width:none;margin:8% auto 1%;gap:1%}
+.board-wrap{flex:1 1 0;width:100%;height:auto;max-height:none;min-height:0;padding:.55%;border:3px solid #fff;border-radius:16px;background:linear-gradient(135deg,#f8df82,#dcae58);box-shadow:0 5px 0 #6f5e4844}
+.board{width:100%;height:100%;max-height:100%;aspect-ratio:auto;grid-template-rows:repeat(7,minmax(0,1fr));gap:clamp(1px,.32cqw,4px)}
+#rankings:not([hidden]),#end:not([hidden]){display:block;inset:3%;width:94%;height:94%;padding:10% 3% 3%;overflow:auto;border:3px solid #fff;border-radius:22px;background:#fffdf7;box-shadow:0 5px 0 #6f5e4844}
+#rankings h1,#end h1{color:#303d67}
+@media(orientation:portrait) and (pointer:coarse){
+ .topbar{left:1.2%;right:1.2%;top:1.4%;height:8%}
+ .container{inset:0;width:100%;height:100%}
+ .cover-image{object-position:center 58%}
+ .cover-copy{top:8%;left:8%;right:8%}
+ .cover-copy h1{font-size:clamp(28px,7.1cqw,86px)}
+ .cover-actions #open-intro{top:44%}
+ .play-area{inset:1.5%;width:97%;height:97%}
+ .hud{margin-top:8%}
+ .intro-screen{padding:2%}
+ .intro-layout{grid-template-columns:minmax(0,66%) minmax(0,1fr);gap:1.5%}
+}
+
+</style>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js"></script>
+</head>
+<body>
+<div class="viewport"><div class="stage" id="ginkgo-stage">
+<header class="topbar">
+<div class="menu"><button class="menu-button" id="mode-menu" aria-expanded="false" aria-controls="mode-options" type="button">☰ <span data-i18n="choose">게임 선택</span></button>
+<nav id="mode-options" class="menu-list" aria-label="Game modes" hidden>
+<a href="/" data-i18n="pot">🪴 폿브레이커 RE</a><a href="/ginkgo" aria-current="page" data-i18n="ginkgo">🍂 깅코트리 브레이커</a></nav></div>
+<div class="brand-mini">CLOUD BEAR ZOO PARK · POT BREAKER THEME 2</div>
+<select id="language" class="lang-picker" aria-label="Language"><option value="ko">한국어</option><option value="en">English</option><option value="ja">日本語</option><option value="zh">中文</option></select>
+</header>
+<main class="container">
+<section id="home" class="cover-screen">
+<div class="cover-frame">
+<img class="cover-image" src="{{COVER_IMAGE}}" alt="{{COVER_ALT}}" width="1254" height="1254" decoding="async" fetchpriority="high">
+</div>
+<div class="cover-actions">
+<div class="cover-copy"><small data-i18n="theme">폿 브레이커 테마 2</small><h1><span data-i18n="title1">깅코트리</span> <span data-i18n="title2">브레이커!</span></h1><p data-i18n="subtitle">많이 뽑을수록 좋은 건가...? 썩기 전에 은행을 터치해 점수를 올리세요!</p></div>
+<button class="action cover-start" id="open-intro" data-i18n="open">게임 시작</button>
+<button class="action secondary" id="ranks-from-home" data-i18n="ranking">🏆 랭킹 보기</button>
+</div>
+</section>
+<section id="intro" class="intro-screen" hidden>
+<div class="intro-layout">
+<figure class="intro-art"><img class="intro-comic-image" src="{{COMIC_IMAGE}}" alt="{{COMIC_ALT}}" width="1254" height="1254" decoding="async" fetchpriority="high"></figure>
+<aside class="intro-panel surface">
+<p class="episode">EP.02 / GINKGO TREE BREAKER</p>
+<h1 data-i18n="intro_title">기묘의 이상한 출근길</h1>
+<p class="intro-copy" data-i18n="intro_copy">은행이 썩기 전에 터치해 없애세요. 60초 동안 점수를 모아 랭킹에 도전합니다.</p>
+<div class="difficulties">
+<label><input type="radio" name="difficulty" value="normal" checked> NORMAL <small>3s</small></label>
+<label><input type="radio" name="difficulty" value="hard"> HARD <small>2s</small></label>
+<label><input type="radio" name="difficulty" value="very_hard"> VERY HARD <small>1s</small></label>
+</div>
+<button class="action cover-start" id="begin" data-i18n="enter">은행나무로 출근 ▶</button>
+<button class="action secondary" id="intro-back" data-i18n="back">처음으로</button>
+<p class="intro-help" data-i18n="intro_help">노란 은행만 터치하세요. 잎은 콤보를 끊고, 썩은 은행은 0.5초 동안 입력을 막습니다.</p>
+<p class="status" id="begin-status" aria-live="polite"></p>
+</aside>
+</div>
+</section>
+<section id="play" class="play-area" hidden aria-label="Ginkgo Tree Breaker game">
+<div class="hud"><div class="stat">🏆 <span data-i18n="score">점수</span> <b id="score">0</b></div><div class="stat time">⏱️ <b id="timer">60.0</b>s</div><div class="stat">🔥 <span data-i18n="combo">연속</span> <b id="combo">0</b></div></div>
+<div class="board-wrap"><div id="board" class="board" role="group" aria-label="Ginkgo trees"></div></div>
+<p id="lock-message" class="lock-message" aria-live="polite"></p>
+</section>
+<section id="end" class="surface" hidden>
+<h2 data-i18n="finished">60초 종료!</h2><div class="end-grid"><div class="stat"><span data-i18n="score">점수</span><br><b id="final-score">0</b></div><div class="stat"><span data-i18n="best">최대 연속 성공</span><br><b id="final-combo">0</b></div></div>
+<label for="nickname" data-i18n="name">랭킹에 표시할 닉네임</label><br><input class="nickname" maxlength="16" id="nickname" autocomplete="nickname" placeholder="Gimyo">
+<div><button class="action" id="submit" data-i18n="submit">랭킹 등록</button><button class="action secondary" id="retry" data-i18n="retry">다시 시작</button></div>
+<p id="result-status" class="status" aria-live="polite"></p>
+</section>
+<section id="rankings" class="surface" hidden>
+<h2 data-i18n="ranking">🏆 랭킹 보기</h2><p data-i18n="ranking_info">점수 우선 · 동점 시 최대 연속 성공 · 1~3위 영구 보관 / 4위 이하 매월 1일 삭제</p>
+<select id="rank-difficulty" class="lang-picker"><option value="normal">NORMAL</option><option value="hard">HARD</option><option value="very_hard">VERY HARD</option></select>
+<div style="overflow-x:auto"><table><thead><tr><th data-i18n="place">순위</th><th data-i18n="player">플레이어</th><th data-i18n="score">점수</th><th data-i18n="best">최대 연속 성공</th></tr></thead><tbody id="ranking-rows"></tbody></table></div>
+<p id="rank-status" class="status" aria-live="polite"></p><button class="action secondary" id="back" data-i18n="back">처음으로</button>
+</section>
+<section class="seo-copy">
+<h2>{{GUIDE_TITLE}}</h2><p>{{GUIDE_BODY}}</p>
+</section>
+<footer><a href="/" data-i18n="pot">폿브레이커 RE</a><a href="/about" data-i18n="about">게임 소개</a><a href="/privacy" data-i18n="privacy">개인정보 및 광고 안내</a></footer>
+</main>
+<script>
+"use strict";
+const T={
+ko:{intro_title:"기묘의 이상한 출근길",intro_copy:"은행이 썩기 전에 터치해 없애세요. 60초 동안 점수를 모아 랭킹에 도전합니다.",intro_help:"노란 은행만 터치하세요. 잎은 콤보를 끊고, 썩은 은행은 0.5초 동안 입력을 막습니다.",open:"게임 시작",enter:"은행나무로 출근 ▶",choose:"게임 선택",pot:"🪴 폿브레이커 RE",ginkgo:"🍂 깅코트리 브레이커",theme:"폿 브레이커 테마 2",title1:"깅코트리",title2:"브레이커!",subtitle:"많이 뽑을수록 좋은 건가...? 썩기 전에 은행을 터치해 점수를 올리세요!",difficulty:"난이도 선택",start:"60초 게임 시작",ranking:"🏆 랭킹 보기",story:"🍁 기묘의 이상한 출근길 — 4컷 만화",scene1:"① 출근길",scene2:"② 하청이라고요?",scene3:"③ 진짜 뽑아야 해?",scene4:"④ 깅코트리 브레이커!",line1:"은행나무 교체 공사? 오, 좋다!",line2:"오늘부터 네가 뽑아.",line3:"많이 뽑을수록 좋다고...?",line4:"그렇게 은행나무를 뽑게 된 기묘.",score:"점수",combo:"연속",finished:"60초 종료!",best:"최대 연속 성공",name:"랭킹에 표시할 닉네임",submit:"랭킹 등록",retry:"다시 시작",ranking_info:"점수 우선 · 동점 시 최대 연속 성공 · 1~3위 영구 보관 / 4위 이하 매월 1일 삭제",place:"순위",player:"플레이어",back:"처음으로",about:"게임 소개",privacy:"개인정보 및 광고 안내",loading:"서버에서 게임을 준비하고 있습니다.",locked:"썩은 은행! 0.5초간 터치 불가",network:"서버에 연결하지 못했습니다. 다시 시도해 주세요.",offline:"서버를 사용할 수 없어 오프라인으로 계속합니다.",offline_result:"서버 연결이 복구되면 랭킹을 다시 이용할 수 있습니다.",registered:"랭킹에 등록되었습니다.",empty:"아직 등록된 기록이 없습니다.",blocked:"기록을 불러올 수 없습니다.",already:"종료된 게임입니다."},
+en:{intro_title:"Gimyo's Strange Commute",intro_copy:"Tap ginkgo fruit before it rots. Score as much as you can in 60 seconds and challenge the leaderboard.",intro_help:"Tap yellow fruit. Leaves reset your combo; rotten fruit locks input for 0.5 seconds.",open:"Start Game",enter:"Head to the Ginkgo Trees ▶",choose:"Choose game",pot:"🪴 Pot Breaker RE",ginkgo:"🍂 Ginkgo Tree Breaker",theme:"POT BREAKER THEME 2",title1:"GINKGO TREE",title2:"BREAKER!",subtitle:"The more you pull, the better...? Tap the ginkgo fruit before it rots!",difficulty:"Choose difficulty",start:"Start 60-second game",ranking:"🏆 Rankings",story:"🍁 Gimyo's Strange Commute — 4-Panel Comic",scene1:"① On the way to work",scene2:"② Subcontract work?",scene3:"③ Really pull them out?",scene4:"④ Ginkgo Tree Breaker!",line1:"They're replacing the trees? Nice!",line2:"Starting today, you pull them out.",line3:"So... the more I pull, the better...?",line4:"That's how Gimyo ended up pulling ginkgo trees.",score:"Score",combo:"Combo",finished:"60 seconds up!",best:"Best streak",name:"Nickname for the leaderboard",submit:"Submit score",retry:"Play again",ranking_info:"Highest score first · Best streak breaks ties · Top 3 saved permanently, others cleared monthly",place:"Rank",player:"Player",back:"Home",about:"About",privacy:"Privacy and ads",loading:"Starting a verified game on the server.",locked:"Rotten fruit! Can't tap for 0.5 seconds",network:"Could not connect to the server. Try again.",offline:"Server unavailable; continuing offline.",offline_result:"This score could not be submitted while the server is unavailable.",registered:"Your score was submitted.",empty:"No scores yet.",blocked:"Could not load rankings.",already:"This game has ended."},
+ja:{intro_title:"ギミョの奇妙な通勤路",intro_copy:"ギンナンが腐る前にタップ。60秒でスコアを集めてランキングに挑戦。",intro_help:"黄色いギンナンをタップ。葉は連続記録をリセットし、腐った実は0.5秒間操作を止めます。",open:"ゲーム開始",enter:"イチョウ並木へ ▶",choose:"ゲーム選択",pot:"🪴 ポットブレイカー RE",ginkgo:"🍂 ギンコツリー・ブレイカー",theme:"ポットブレイカー テーマ2",title1:"ギンコツリー",title2:"ブレイカー！",subtitle:"たくさん抜くほどいいのかな…？ 腐る前のギンナンをタップ！",difficulty:"難易度選択",start:"60秒ゲーム開始",ranking:"🏆 ランキング",story:"🍁 ギミョの奇妙な通勤路 — 4コマ",scene1:"① 出勤中",scene2:"② 下請けですか？",scene3:"③ 本当に抜くの？",scene4:"④ ギンコツリー・ブレイカー！",line1:"イチョウの木を交換？ いいね！",line2:"今日からお前が抜け。",line3:"たくさん抜くほどいいってこと…？",line4:"こうしてギミョは木を抜くことになった。",score:"スコア",combo:"連続",finished:"60秒終了！",best:"最大連続成功",name:"ランキング用ニックネーム",submit:"記録を登録",retry:"もう一度",ranking_info:"スコア優先・同点は最大連続成功で判定・上位3位は永久保存、ほかは毎月1日削除",place:"順位",player:"プレイヤー",back:"最初へ",about:"ゲーム紹介",privacy:"プライバシー・広告",loading:"サーバーでゲームを準備しています。",locked:"腐ったギンナン！ 0.5秒間タップできません",network:"サーバーに接続できません。再試行してください。",offline:"サーバーに接続できないため、オフラインで続行します。",offline_result:"サーバーに接続できないため、今回のスコアはランキングに登録されません。",registered:"ランキングに登録しました。",empty:"まだ記録がありません。",blocked:"記録を読み込めません。",already:"ゲームは終了しました。"},
+zh:{intro_title:"吉喵的奇妙上班路",intro_copy:"在银杏果腐烂前点击它。用60秒积累分数，挑战排行榜。",intro_help:"只点击黄色银杏果。树叶会中断连击，烂果会锁定操作0.5秒。",open:"开始游戏",enter:"前往银杏树 ▶",choose:"选择游戏",pot:"🪴 POT BREAKER RE",ginkgo:"🍂 银杏树破坏者",theme:"POT BREAKER 主题2",title1:"银杏树",title2:"破坏者！",subtitle:"拔得越多就越好吗……？ 在银杏果腐烂前点击它！",difficulty:"选择难度",start:"开始60秒游戏",ranking:"🏆 排行榜",story:"🍁 吉喵的奇妙上班路 — 四格漫画",scene1:"① 上班路上",scene2:"② 这是外包吗？",scene3:"③ 真的要拔吗？",scene4:"④ 银杏树破坏者！",line1:"要更换银杏树？不错！",line2:"从今天起，你来拔。",line3:"拔得越多越好吗……？",line4:"就这样，吉喵开始拔银杏树了。",score:"分数",combo:"连击",finished:"60秒结束！",best:"最高连续成功",name:"排行榜昵称",submit:"提交成绩",retry:"再玩一次",ranking_info:"先比总分·同分比最高连击·前三名永久保留，其他记录每月1日清理",place:"排名",player:"玩家",back:"返回首页",about:"游戏介绍",privacy:"隐私与广告",loading:"正在服务器创建游戏。",locked:"烂银杏果！0.5秒内无法点击",network:"无法连接服务器，请重试。",offline:"服务器暂时不可用，继续离线游戏。",offline_result:"服务器不可用，本次成绩无法提交到排行榜。",registered:"成绩已提交。",empty:"暂无记录。",blocked:"无法加载排行榜。",already:"游戏已结束。"}};
+const lang=document.documentElement.lang in T?document.documentElement.lang:"ko",tr=T[lang];
+document.querySelectorAll("[data-i18n]").forEach(e=>e.textContent=tr[e.dataset.i18n]||e.textContent);
+document.querySelector("#language").value=lang;
+const routes={ko:"/ginkgo",en:"/ginkgo/en",ja:"/ginkgo/ja",zh:"/ginkgo/zh"};
+document.querySelector("#language").addEventListener("change",e=>location.assign(routes[e.target.value]));
+const menu=document.querySelector("#mode-menu"),options=document.querySelector("#mode-options");
+menu.addEventListener("click",()=>{options.hidden=!options.hidden;menu.setAttribute("aria-expanded",String(!options.hidden))});
+document.addEventListener("click",e=>{if(!e.target.closest(".menu")){options.hidden=true;menu.setAttribute("aria-expanded","false")}});
+const $=id=>document.getElementById(id);
+let run=null,latestVersion=-1,busy=false,tapping=Promise.resolve(),pollTimer=null,deadline=0,finishShown=false,currentDifficulty="normal",feedbackHideTimer=null,serverOffline=false,localLockShown=false;
+let pyodideRuntime=null,pyEngine=null,localTimer=null;
+function show(view){["home","intro","play","end","rankings"].forEach(id=>$(id).hidden=id!==view);window.scrollTo({top:0,behavior:"instant"});}
+function errors(res){return res.json().then(body=>{if(!res.ok)throw Error(body.error||"network");return body})}
+async function ensurePyEngine(seed){
+ if(!window.loadPyodide)throw new Error("Pyodide unavailable");
+ if(!pyodideRuntime){
+  pyodideRuntime=await loadPyodide({indexURL:"https://cdn.jsdelivr.net/pyodide/v0.27.7/full/"});
+  const response=await fetch("/ginkgo/game.py",{cache:"no-store"});
+  if(!response.ok)throw new Error("shared game engine unavailable");
+  await pyodideRuntime.runPythonAsync(await response.text());
+ }
+ if(pyEngine)pyEngine.destroy();
+ pyEngine=pyodideRuntime.runPython('GameEngine("ginkgo", '+String(seed)+', "'+currentDifficulty+'")');
+}
+function showFeedback(message,timeout=0){
+ const el=$("lock-message");clearTimeout(feedbackHideTimer);
+ if(!message){el.classList.remove("is-visible");feedbackHideTimer=setTimeout(()=>{if(!el.classList.contains("is-visible"))el.textContent=""},220);return}
+ el.textContent=message;el.classList.add("is-visible");
+ if(timeout)feedbackHideTimer=setTimeout(()=>showFeedback(""),timeout);
+}
+function paintStates(phases){
+ if(!phases)return;
+ phases.forEach((phase,i)=>{const cell=$("tree-"+i);if(cell)cell.className="tree "+(phase===0?"leaf0":phase===1?"leaf1":phase===2?"fruit2":"fruit3")});
+}
+function update(snapshot){
+ if(!run||snapshot.version<latestVersion)return;
+ latestVersion=snapshot.version;
+ if(pyEngine)snapshot={...snapshot,...JSON.parse(pyEngine.sync(JSON.stringify({...snapshot,now_ms:Date.now()})))};
+ paintStates(snapshot.cells);
+ $("score").textContent=snapshot.score;
+ $("combo").textContent=snapshot.combo;
+ $("timer").textContent=(Math.max(0,snapshot.remaining_ms)/1000).toFixed(1);
+ deadline=Date.now()+snapshot.remaining_ms;
+ localLockShown=Date.now()<snapshot.locked_until;
+ showFeedback(localLockShown?tr.locked:"");
+ if(snapshot.done)finishGame(snapshot);
+}
+function renderLocalState(){
+ if(!pyEngine)return null;
+ const local=JSON.parse(pyEngine.state());
+ paintStates(local.cells);
+ $("score").textContent=local.score;
+ $("combo").textContent=local.combo;
+ $("timer").textContent=(Math.max(0,local.remaining_ms)/1000).toFixed(1);
+ if(Boolean(local.locked)!==localLockShown){localLockShown=Boolean(local.locked);showFeedback(localLockShown?tr.locked:"");}
+ if(local.phase==="finished")finishGame({...local,done:true});
+ return local;
+}
+function enterOfflineMode(){
+ if(serverOffline)return;
+ serverOffline=true;clearInterval(pollTimer);pollTimer=null;
+ showFeedback(tr.offline,2600);
+}
+function localSeed(){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]||987654321;}
+function paintBoard(){
+ const root=$("board");root.replaceChildren();
+ for(let i=0;i<91;i++){
+  const btn=document.createElement("button");btn.type="button";btn.className="cell";btn.setAttribute("aria-label","Tree "+(i+1));
+  const trunk=document.createElement("span");trunk.className="trunk";const tree=document.createElement("span");tree.className="tree leaf0";tree.id="tree-"+i;btn.append(trunk,tree);
+  btn.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse")e.preventDefault();tap(i)}); // supports two-finger simultaneous taps
+  btn.addEventListener("click",e=>{if(e.detail===0)tap(i)}); // keyboard accessibility
+  root.append(btn);
+ }
+}
+async function begin(){
+ if(busy)return;busy=true;
+ $("begin").disabled=true;$("begin-status").textContent=tr.loading;
+ currentDifficulty=document.querySelector("input[name=difficulty]:checked").value;
+ serverOffline=false;localLockShown=false;finishShown=false;latestVersion=-1;
+ clearInterval(pollTimer);clearInterval(localTimer);pollTimer=null;
+ let seed=localSeed(),data=null;
+ try{
+  await ensurePyEngine(seed);
+  try{
+   const response=await fetch("/api/ginkgo/start",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({difficulty:currentDifficulty})});
+   data=await errors(response);run=data.run_id;
+   if(Number.isInteger(data.seed)&&data.seed!==seed){seed=data.seed;await ensurePyEngine(seed);}
+  }catch(e){serverOffline=true;run=null;}
+  deadline=Date.now()+(data?.remaining_ms||60000);paintBoard();show("play");
+  if(data){update(data);}else{renderLocalState();showFeedback(tr.offline,2600);}
+  localTimer=setInterval(()=>{if(pyEngine&&!finishShown){pyEngine.step(0.05);renderLocalState();}},50);
+ }catch(e){$("begin-status").textContent=tr.network+" ("+(e?.message||"")+")"}
+ finally{busy=false;$("begin").disabled=false}
+}
+let pollBusy=false;
+async function poll(){
+ if(pollBusy||!run||finishShown||serverOffline)return;pollBusy=true;
+ try{
+  const r=await fetch("/api/ginkgo/state?run="+encodeURIComponent(run),{cache:"no-store"});
+  update(await errors(r));
+ }catch(e){enterOfflineMode();}
+ finally{pollBusy=false}
+}
+function tap(index){
+ if((!run&&!serverOffline)||finishShown||Date.now()>=deadline)return;
+ tapping=tapping.then(async()=>{
+  if(finishShown)return;
+  try{
+   if(serverOffline){if(pyEngine)pyEngine.tap(index);renderLocalState();return;}
+   if(pyEngine&&!pyEngine.tap(index)){renderLocalState();return;}
+   renderLocalState();
+   if(!run)return;
+   let r=await fetch("/api/ginkgo/tap",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({run_id:run,index})});
+   if(r.status===409){const e=await r.json();if(e.error==="state_conflict"){r=await fetch("/api/ginkgo/tap",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({run_id:run,index})});}else if(e.error==="temporarily_locked"){showFeedback(tr.locked,700);return}else if(e.error==="game_ended"){await poll();return}else if(r.status>=500){enterOfflineMode();return}}
+   if(r.ok)update(await r.json());
+   else if(r.status>=500)enterOfflineMode();
+  }catch(e){enterOfflineMode();}
+ });
+}
+function finishGame(state){
+ if(finishShown)return;finishShown=true;clearInterval(pollTimer);clearInterval(localTimer);
+ $("final-score").textContent=state.score;
+ $("final-combo").textContent=state.max_combo;
+ $("result-status").textContent=serverOffline?tr.offline_result:"";
+ show("end");
+}
+async function rankings(){
+ show("rankings");$("rank-difficulty").value=currentDifficulty;
+ $("rank-status").textContent=tr.loading;$("ranking-rows").replaceChildren();
+ try{
+  const r=await fetch("/api/ginkgo/rankings?difficulty="+encodeURIComponent($("rank-difficulty").value),{cache:"no-store"});
+  const d=await errors(r);
+  $("rank-status").textContent=d.rankings.length?"":tr.empty;
+  let rank=0,prior="",index=0;
+  for(const item of d.rankings){
+   index++;const key=item.score+"|"+item.max_combo;if(key!==prior){rank=index;prior=key}
+   const row=document.createElement("tr");
+   [rank,item.nickname,item.score,item.max_combo].forEach(value=>{const td=document.createElement("td");td.textContent=String(value);row.appendChild(td)});
+   $("ranking-rows").append(row);
+  }
+ }catch(e){$("rank-status").textContent=tr.blocked}
+}
+$("open-intro").addEventListener("click",()=>show("intro"));
+$("intro-back").addEventListener("click",()=>show("home"));
+$("begin").addEventListener("click",begin);
+$("ranks-from-home").addEventListener("click",rankings);
+$("rank-difficulty").addEventListener("change",()=>{currentDifficulty=$("rank-difficulty").value;rankings()});
+$("back").addEventListener("click",()=>{run=null;finishShown=false;show("home")});
+$("retry").addEventListener("click",()=>{run=null;finishShown=false;show("home")});
+$("submit").addEventListener("click",async()=>{
+ if(serverOffline||!run){$("result-status").textContent=tr.offline_result;return;}
+ const name=$("nickname").value.trim();
+ if(!name){$("result-status").textContent=tr.name;return}
+ $("submit").disabled=true;
+ try{
+  const r=await fetch("/api/ginkgo/finish",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({run_id:run,nickname:name})});
+  await errors(r);$("result-status").textContent=tr.registered;currentDifficulty=document.querySelector("input[name=difficulty]:checked").value;
+  await rankings();
+ }catch(e){enterOfflineMode();$("result-status").textContent=tr.offline_result}
+ finally{$("submit").disabled=false}
+});
+</script>
+</body></html>

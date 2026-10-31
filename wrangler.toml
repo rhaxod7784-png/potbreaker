@@ -7,3 +7,7 @@ binding = "POTBREAKER_DB"
 database_name = "potbreaker-re-ranking"
 database_id = "bfc89eda-b76b-44f0-9653-bbda3b7c6806"
 migrations_dir = "cloudflare/migrations"
+
+[triggers]
+# 15:00 UTC on the last calendar day = 00:00 on the 1st in Asia/Seoul.
+crons = ["0 15 28-31 * *"]
