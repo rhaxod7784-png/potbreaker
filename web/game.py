@@ -13,7 +13,7 @@ PAD_SPAWN_SECONDS = 1.15
 PAD_LIFETIME_SECONDS = 8.0
 PAD_LIMIT = 8
 PARTITION_MOVE_SECONDS = 1.7
-FIELD_POT_COUNT = 4  # Four ammo pots plus one healing pot.
+FIELD_POT_COUNT = 5  # Five ordinary pots plus one healing pot = six field pots.
 SPECIAL_POT_EFFECTS = ('heal',)
 CROW_FIRST_APPEAR_SECONDS = 2.5
 CROW_RESPAWN_SECONDS = 14.0
