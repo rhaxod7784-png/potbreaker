@@ -28,21 +28,18 @@ function fixV111Startup(source) {
   // unconditionally in Pyodide (__name__='__main__'), delaying game startup.
   // Keep that test in repository CI, not in the browser-served Python module.
   const startMarker = "var GAME = `";
-  const endMarker = "`;
-var BROWSER_MODULES = ";
+  const endMarker = "`;\nvar BROWSER_MODULES = ";
   const begin=source.indexOf(startMarker),from=begin+startMarker.length;
   const end=source.indexOf(endMarker,from);
   if(begin<0||end<0)throw Error("v188 Python bundle marker missing");
   const python=source.slice(from,end);
-  const guard="if __name__ == '__main__':
-    g = PotBreaker(42)";
+  const guard="if __name__ == '__main__':\n    g = PotBreaker(42)";
   const guardIndex=python.lastIndexOf(guard);
   if(guardIndex<0 || python.slice(guardIndex).indexOf("print('OK: 2500 deterministic engine ticks')")<0) {
     throw Error("Unexpected Python standalone test; no modification");
   }
   if(python.slice(guardIndex+guard.length).includes("class "))throw Error("Unexpected code after standalone test");
-  const cleaned=python.slice(0,guardIndex).trimEnd()+"
-";
+  const cleaned=python.slice(0,guardIndex).trimEnd()+"\n";
   source=source.slice(0,from)+cleaned+source.slice(end);
   applied.push("exclude standalone Python stress test from Pyodide startup");
   if(source.includes("),const {fire:fireNow"))throw Error("Startup SyntaxError still present");
