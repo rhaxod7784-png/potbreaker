@@ -18,13 +18,13 @@ This document distinguishes the verified Git history, authored release requireme
 | Core PotBreaker | 3 HP player, boss HP Normal 5 / Hard 7 / Very Hard 10, ordinary ammo caps Normal 3 / Hard 2 / Very Hard 2 |
 | Movement | Player dash cooldown 3 seconds, boss dash cooldown 5 seconds |
 | Projectiles | Boss projectiles stop at partitions; normal throws remain available |
-| Pot floor items | 4 ordinary pickups plus 1 healing pickup (total 5); avoid runaway growth |
+| Pot floor items | 5 ordinary pickups plus 1 healing pickup (total 6); avoid runaway growth |
 | Modular game modes | Field, Combat, Actor, Charge components preserved alongside Ginkgo game mode |
 | Ginkgo Tree Breaker | Original planned progression intervals **Normal 1.0 s / Hard 0.7 s / Very Hard 0.5 s** |
 | Ginkgo gameplay | Round duration 60 s, lock penalty 0.5 s, independent scoreboard/ranking pathway |
 | New charge burst | Holding Space gathers existing ordinary ammo and pickups; releasing does one boss HP of damage per pot, charge caps **3/4/5** by Normal/Hard/Very Hard |
 
-The Ginkgo UI/server/Python had drifted to 3/2/1 seconds. PR #12 restored the documented 1.0/0.7/0.5 s across `web/ginkgo_modules.py`, `cloudflare/ginkgo-api.js`, `web/ginkgo.html`, and localized SEO/description text in `scripts/build_worker.py`. Python and Node tests were updated.
+A mismatch with the previously requested six field pots was also corrected: earlier source had four ordinary plus one healing pot (five total); current source now maintains five ordinary plus one healing pot (six total) while preserving the refill/recycle cap.\n\nThe Ginkgo UI/server/Python had drifted to 3/2/1 seconds. PR #12 restored the documented 1.0/0.7/0.5 s across `web/ginkgo_modules.py`, `cloudflare/ginkgo-api.js`, `web/ginkgo.html`, and localized SEO/description text in `scripts/build_worker.py`. Python and Node tests were updated.
 
 ### Automated verification
 
