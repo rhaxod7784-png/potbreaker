@@ -1,0 +1,32 @@
+{
+  "project": "POT BREAKER RE",
+  "deployed_worker": "potbreaker",
+  "domain": "https://potbreaker.com",
+  "release": "v188",
+  "base_worker_version": 184,
+  "base_worker_id": "ec53a477-dcef-4b75-8142-8066aabf1fe6",
+  "deployed_worker_version": 188,
+  "deployed_worker_id": "85d545da-dabd-4d03-acc6-e2323ee07d44",
+  "deployment_id": "4702010b-f0ce-4985-ba69-1d693f83192a",
+  "github_branch": "fix/v184-ranking-charge-sparks",
+  "github_feature_commit": "31878c503b411a7a85cf2fd3e2d3840e190a76c4",
+  "traffic_percentage": 100,
+  "changes": [
+    "Restore end-screen home layout",
+    "Expose winning ranking registration without waiting for async finish API",
+    "All difficulty player pot capacity max 3",
+    "ProjectileModule charging max 3, travel-based auto aim and 2-wall penetration",
+    "One spark per pot (1-3) around Gimyo",
+    "Separate dash release from charge release"
+  ],
+  "validation": {
+    "cloudflare_upload": "success",
+    "live_traffic": "100 percent verified",
+    "github_branch_push": "success",
+    "deployment_static_checks": "passed",
+    "browser_interaction_qa": "not performed; site not accessible via inspection tool",
+    "pyodide_runtime_qa": "not performed; static checks do not prove runtime behavior"
+  },
+  "source_note": "The 4.15 MB compiled worker is deployed in Cloudflare. This branch stores the exact v184-targeted patch and deployment script; the old v1.0.0 Python repo sources are not silently rewritten.",
+  "rollback": "python3 scripts/deploy_v184.py --deploy"
+}
