@@ -1,0 +1,31 @@
+name: QA PotBreaker Charge Burst
+
+on:
+  push:
+    branches:
+      - feat/potbreaker-charge-burst-20261103
+  pull_request:
+    branches:
+      - feat/ginkgo-tree-breaker-v0-6-20261030
+
+permissions:
+  contents: read
+
+jobs:
+  charge-and-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Charge mechanic tests
+        run: python -m unittest discover -s tests -p 'test_charge_burst.py' -v
+      - name: Common-engine regression tests
+        run: python -m unittest discover -s tests -p 'test_potbreaker_engine_modules.py' -v
+      - name: Ginkgo regression tests
+        run: python -m unittest discover -s tests -p 'test_game_engine.py' -v
+      - name: Build Cloudflare Worker without deploying
+        run: python scripts/build_worker.py
+      - name: Generated Worker JavaScript syntax
+        run: node --check cloudflare/worker.js
