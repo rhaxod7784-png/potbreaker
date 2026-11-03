@@ -56,7 +56,7 @@ function fromModule(bundle, path) {
   return JSON.parse(encoded);
 }
 function validate(bundle, applied) {
-  assert.equal(applied.length, 23, "All 23 scoped fixes must apply");
+  assert.equal(applied.length, 25, "All 25 scoped fixes must apply");
   const python = fromTemplate(bundle, "GAME", "BROWSER_MODULES");
   const page = fromTemplate(bundle, "PAGE", "GAME");
   const input = fromModule(bundle, "/modules/potbreaker/input.js");
@@ -67,6 +67,7 @@ function validate(bundle, applied) {
   assert(main.includes("if(win)$('registerScore').classList.remove('hidden');if(activeRunId)"), "Victory action must not wait for API");
   assert(main.includes("chargingNow"), "Charging input must reach Python engine");
   assert(input.includes("fireReleasePending"), "Quick taps must be preserved");
+  assert(input.includes("this.onDashUp") && input.includes("this.dashButton.addEventListener(type, this.onDashUp)"), "Dash release must not trigger fire release");
   assert(renderer.includes("drawChargeSparks(s)"), "Spark effect hook missing");
   assert(renderer.includes("i * Math.PI * 2 / n"), "Need one visual per charged pot");
   assert(renderer.includes("(p.boss||p.charged)?.92:.52"), "Charged pot must match boss projectile size");
