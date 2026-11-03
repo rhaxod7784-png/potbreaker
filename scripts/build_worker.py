@@ -45,10 +45,6 @@ if touch_target not in html:
 html = html.replace(touch_target, '<div class="touch-layer">' + dpad_markup + '<div class="actions">', 1)
 html = html.replace("화면을 밀어 방향 조작", "원형 조작부를 눌러 방향 이동")
 dpad_css = """
-/* Hide on-screen movement/dash/throw controls on mouse/keyboard desktops.
-   Touch-first devices keep the controls, including landscape phones. */
-#gamePanel .touch-layer{display:none!important}
-@media (pointer:coarse) and (hover:none){#gamePanel .touch-layer{display:block!important}}
 #dpad{position:absolute!important;left:1.5%!important;bottom:1.5%!important;top:auto!important;right:auto!important;width:clamp(184px,24cqw,232px)!important;height:clamp(184px,24cqw,232px)!important;aspect-ratio:1;display:block!important;padding:0!important;overflow:visible!important;border:3px solid #ffffffed!important;border-radius:50%!important;background:linear-gradient(45deg,transparent 49.4%,#ffffffdc 49.7%,#ffffffdc 50.3%,transparent 50.6%),linear-gradient(-45deg,transparent 49.4%,#ffffffdc 49.7%,#ffffffdc 50.3%,transparent 50.6%),conic-gradient(from -45deg,#d9eafa88 0deg 90deg,#c8def488 90deg 180deg,#d9eafa88 180deg 270deg,#c8def488 270deg 360deg)!important;box-shadow:0 4px 12px #31486b55!important;touch-action:none!important;user-select:none;-webkit-user-select:none}
 #dpad>.dpad-button{position:absolute!important;inset:0!important;display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important;padding:0!important;border:1px solid #ffffffa8!important;border-radius:0!important;background:transparent!important;color:#344f83!important;font-size:clamp(28px,4cqw,42px)!important;font-weight:1000;box-shadow:none!important;pointer-events:auto!important;touch-action:none!important;clip-path:none!important}
 #dpad>.dpad-button.up{clip-path:polygon(0 0,100% 0,50% 50%)!important;align-items:flex-start!important;padding-top:12%!important}
