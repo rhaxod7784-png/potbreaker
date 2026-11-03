@@ -1,6 +1,6 @@
 // Ginkgo Tree Breaker v0.6: authoritative game state and ranking (Cloudflare Workers/D1).
 const GINKGO_COLS=13,GINKGO_ROWS=7,GINKGO_TOTAL=GINKGO_COLS*GINKGO_ROWS;
-const GINKGO_INTERVAL={normal:3000,hard:2000,very_hard:1000};
+const GINKGO_INTERVAL={normal:1000,hard:700,very_hard:500};
 const GINKGO_SCHEMA=`CREATE TABLE IF NOT EXISTS ginkgo_runs (run_id TEXT PRIMARY KEY,difficulty TEXT NOT NULL,started_ms INTEGER NOT NULL,deadline_ms INTEGER NOT NULL,state_json TEXT NOT NULL,version INTEGER NOT NULL DEFAULT 0,finished INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL DEFAULT (datetime('now')));
 CREATE TABLE IF NOT EXISTS ginkgo_rankings (id INTEGER PRIMARY KEY AUTOINCREMENT,run_id TEXT NOT NULL UNIQUE,nickname TEXT NOT NULL,difficulty TEXT NOT NULL,score INTEGER NOT NULL,max_combo INTEGER NOT NULL,created_at TEXT NOT NULL DEFAULT (datetime('now')));
 CREATE INDEX IF NOT EXISTS ginkgo_rankings_order ON ginkgo_rankings(difficulty,score DESC,max_combo DESC);
