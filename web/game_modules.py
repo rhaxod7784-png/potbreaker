@@ -69,7 +69,7 @@ class FieldModule(_FeatureModule):
             x, y = self.rng.choice(choices)
             self.special_pots.append({'x': x, 'y': y, 'effect': effect})
     def _maintain_field_pots(self):
-        # Keep four ammo pots and exactly one healing pot available.
+        # Keep five ordinary ammo pots and one healing pot: six field pots total.
         while len(self.pots) < FIELD_POT_COUNT:
             before = len(self.pots)
             self._add_pot()
