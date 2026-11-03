@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feat/ginkgo-tree-breaker-v0-6-20261030
+      - fix/potbreaker-preserve-v110-prior-updates-20261103
   pull_request:
     paths:
       - web/ginkgo.html
