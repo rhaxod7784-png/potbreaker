@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feat/ginkgo-tree-breaker-v0-6-20261030
+      - fix/potbreaker-preserve-v110-prior-updates-20261103
   pull_request:
     paths:
       - web/ginkgo.html
@@ -34,6 +35,8 @@ jobs:
           python -m unittest discover -s tests -p 'test_ginkgo_static.py' -v
           python -m unittest discover -s tests -p 'test_potbreaker_engine_modules.py' -v
           python -m unittest discover -s tests -p 'test_game_engine.py' -v
+          python -m unittest discover -s tests -p 'test_charge_burst.py' -v
+          python -m unittest discover -s tests -p 'test_preserved_previous_updates.py' -v
       - name: Build Worker from exact branch assets
         run: python scripts/build_worker.py
       - name: Check generated Worker JavaScript

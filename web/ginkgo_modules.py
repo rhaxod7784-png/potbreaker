@@ -12,7 +12,7 @@ except ImportError:
 class RoundTimerModule(GameComponent):
     """Reusable round clock with difficulty-driven beat intervals."""
 
-    INTERVALS = {"normal": 3.0, "hard": 2.0, "very_hard": 1.0}
+    INTERVALS = {"normal": 1.0, "hard": 0.7, "very_hard": 0.5}
 
     def __init__(self, difficulty="normal", duration=60.0, name="round_timer"):
         super().__init__(name)
