@@ -9,11 +9,12 @@ class PotBreakerFeatureModuleTests(unittest.TestCase):
         game = PotBreaker(42)
         self.assertEqual(
             set(game._feature_modules),
-            {"field", "combat", "actor"},
+            {"field", "combat", "actor", "charge"},
         )
         self.assertIs(game._free.__self__, game._feature_modules["field"])
         self.assertIs(game._damage.__self__, game._feature_modules["combat"])
         self.assertIs(game._move_player.__self__, game._feature_modules["actor"])
+        self.assertIs(game._begin_charge.__self__, game._feature_modules["charge"])
 
     def test_composed_engine_keeps_deterministic_step_and_state(self):
         left = PotBreaker(17)
