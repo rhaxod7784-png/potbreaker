@@ -1,0 +1,17 @@
+{
+  "project": "POT BREAKER RE",
+  "domain": "https://potbreaker.com",
+  "cloudflare_worker": "potbreaker",
+  "production_version_number": 184,
+  "production_version_id": "ec53a477-dcef-4b75-8142-8066aabf1fe6",
+  "version_created_at_utc": "2026-11-02T13:53:28.905734Z",
+  "compatibility_date": "2026-10-27",
+  "main_module": "worker.js",
+  "bindings": ["POTBREAKER_DB"],
+  "deployment_traffic_percent": 100,
+  "rollback_entrypoint": "python scripts/deploy_v184.py --deploy",
+  "verification_entrypoint": "python scripts/deploy_v184.py",
+  "baseline_scope": "Deployed Cloudflare Worker version; NOT an assertion that GitHub source rebuilds v184",
+  "github_source_parity": "NOT_VERIFIED",
+  "note": "Cloudflare v184 is pinned by immutable version ID. The older GitHub Python source and cloudflare/worker.js were intentionally not overwritten with an incomplete bundle."
+}
