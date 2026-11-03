@@ -30,6 +30,7 @@ class PreviousUpdateCompatibilityTests(unittest.TestCase):
                 self.assertEqual(state["ammo_cap"], ammo_cap)
                 self.assertEqual(len(state["pots"]), FIELD_POT_COUNT)
                 self.assertEqual(len(state["special_pots"]), 1)
+                self.assertEqual(len(state["pots"]) + len(state["special_pots"]), 6)
 
     def test_field_pots_are_recycled_not_infinitely_added(self):
         game = PotBreaker(seed=5)
