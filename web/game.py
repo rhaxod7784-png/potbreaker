@@ -42,12 +42,17 @@ class PotBreaker:
         self.rng = random.Random(seed)
         if 'FieldModule' not in globals():
             from . import game_modules as _game_modules
+            from . import charge_module as _charge_module
             globals().update({
                 'FieldModule': _game_modules.FieldModule,
                 'CombatModule': _game_modules.CombatModule,
                 'ActorModule': _game_modules.ActorModule,
+                'ChargeModule': _charge_module.ChargeModule,
                 'FEATURE_METHODS': _game_modules.FEATURE_METHODS,
             })
+        if 'ChargeModule' not in globals():
+            from .charge_module import ChargeModule
+            globals()['ChargeModule'] = ChargeModule
         feature_classes = globals()
         self.difficulty = difficulty if difficulty in ('normal', 'hard', 'very_hard') else 'normal'
         self.player_pot_cap = 3 if self.difficulty == 'normal' else 2
@@ -56,10 +61,11 @@ class PotBreaker:
             'field': feature_classes['FieldModule'],
             'combat': feature_classes['CombatModule'],
             'actor': feature_classes['ActorModule'],
+            'charge': feature_classes['ChargeModule'],
         }
         components = components or {}
         if not isinstance(components, dict) or not set(components).issubset(feature_classes_by_name):
-            raise ValueError("PotBreaker components must map field, combat, or actor to module instances")
+            raise ValueError("PotBreaker components must map field, combat, actor, or charge to module instances")
         self._feature_modules = {}
         for name, module_class in feature_classes_by_name.items():
             module = components[name] if name in components else module_class(self)
@@ -101,6 +107,8 @@ class PotBreaker:
             else:
                 break
         self.ammo, self.boss_ammo, self.max_boss_ammo = 0, 0, BOSS_POT_CAP
+        self.charge_active, self.charge_count = False, 0
+        self.charge_cap = {'normal': 3, 'hard': 4, 'very_hard': 5}[self.difficulty]
         self.boss_pot_cap = BOSS_POT_CAP
         self.throw_cd, self.boss_throw_cd = 0.0, 1.2
         self.player_move_cd, self.boss_move_cd = 0.0, .5
@@ -123,8 +131,13 @@ class PotBreaker:
         
         return self.state()
 
-    def step(self, dt, mx=0, my=0, jump=False, fire=False, aimx=0, aimy=0):
-        # Keep previous API signature for the existing Pyodide front-end.
+    def step(self, dt, mx=0, my=0, jump=False, fire=False, aimx=0, aimy=0, charge=False):
+        # Optional eighth input retains the seven-argument legacy interface.
+        if self.phase != 'playing': return self.state()
+        if charge and not self.charge_active:
+            self._begin_charge()
+        elif not charge and self.charge_active:
+            self._release_charge()
         if self.phase != 'playing': return self.state()
         dt = min(.085, max(.01, float(dt)))
         self.clock += dt
@@ -200,6 +213,8 @@ class PotBreaker:
                            'player_hp': self.player_hp, 'boss_hp': self.boss_hp,
                            'player_dash_cd': round(self.player_dash_cd,2), 'boss_dash_cd': round(self.boss_dash_cd,2),
                            'ammo': self.ammo, 'ammo_cap': self.player_pot_cap, 'boss_ammo': self.boss_ammo,
+                           'charging': self.charge_active, 'charge_count': self.charge_count,
+                           'charge_cap': self.charge_cap,
                            'boss_hp_cap': self.boss_hp_cap, 'difficulty': self.difficulty,
                            'dash_effect': self.dash_effect,
                            'notice': self.notice if self.notice_time else '',
