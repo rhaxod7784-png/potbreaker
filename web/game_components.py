@@ -45,8 +45,8 @@ class ComponentAssemblyMode:
             component.reset(self.context)
         return self.state()
 
-    def step(self, dt, mx=0, my=0, jump=False, fire=False, aimx=0, aimy=0, **inputs):
-        inputs.update(mx=mx, my=my, jump=jump, fire=fire, aimx=aimx, aimy=aimy)
+    def step(self, dt, mx=0, my=0, jump=False, fire=False, aimx=0, aimy=0, charge=False, **inputs):
+        inputs.update(mx=mx, my=my, jump=jump, fire=fire, aimx=aimx, aimy=aimy, charge=charge)
         for component in self.components:
             component.step(self.context, dt, **inputs)
         return self.state()

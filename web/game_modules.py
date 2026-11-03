@@ -69,7 +69,7 @@ class FieldModule(_FeatureModule):
             x, y = self.rng.choice(choices)
             self.special_pots.append({'x': x, 'y': y, 'effect': effect})
     def _maintain_field_pots(self):
-        # Keep four ammo pots and exactly one healing pot available.
+        # Keep five ordinary ammo pots and one healing pot: six field pots total.
         while len(self.pots) < FIELD_POT_COUNT:
             before = len(self.pots)
             self._add_pot()
@@ -161,12 +161,19 @@ class FieldModule(_FeatureModule):
         self._drop_pot(x, y)
     def _pickups(self):
         for who, cap, attr in ((self.player, self.player_pot_cap, 'ammo'), (self.boss, self.boss_pot_cap, 'boss_ammo')):
-            if getattr(self, attr) >= cap: continue
+            charging_player = attr == 'ammo' and self.charge_active
+            if charging_player:
+                if self.charge_count >= self.charge_cap: continue
+            elif getattr(self, attr) >= cap:
+                continue
             for pot in list(self.pots):
                 if distance(who, pot) < .62:
-                    setattr(self, attr, getattr(self, attr) + 1)
+                    if charging_player:
+                        self._charge_pickup()
+                    else:
+                        setattr(self, attr, getattr(self, attr) + 1)
                     self.pots.remove(pot)
-                    self._maintain_field_pots()  # Keep four ammo pots and one healing pot.
+                    self._maintain_field_pots()
                     break
     def _pick_special_pots(self):
         for item in list(self.special_pots):
@@ -444,4 +451,7 @@ FEATURE_METHODS = {
     "_advance_projectiles": "combat",
     "_move_player": "actor",
     "_move_boss": "actor",
+    "_begin_charge": "charge",
+    "_charge_pickup": "charge",
+    "_release_charge": "charge",
 }

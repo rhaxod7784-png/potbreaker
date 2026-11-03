@@ -1,3 +1,13 @@
+# POT BREAKER RE v1.1.0 — source and deployment audit
+
+Feature branch: `feat/potbreaker-charge-burst-20261103`.
+
+The charge-burst mechanic is implemented as `web/charge_module.py`. Hold Space to gather pots and release for one boss HP of damage per collected pot. Limits: Normal 3 / Hard 4 / Very Hard 5. Existing touch throw controls and Ginkgo Tree Breaker remain separate.
+
+Cloudflare Worker v185 was deployed via API on 2026-11-03 16:13 KST (100% traffic), but this source branch has since received a Ginkgo timing/regression fix not yet deployed. The preceding v184 Wrangler Worker has not been source-diffed against v185. Therefore source parity and preservation of every previous production update remain unverified; this branch does not automatically deploy. See RELEASE_AUDIT_20261103.md.
+
+---
+
 # Current browser release — POT BREAKER RE v1.0.89
 
 The current web game is the Korean-language Cloudflare Worker release at [potbreaker.com](https://potbreaker.com/). It runs the Python game engine in the browser with Pyodide and Canvas rendering.

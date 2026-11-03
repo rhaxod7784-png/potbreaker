@@ -8,6 +8,14 @@ class GinkgoModeTests(unittest.TestCase):
     def make_game(self, difficulty="normal"):
         return GameEngine("ginkgo", seed=41, difficulty=difficulty)
 
+    def test_original_difficulty_intervals_are_preserved(self):
+        for difficulty, seconds in (("normal", 3.0), ("hard", 2.0), ("very_hard", 1.0)):
+            with self.subTest(difficulty=difficulty):
+                game = self.make_game(difficulty)
+                self.assertEqual(game.mode.interval, seconds)
+                game.step(seconds + 0.001)
+                self.assertEqual(game.mode.context["round_timer"].tick_count, 1)
+
     def test_board_and_difficulty_parameters(self):
         game = self.make_game("very_hard")
         state = json.loads(game.state())

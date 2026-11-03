@@ -20,6 +20,8 @@ class TestGinkgoStatic(unittest.TestCase):
         self.assertIn('$("intro-back").addEventListener("click",()=>show("home"));',html)
         self.assertIn('$("begin").addEventListener("click",begin);',html)
         self.assertIn('name="difficulty"',html)
+        for t in ('NORMAL <small>3s</small>', 'HARD <small>2s</small>', 'VERY HARD <small>1s</small>'):
+            self.assertIn(t,html)
         self.assertIn('id="rankings"',html)
         for loc in ('ko','en','ja','zh'):
             self.assertRegex(html,r"\b"+loc+r":\{")

@@ -1,4 +1,4 @@
-"""Build illustrated POT BREAKER RE v1.0.91 for Cloudflare Workers.
+"""Build illustrated POT BREAKER RE v1.1.0 for Cloudflare Workers.
 
 Inputs: web/index.html (images + UI bundled), the PotBreaker core, reusable
 feature components, Ginkgo components, and the mode-composing game engine.
@@ -21,6 +21,7 @@ if demo_marker in pot_source:
 python_source = "\n\n".join([
     pot_source,
     (root / "web" / "game_modules.py").read_text(encoding="utf-8"),
+    (root / "web" / "charge_module.py").read_text(encoding="utf-8"),
     (root / "web" / "game_components.py").read_text(encoding="utf-8"),
     (root / "web" / "ginkgo_modules.py").read_text(encoding="utf-8"),
     (root / "web" / "game_engine.py").read_text(encoding="utf-8"),
@@ -58,8 +59,37 @@ dpad_css = """
 html = html.replace("</style>", dpad_css + "\n</style>", 1)
 
 
+
+# PotBreaker charge burst: keep the touch throw control, change Space to hold.
+charge_replacements = [
+    ("keys=new Set(),fire=false,dash=false,tick=0", "keys=new Set(),fire=false,dash=false,charging=false,tick=0"),
+    ("if(e.code==='Space')fire=true", "if(e.code==='Space' && active && !paused)charging=true"),
+    ("if(e.code==='Space')fire=false", "if(e.code==='Space')charging=false"),
+    ("const fireNow=fire,dashNow=dash;dash=false;world=JSON.parse(game.step(.04,mx,my,dashNow,fireNow,0,0))",
+     "const fireNow=fire,dashNow=dash;dash=false;world=JSON.parse(game.step(.04,mx,my,dashNow,fireNow,0,0,charging))"),
+    ("fire=false;dash=false;resetTouch()", "fire=false;dash=false;charging=false;resetTouch()"),
+    ("window.addEventListener('blur',()=>{keys.clear();resetTouch();fire=false})",
+     "window.addEventListener('blur',()=>{keys.clear();resetTouch();fire=false;charging=false})"),
+    ("$('catAmmo').textContent=s.ammo+'/'+s.ammo_cap;",
+     "$('catAmmo').textContent=s.ammo+'/'+s.ammo_cap;const chargeUI=document.getElementById('chargeIndicator');if(chargeUI){chargeUI.textContent=s.charging?'모으는 화분 '+s.charge_count+'/'+s.charge_cap:'';chargeUI.hidden=!s.charging}"),
+    ('<div class="damage-flash" id="damageFlash"></div>',
+     '<div class="damage-flash" id="damageFlash"></div><div class="charge-indicator" id="chargeIndicator" aria-live="polite" hidden></div>'),
+]
+for old, new_value in charge_replacements:
+    matches = html.count(old)
+    if matches != 1:
+        raise SystemExit(f"Charge UI hook not found uniquely: {old[:80]}, matches={matches}")
+    html = html.replace(old, new_value, 1)
+charge_css = """
+.charge-indicator{position:absolute;top:18%;left:50%;transform:translateX(-50%);z-index:16;padding:6px 15px;background:#264b7ee8;border:2px solid #fce38a;border-radius:999px;color:#fff7c7;font-weight:900;font-size:clamp(12px,1.3cqw,18px);pointer-events:none;white-space:nowrap}
+.charge-indicator[hidden]{display:none!important}
+"""
+html = html.replace("</style>", charge_css + "\n</style>", 1)
+html = html.replace("Space(공격)", "Space(누르고 모으기·놓으면 공격)")
+html = html.replace("Space (throw)", "Space (hold to collect, release to attack)")
+
 # v1.0.91: crawlable site metadata, visible game guidance, and safe publisher gates.
-html = html.replace("POT BREAKER RE v1.0.91 · CBZP", "폿브레이커 RE | 기묘와 크다 부장의 미로 게임", 1)
+html = html.replace("POT BREAKER RE v1.1.0 · CBZP", "폿브레이커 RE | 기묘와 크다 부장의 미로 게임", 1)
 seo_head = """
 <meta name="description" content="기묘를 조작해 CBZP 사무실 미로에서 크다 부장과 대결하는 무료 브라우저 게임. 게임 소개, 조작법, 개인정보 및 광고 안내를 확인하세요.">
 <link rel="canonical" href="https://potbreaker.com/">
@@ -114,9 +144,9 @@ body{min-height:100dvh!important}
 @media(orientation:landscape){.viewport{height:calc(100dvh - var(--pb-footer-h))!important}}
 """
 html = html.replace("</style>", seo_css + "\n</style>", 1)
-html = html.replace("POT BREAKER RE v1.0.89", "POT BREAKER RE v1.0.91")
-html = html.replace("POT BREAKER RE v1.0.54", "POT BREAKER RE v1.0.91")
-html = html.replace("<title>POT BREAKER RE v1.0.91 · CBZP</title>", "<title>폿브레이커 RE | 기묘와 크다 부장의 사무실 미로</title>")
+html = html.replace("POT BREAKER RE v1.0.89", "POT BREAKER RE v1.1.0")
+html = html.replace("POT BREAKER RE v1.0.54", "POT BREAKER RE v1.1.0")
+html = html.replace("<title>POT BREAKER RE v1.1.0 · CBZP</title>", "<title>폿브레이커 RE | 기묘와 크다 부장의 사무실 미로</title>")
 html = html.replace("</body>", site_info + "\n</body>", 1)
 
 
@@ -141,7 +171,7 @@ language_script = r"""<script>
 const dictionaries = {
 en: {
 "폿브레이커 RE | 기묘와 크다 부장의 사무실 미로":"POT BREAKER RE | Gimyo vs. Manager Keuda",
-"POT BREAKER RE v1.0.91":"POT BREAKER RE v1.0.91",
+"POT BREAKER RE v1.1.0":"POT BREAKER RE v1.1.0",
 "기묘가 CBZP에 출근하고, 이상한 사무실에서 화분을 피하고 크다 부장에게 쫓기는 4컷 만화":"A four-panel comic: Gimyo starts at CBZP, dodges flying pots, and is chased by Manager Keuda.",
 "기묘와 크다 부장의 사무실 미로 추격전":"Office Maze Chase: Gimyo vs. Manager Keuda",
 "CBZP 인턴 고양이 기묘가 이동 파티션으로 이루어진 사무실에서 크다 부장을 피해 화분을 던지는 1인용 브라우저 게임입니다.":"Play as Gimyo, a CBZP cat intern. Dodge Manager Keuda and throw pots in this browser maze game.",
@@ -491,8 +521,11 @@ game_modes_css="""
 html=html.replace("</style>",game_modes_css+"\n</style>",1)
 html=html.replace("<body>",'<body><details id="pb-game-mode"><summary aria-label="게임 선택">☰ <span>게임 선택 / Choose game</span></summary><nav aria-label="Game selection"><a href="/" aria-current="page">🪴 POT BREAKER RE</a><a href="/ginkgo">🍂 GINKGO TREE BREAKER</a></nav></details>',1)
 
+# Public release version for the generated HTML shell.
+html = html.replace('v1.0.91', 'v1.1.0').replace('v1.0.89', 'v1.1.0')
+
 worker = (
-    "// Generated by scripts/build_worker.py. POT BREAKER RE v1.0.91 SEO/AdSense-ready\n"
+    "// Generated by scripts/build_worker.py. POT BREAKER RE v1.1.0 SEO/AdSense-ready\n"
     + "const PAGE=" + json.dumps(html, ensure_ascii=False) + ";\n"
     + "const GAME=" + json.dumps(python_source, ensure_ascii=False) + ";\n"
     + r"""const SCHEMA=`CREATE TABLE IF NOT EXISTS visits (visitor_id TEXT PRIMARY KEY, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%S','now')));
@@ -508,7 +541,7 @@ const validDifficulty=value=>["normal","hard","very_hard"].includes(value);
 export default {async fetch(request,env){
 const path=new URL(request.url).pathname;
 if(path==="/health")
-  return json({ok:true,version:"1.0.91",visual:"illustrated",engine:"Python/Pyodide",database:!!env.POTBREAKER_DB});
+  return json({ok:true,version:"1.1.0",visual:"illustrated",engine:"Python/Pyodide",database:!!env.POTBREAKER_DB});
 if(path.startsWith("/api/")){
   if(!env.POTBREAKER_DB)return json({error:"랭킹 데이터베이스가 연결되지 않았습니다."},503);
   try{

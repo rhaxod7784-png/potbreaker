@@ -19,7 +19,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
         game = PotBreaker(42)
         for i in range(2500):
             state = json.loads(game.step(.04, 1 if i % 6 < 3 else -1, 0, False, i % 17 == 0))
-            self.assertEqual(len(state["pots"]) + len(state["special_pots"]), 5)
+            self.assertEqual(len(state["pots"]) + len(state["special_pots"]), 6)
             self.assertTrue(0 <= state["boss_ammo"] <= 5)
             self.assertTrue(0 <= state["player_hp"] <= 3 and 0 <= state["boss_hp"] <= 10)
             if state["phase"] != "playing":
@@ -55,7 +55,7 @@ class PotBreakerBalanceTests(unittest.TestCase):
 
         self.assertEqual(game.projectiles, [])
         self.assertEqual(game.pot_break_events, [])
-        self.assertEqual(len(game.pots) + len(game.special_pots), 5)
+        self.assertEqual(len(game.pots) + len(game.special_pots), 6)
 
     def test_character_hit_emits_pot_break_event(self):
         game = PotBreaker(4)
