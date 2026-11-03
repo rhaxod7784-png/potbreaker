@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - feat/potbreaker-charge-burst-20261103
+      - feat/potbreaker-v1-1-1-modular-charge-20261103
   pull_request:
     branches:
       - feat/ginkgo-tree-breaker-v0-6-20261030
+      - feat/potbreaker-charge-burst-20261103
 
 permissions:
   contents: read
@@ -21,6 +23,8 @@ jobs:
           python-version: '3.12'
       - name: Charge mechanic tests
         run: python -m unittest discover -s tests -p 'test_charge_burst.py' -v
+      - name: Earlier-update nonregression tests
+        run: python -m unittest discover -s tests -p 'test_preserved_previous_updates.py' -v
       - name: Common-engine regression tests
         run: python -m unittest discover -s tests -p 'test_potbreaker_engine_modules.py' -v
       - name: Ginkgo regression tests

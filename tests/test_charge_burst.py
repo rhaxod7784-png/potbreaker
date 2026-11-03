@@ -72,6 +72,15 @@ class ChargeV111Tests(unittest.TestCase):
         self.assertEqual(shot["penetrated"], 2)
         self.assertEqual(g.boss_hp, hp - 3)
 
+    def test_static_and_moving_partition_both_count(self):
+        g = self.make_game()
+        g.walls = {(3, 5)}
+        g.moving_walls = {(6, 5)}
+        shot = self.shoot(g)
+        self.advance(g)
+        self.assertEqual(shot["penetrated"], 2)
+        self.assertEqual(g.boss_hp, g.boss_hp_cap - 3)
+
     def test_third_partition_blocks_with_no_damage(self):
         g = self.make_game()
         g.walls = {(3, 5), (5, 5), (7, 5)}

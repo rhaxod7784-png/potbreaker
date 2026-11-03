@@ -2,6 +2,7 @@
 import math
 try:
     from .game_modules import _FeatureModule
+    from .game import WIDTH, HEIGHT, distance
 except ImportError:
     pass
 
