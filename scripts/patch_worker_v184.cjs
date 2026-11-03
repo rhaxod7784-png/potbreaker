@@ -143,7 +143,7 @@ function patchWorkerBundle(source) {
     return p;
   });
   module("/modules/potbreaker/main.js", p => {
-    p = once(p, "const {fire:fireNow,dash:dashNow}=controls.consumeActions();", "const {fire:fireNow,charging:chargingNow,dash:dashNow}=controls.consumeActions();", "forward charging");
+    p = once(p, "{fire:fireNow,dash:dashNow}=controls.consumeActions();", "const {fire:fireNow,charging:chargingNow,dash:dashNow}=controls.consumeActions();", "forward charging");
     p = once(p, "game.step(.04,mx,my,dashNow,fireNow,0,0)", "game.step(.04,mx,my,dashNow,fireNow,0,0,chargingNow)", "step argument");
     p = once(p, "if(win)$('registerScore').classList.remove('hidden')}catch(error)", "}catch(error)", "remove async ranking gating");
     p = once(p, "if(activeRunId){try{await api('/api/runs/finish'", "if(win)$('registerScore').classList.remove('hidden');if(activeRunId){try{await api('/api/runs/finish'", "immediate victory ranking button");
