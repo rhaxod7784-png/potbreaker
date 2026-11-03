@@ -136,6 +136,8 @@ function patchWorkerBundle(source) {
   module("/modules/potbreaker/input.js", p => {
     p = once(p, "    this.fire = false;\n    this.dash = false;", "    this.fire = false;\n    this.fireReleasePending = false;\n    this.dash = false;", "input latch init");
     p = once(p, "    this.onFireUp = () => { this.fire = false; };", "    this.onFireUp = () => { if (this.fire) this.fireReleasePending = true; this.fire = false; };", "pointer release");
+    p = once(p, "      try { this.dashButton.setPointerCapture(event.pointerId); } catch {}\n    };", "      try { this.dashButton.setPointerCapture(event.pointerId); } catch {}\n    };\n    this.onDashUp = () => { this.dash = false; };", "dash release does not release charge");
+    p = once(p, "this.dashButton.addEventListener(type, this.onFireUp);", "this.dashButton.addEventListener(type, this.onDashUp);", "bind independent dash release");
     p = once(p, "      if (event.code === 'Space') this.fire = false;", "      if (event.code === 'Space') { if (this.fire) this.fireReleasePending = true; this.fire = false; }", "space release");
     p = once(p, "this.fire = false; this.dash = false; };", "this.fire = false; this.fireReleasePending = false; this.dash = false; };", "blur cleanup");
     p = once(p, "    const actions = {fire: this.fire, dash: this.dash};\n    this.dash = false;", "    const actions = {fire: this.fireReleasePending, charging: this.fire, dash: this.dash};\n    this.fireReleasePending = false;\n    this.dash = false;", "charge input actions");
