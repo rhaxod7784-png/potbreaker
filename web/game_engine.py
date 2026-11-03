@@ -42,7 +42,9 @@ class GameEngine:
     def reset(self):
         return self.mode.reset()
 
-    def step(self, dt, mx=0, my=0, jump=False, fire=False, aimx=0, aimy=0):
+    def step(self, dt, mx=0, my=0, jump=False, fire=False, aimx=0, aimy=0, charge=False):
+        if self.mode_name in ('potbreaker', 'composed'):
+            return self.mode.step(dt, mx, my, jump, fire, aimx, aimy, charge)
         return self.mode.step(dt, mx, my, jump, fire, aimx, aimy)
 
     def tap(self, index):
