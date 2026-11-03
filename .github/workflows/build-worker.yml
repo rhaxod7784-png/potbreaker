@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feat/potbreaker-seo-adsense
+      - feat/potbreaker-charge-burst-20261103
   workflow_dispatch:
 
 permissions:
