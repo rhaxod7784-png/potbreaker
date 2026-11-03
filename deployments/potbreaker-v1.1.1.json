@@ -1,0 +1,33 @@
+{
+  "project": "POT BREAKER RE",
+  "release": "v1.1.1",
+  "worker": "potbreaker",
+  "production_url": "https://potbreaker.com",
+  "original_baseline_version": 184,
+  "previous_worker_version": 188,
+  "deployed_worker_version": 189,
+  "worker_version_id": "c0cd8015-6972-4e8e-b050-ee29e613118e",
+  "cloudflare_deployment_id": "c49466e5-c996-4c57-9b8d-85d9b724d6eb",
+  "github_branch": "fix/v1.1.1-startup",
+  "patch_commit": "2a5644ec82dd329483a9842dc7d4862631bf8959",
+  "fixes": [
+    "Repair duplicate const declaration in gameplay event loop (main.js parse failure)",
+    "Stamp page title, visible game version, and health endpoint as v1.1.1",
+    "Omit 2500-tick standalone Python test from browser-served source"
+  ],
+  "preserved": [
+    "Hard and Very Hard ammunition capacity 3",
+    "Charged throwing power 1-3",
+    "One to three Gimyo spark particles",
+    "Ranking registration/home buttons and Cloudflare D1 binding"
+  ],
+  "validation": {
+    "uploaded_cloudflare_worker": true,
+    "production_traffic": "100%",
+    "static_code_checks": true,
+    "github_module_snapshot": "snapshots/v111/potbreaker-main.mjs",
+    "browser_qa": "not confirmed from connected browser",
+    "github_actions_result": "not confirmed"
+  },
+  "note": "The full compiled Worker is maintained by Cloudflare; GitHub records a reproducible targeted patch and an independent main.js module syntax-check artifact."
+}
