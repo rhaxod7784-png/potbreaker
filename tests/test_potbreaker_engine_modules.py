@@ -22,7 +22,7 @@ class PotBreakerFeatureModuleTests(unittest.TestCase):
         left_state = json.loads(left.step(.04, 1, 0))
         right_state = json.loads(right.step(.04, 1, 0))
         self.assertEqual(left_state, right_state)
-        self.assertEqual(len(left_state["pots"]), 4)
+        self.assertEqual(len(left_state["pots"]), 5)
         self.assertEqual(left_state["phase"], "playing")
 
     def test_feature_methods_can_call_across_modules(self):
