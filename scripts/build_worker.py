@@ -21,6 +21,7 @@ if demo_marker in pot_source:
 python_source = "\n\n".join([
     pot_source,
     (root / "web" / "game_modules.py").read_text(encoding="utf-8"),
+    (root / "web" / "charge_module.py").read_text(encoding="utf-8"),
     (root / "web" / "game_components.py").read_text(encoding="utf-8"),
     (root / "web" / "ginkgo_modules.py").read_text(encoding="utf-8"),
     (root / "web" / "game_engine.py").read_text(encoding="utf-8"),
@@ -57,6 +58,35 @@ dpad_css = """
 """
 html = html.replace("</style>", dpad_css + "\n</style>", 1)
 
+
+
+# PotBreaker charge burst: keep the touch throw control, change Space to hold.
+charge_replacements = [
+    ("keys=new Set(),fire=false,dash=false,tick=0", "keys=new Set(),fire=false,dash=false,charging=false,tick=0"),
+    ("if(e.code==='Space')fire=true", "if(e.code==='Space' && active && !paused)charging=true"),
+    ("if(e.code==='Space')fire=false", "if(e.code==='Space')charging=false"),
+    ("const fireNow=fire,dashNow=dash;dash=false;world=JSON.parse(game.step(.04,mx,my,dashNow,fireNow,0,0))",
+     "const fireNow=fire,dashNow=dash;dash=false;world=JSON.parse(game.step(.04,mx,my,dashNow,fireNow,0,0,charging))"),
+    ("fire=false;dash=false;resetTouch()", "fire=false;dash=false;charging=false;resetTouch()"),
+    ("window.addEventListener('blur',()=>{keys.clear();resetTouch();fire=false})",
+     "window.addEventListener('blur',()=>{keys.clear();resetTouch();fire=false;charging=false})"),
+    ("$('catAmmo').textContent=s.ammo+'/'+s.ammo_cap;",
+     "$('catAmmo').textContent=s.ammo+'/'+s.ammo_cap;const chargeUI=document.getElementById('chargeIndicator');if(chargeUI){chargeUI.textContent=s.charging?'모으는 화분 '+s.charge_count+'/'+s.charge_cap:'';chargeUI.hidden=!s.charging}"),
+    ('<div class="damage-flash" id="damageFlash"></div>',
+     '<div class="damage-flash" id="damageFlash"></div><div class="charge-indicator" id="chargeIndicator" aria-live="polite" hidden></div>'),
+]
+for old, new_value in charge_replacements:
+    matches = html.count(old)
+    if matches != 1:
+        raise SystemExit(f"Charge UI hook not found uniquely: {old[:80]}, matches={matches}")
+    html = html.replace(old, new_value, 1)
+charge_css = """
+.charge-indicator{position:absolute;top:18%;left:50%;transform:translateX(-50%);z-index:16;padding:6px 15px;background:#264b7ee8;border:2px solid #fce38a;border-radius:999px;color:#fff7c7;font-weight:900;font-size:clamp(12px,1.3cqw,18px);pointer-events:none;white-space:nowrap}
+.charge-indicator[hidden]{display:none!important}
+"""
+html = html.replace("</style>", charge_css + "\n</style>", 1)
+html = html.replace("Space(공격)", "Space(누르고 모으기·놓으면 공격)")
+html = html.replace("Space (throw)", "Space (hold to collect, release to attack)")
 
 # v1.0.91: crawlable site metadata, visible game guidance, and safe publisher gates.
 html = html.replace("POT BREAKER RE v1.0.91 · CBZP", "폿브레이커 RE | 기묘와 크다 부장의 미로 게임", 1)
