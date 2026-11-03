@@ -167,8 +167,8 @@ class PotBreakerBalanceTests(unittest.TestCase):
         self.assertEqual(PotBreaker(1, "normal").boss_hp_cap, 5)
         self.assertEqual(PotBreaker(1, "hard").boss_hp_cap, 7)
         self.assertEqual(PotBreaker(1, "very_hard").boss_hp_cap, 10)
-        self.assertEqual(PotBreaker(1, "hard").player_pot_cap, 2)
-        self.assertEqual(PotBreaker(1, "very_hard").player_pot_cap, 2)
+        self.assertEqual(PotBreaker(1, "hard").player_pot_cap, 3)
+        self.assertEqual(PotBreaker(1, "very_hard").player_pot_cap, 3)
 
 
     def test_pot_break_uses_red_flash_without_screen_shake(self):

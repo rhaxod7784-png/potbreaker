@@ -1,4 +1,4 @@
-"""Build illustrated POT BREAKER RE v1.1.0 for Cloudflare Workers.
+"""Build illustrated POT BREAKER RE v1.1.1 for Cloudflare Workers.
 
 Inputs: web/index.html (images + UI bundled), the PotBreaker core, reusable
 feature components, Ginkgo components, and the mode-composing game engine.
@@ -62,6 +62,8 @@ html = html.replace("</style>", dpad_css + "\n</style>", 1)
 
 # PotBreaker charge burst: keep the touch throw control, change Space to hold.
 charge_replacements = [
+    ("plant(p.x+.5,p.y+.26,p.boss?.92:.52,true,p.boss?'boss':'player')",
+     "plant(p.x+.5,p.y+.26,(p.boss||p.large)?.92:.52,true,p.boss?'boss':'player')"),
     ("keys=new Set(),fire=false,dash=false,tick=0", "keys=new Set(),fire=false,dash=false,charging=false,tick=0"),
     ("if(e.code==='Space')fire=true", "if(e.code==='Space' && active && !paused)charging=true"),
     ("if(e.code==='Space')fire=false", "if(e.code==='Space')charging=false"),
