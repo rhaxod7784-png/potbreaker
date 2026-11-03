@@ -20,7 +20,7 @@ class PreviousUpdateCompatibilityTests(unittest.TestCase):
         self.assertEqual(BOSS_DASH_COOLDOWN, 5.0)
         self.assertEqual(BOSS_POT_CAP, 5)
         for difficulty, boss_hp, ammo_cap in (
-            ("normal", 5, 3), ("hard", 7, 2), ("very_hard", 10, 2),
+            ("normal", 5, 3), ("hard", 7, 3), ("very_hard", 10, 3),
         ):
             with self.subTest(difficulty=difficulty):
                 game = PotBreaker(seed=5, difficulty=difficulty)
@@ -60,7 +60,8 @@ class PreviousUpdateCompatibilityTests(unittest.TestCase):
         game.step(.04, charge=True)
         self.assertEqual(game.charge_count, 2)
         game.step(.04, charge=False)
-        self.assertEqual(game.boss_hp, game.boss_hp_cap - 2)
+        self.assertEqual(game.boss_hp, game.boss_hp_cap)
+        self.assertEqual(len(game.charge_projectiles), 1)
         game.reset()
         game.ammo = 1
         game.boss_move_cd = 999
@@ -73,7 +74,7 @@ class PreviousUpdateCompatibilityTests(unittest.TestCase):
         self.assertEqual(json.loads(ginkgo.state())["difficulty"], "hard")
         self.assertEqual(ginkgo.mode.interval, 2.0)
         pot = GameEngine("potbreaker", seed=41, difficulty="hard")
-        self.assertEqual(json.loads(pot.state())["charge_cap"], 4)
+        self.assertEqual(json.loads(pot.state())["charge_cap"], 3)
         self.assertNotIn("cells", json.loads(pot.state()))
 
 

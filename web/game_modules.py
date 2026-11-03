@@ -454,4 +454,5 @@ FEATURE_METHODS = {
     "_begin_charge": "charge",
     "_charge_pickup": "charge",
     "_release_charge": "charge",
+    "_advance_charge_projectiles": "charge",
 }

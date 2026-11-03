@@ -1,4 +1,4 @@
-"""POT BREAKER RE v1.1.0 — single-player deterministic Python game rules.
+"""POT BREAKER RE v1.1.1 — single-player deterministic Python game rules.
 UI draws state with Canvas; Cloudflare only serves static assets / Python source.
 """
 import json
@@ -55,7 +55,7 @@ class PotBreaker:
             globals()['ChargeModule'] = ChargeModule
         feature_classes = globals()
         self.difficulty = difficulty if difficulty in ('normal', 'hard', 'very_hard') else 'normal'
-        self.player_pot_cap = 3 if self.difficulty == 'normal' else 2
+        self.player_pot_cap = 3
         self.boss_hp_cap = {'normal': 5, 'hard': 7, 'very_hard': 10}[self.difficulty]
         feature_classes_by_name = {
             'field': feature_classes['FieldModule'],
@@ -108,11 +108,12 @@ class PotBreaker:
                 break
         self.ammo, self.boss_ammo, self.max_boss_ammo = 0, 0, BOSS_POT_CAP
         self.charge_active, self.charge_count = False, 0
-        self.charge_cap = {'normal': 3, 'hard': 4, 'very_hard': 5}[self.difficulty]
+        self.charge_cap = 3
         self.boss_pot_cap = BOSS_POT_CAP
         self.throw_cd, self.boss_throw_cd = 0.0, 1.2
         self.player_move_cd, self.boss_move_cd = 0.0, .5
         self.projectiles, self.pots, self.special_pots = [], [], []
+        self.charge_projectiles = []
         self.crow_flight, self.crow_bombs, self.mystery_pots = None, [], []
         self.hit_events = []
         self.hit_seq = 0
@@ -200,6 +201,7 @@ class PotBreaker:
                 self._fire(self.boss, [math.cos(angle), math.sin(angle)], npc=True)
             self.boss_throw_cd = 1.1
         self._advance_projectiles(dt)
+        self._advance_charge_projectiles(dt)
         self._maintain_field_pots()
         return self.state()
 
@@ -207,7 +209,7 @@ class PotBreaker:
         return json.dumps({'phase': self.phase, 'player': self.player, 'boss': self.boss,
                            'face': self.face, 'boss_face': self.boss_face,
                            'walls': sorted(self.walls), 'moving_walls': sorted(self.moving_walls),
-                           'pots': self.pots, 'projectiles': self.projectiles,
+                           'pots': self.pots, 'projectiles': self.projectiles + self.charge_projectiles,
                            'crow_flight': self.crow_flight, 'crow_bombs': self.crow_bombs,
                            'mystery_pots': self.mystery_pots, 'special_pots': self.special_pots,
                            'player_hp': self.player_hp, 'boss_hp': self.boss_hp,

@@ -1,106 +1,133 @@
-"""Regression tests for PotBreaker optional Space-held pot burst."""
+"""Regression tests for independent large charged pot projectiles."""
 import json
 import unittest
-
+from pathlib import Path
 from web.game import PotBreaker
 from web.game_engine import GameEngine
 
 
-class ChargeBurstTests(unittest.TestCase):
+class ChargeV111Tests(unittest.TestCase):
     def make_game(self, difficulty="normal"):
-        game = PotBreaker(seed=3, difficulty=difficulty)
-        game.boss_move_cd = 999
-        game.boss_throw_cd = 999
-        game.crow_spawn_timer = 999
-        game.moving_walls = set()
-        return game
+        g = PotBreaker(seed=42, difficulty=difficulty)
+        g.player, g.boss = [1, 5], [10, 5]
+        g.walls, g.moving_walls = set(), set()
+        g.boss_move_cd = g.boss_throw_cd = g.crow_spawn_timer = 999
+        return g
 
-    def test_difficulty_limits_are_independent_of_regular_ammo_capacity(self):
-        for difficulty, limit in (("normal", 3), ("hard", 4), ("very_hard", 5)):
-            with self.subTest(difficulty=difficulty):
-                game = self.make_game(difficulty)
-                self.assertEqual(game.charge_cap, limit)
-                self.assertEqual(game.player_pot_cap, 3 if difficulty == "normal" else 2)
+    def shoot(self, g, count=3):
+        g.ammo = count
+        g._begin_charge()
+        self.assertEqual(g.charge_count, count)
+        g._release_charge()
+        self.assertEqual(len(g.charge_projectiles), 1)
+        return g.charge_projectiles[0]
 
-    def test_normal_uses_owned_ammo_then_deals_three_damage(self):
-        game = self.make_game()
-        game.ammo = 3
-        game.step(.04, charge=True)
-        self.assertEqual((game.ammo, game.charge_count), (0, 3))
-        game.step(.04, charge=False)
-        self.assertEqual(game.boss_hp, 2)
-        self.assertEqual((game.charge_count, game.charge_active), (0, False))
-        self.assertEqual(len(game.hit_events), 3)
+    def advance(self, g):
+        for _ in range(60):
+            if not g.charge_projectiles:
+                break
+            g._advance_charge_projectiles(.08)
 
-    def test_hard_pickups_extend_burst_to_four(self):
-        game = self.make_game("hard")
-        game.ammo = 2
-        game.step(.04, charge=True)
-        self.assertEqual(game.charge_count, 2)
-        self.assertTrue(game._charge_pickup())
-        self.assertTrue(game._charge_pickup())
-        self.assertFalse(game._charge_pickup())
-        game.step(.04, charge=False)
-        self.assertEqual(game.boss_hp, 3)
+    def test_all_difficulties_have_three_ammo_and_charge(self):
+        for diff in ("normal", "hard", "very_hard"):
+            with self.subTest(diff=diff):
+                g = self.make_game(diff)
+                self.assertEqual((g.player_pot_cap, g.charge_cap), (3, 3))
+                g.ammo = 3
+                g._begin_charge()
+                self.assertEqual(g.charge_count, 3)
+                self.assertFalse(g._charge_pickup())
 
-    def test_very_hard_collects_five_from_zero(self):
-        game = self.make_game("very_hard")
-        game.step(.04, charge=True)
-        for _ in range(5):
-            self.assertTrue(game._charge_pickup())
-        self.assertFalse(game._charge_pickup())
-        game.step(.04, charge=False)
-        self.assertEqual(game.boss_hp, 5)
+    def test_pickups_during_charge_stop_at_three(self):
+        g = self.make_game("hard")
+        g.ammo = 2
+        g._begin_charge()
+        self.assertTrue(g._charge_pickup())
+        self.assertFalse(g._charge_pickup())
 
-    def test_player_field_pickup_joins_charge_instead_of_ammo(self):
-        game = self.make_game("hard")
-        game.ammo = 2
-        game.step(.04, charge=True)
-        game.pots[:] = [game.player[:]]
-        game._maintain_field_pots = lambda: None
-        game._pickups()
-        self.assertEqual(game.charge_count, 3)
-        self.assertEqual(game.ammo, 0)
-        self.assertNotIn(game.player, game.pots)
+    def test_release_not_automatic_hit_and_large_shot_in_state(self):
+        g = self.make_game()
+        hp = g.boss_hp
+        shot = self.shoot(g)
+        self.assertEqual(g.boss_hp, hp)
+        self.assertEqual(shot["damage"], 3)
+        self.assertTrue(shot["large"])
+        self.assertTrue(shot["charged"])
+        self.assertEqual(len(json.loads(g.state())["projectiles"]), 1)
 
-    def test_ordinary_fire_still_works_without_charging(self):
-        game = self.make_game()
-        game.ammo = 1
-        game.step(.04, fire=True)
-        self.assertEqual(game.ammo, 0)
-        self.assertFalse(game.charge_active)
+    def test_actual_hit_deals_collected_count_damage(self):
+        g = self.make_game()
+        hp = g.boss_hp
+        self.shoot(g)
+        self.advance(g)
+        self.assertEqual(g.boss_hp, hp - 3)
+        self.assertFalse(g.charge_projectiles)
 
-    def test_empty_charge_does_not_damage_boss(self):
-        game = self.make_game()
-        game.step(.04, charge=True)
-        game.step(.04, charge=False)
-        self.assertEqual(game.boss_hp, game.boss_hp_cap)
-        self.assertEqual(game.phase, "playing")
+    def test_pierces_two_partitions_and_hits(self):
+        g = self.make_game()
+        g.walls = {(3, 5), (6, 5)}
+        shot = self.shoot(g)
+        hp = g.boss_hp
+        self.advance(g)
+        self.assertEqual(shot["penetrated"], 2)
+        self.assertEqual(g.boss_hp, hp - 3)
 
-    def test_burst_finishes_at_zero_boss_hp(self):
-        game = self.make_game()
-        game.boss_hp = 2
-        game.ammo = 3
-        game.step(.04, charge=True)
-        game.step(.04, charge=False)
-        self.assertEqual(game.boss_hp, 0)
-        self.assertEqual(game.phase, "win")
+    def test_third_partition_blocks_with_no_damage(self):
+        g = self.make_game()
+        g.walls = {(3, 5), (5, 5), (7, 5)}
+        shot = self.shoot(g)
+        hp = g.boss_hp
+        self.advance(g)
+        self.assertEqual(shot["penetrated"], 2)
+        self.assertEqual(g.boss_hp, hp)
+        self.assertFalse(g.charge_projectiles)
 
-    def test_reset_clears_charge(self):
-        game = self.make_game()
-        game.ammo = 2
-        game.step(.04, charge=True)
-        game.reset()
-        self.assertEqual((game.charge_active, game.charge_count), (False, 0))
+    def test_boss_can_dodge_aim_locked_at_release(self):
+        g = self.make_game()
+        hp = g.boss_hp
+        self.shoot(g)
+        g.boss = [10, 8]
+        self.advance(g)
+        self.assertEqual(g.boss_hp, hp)
+        self.assertFalse(g.charge_projectiles)
 
-    def test_game_engine_supports_charge_and_legacy_step_signature(self):
-        game = GameEngine("potbreaker", seed=5, difficulty="hard")
-        self.assertEqual(json.loads(game.state())["charge_cap"], 4)
-        game.mode.ammo = 2
-        game.step(.04, charge=True)
-        self.assertTrue(json.loads(game.state())["charging"])
-        game.step(.04)
-        self.assertFalse(json.loads(game.state())["charging"])
+    def test_empty_charge_does_not_fire(self):
+        g = self.make_game()
+        g._begin_charge()
+        g._release_charge()
+        self.assertFalse(g.charge_projectiles)
+        self.assertEqual(g.boss_hp, g.boss_hp_cap)
+
+    def test_regular_throw_remains_separate_and_wall_blocked(self):
+        g = self.make_game()
+        g.ammo = 1
+        g.walls = {(3, 5)}
+        g._fire(g.player, [1, 0])
+        self.assertEqual(len(g.projectiles), 1)
+        self.assertFalse(g.charge_projectiles)
+        for _ in range(30):
+            g._advance_projectiles(.04)
+        self.assertEqual(g.boss_hp, g.boss_hp_cap)
+
+    def test_reset_clears_charge_shot(self):
+        g = self.make_game()
+        self.shoot(g)
+        g.reset()
+        self.assertFalse(g.charge_projectiles)
+        self.assertEqual((g.charge_active, g.charge_count), (False, 0))
+
+    def test_game_engine_accepts_legacy_and_charge_step(self):
+        g = GameEngine("potbreaker", seed=5, difficulty="very_hard")
+        self.assertEqual(json.loads(g.state())["charge_cap"], 3)
+        g.mode.ammo = 2
+        g.step(.04, charge=True)
+        self.assertTrue(json.loads(g.state())["charging"])
+        g.step(.04)
+        self.assertFalse(json.loads(g.state())["charging"])
+
+    def test_builder_uses_boss_sized_sprite_for_large_projectile(self):
+        src = (Path(__file__).resolve().parents[1] / "scripts/build_worker.py").read_text("utf-8")
+        self.assertIn("(p.boss||p.large)?.92:.52", src)
 
 
 if __name__ == "__main__":
