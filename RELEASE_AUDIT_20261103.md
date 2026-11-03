@@ -20,11 +20,11 @@ This document distinguishes the verified Git history, authored release requireme
 | Projectiles | Boss projectiles stop at partitions; normal throws remain available |
 | Pot floor items | 5 ordinary pickups plus 1 healing pickup (total 6); avoid runaway growth |
 | Modular game modes | Field, Combat, Actor, Charge components preserved alongside Ginkgo game mode |
-| Ginkgo Tree Breaker | Original planned progression intervals **Normal 1.0 s / Hard 0.7 s / Very Hard 0.5 s** |
+| Ginkgo Tree Breaker | Latest coded progression intervals from 2026-10-31 **Normal 3 s / Hard 2 s / Very Hard 1 s** (earlier 1.0/0.7/0.5 proposal superseded in Git; user signoff not evidenced) |
 | Ginkgo gameplay | Round duration 60 s, lock penalty 0.5 s, independent scoreboard/ranking pathway |
 | New charge burst | Holding Space gathers existing ordinary ammo and pickups; releasing does one boss HP of damage per pot, charge caps **3/4/5** by Normal/Hard/Very Hard |
 
-A mismatch with the previously requested six field pots was also corrected: earlier source had four ordinary plus one healing pot (five total); current source now maintains five ordinary plus one healing pot (six total) while preserving the refill/recycle cap.\n\nThe Ginkgo UI/server/Python had drifted to 3/2/1 seconds. PR #12 restored the documented 1.0/0.7/0.5 s across `web/ginkgo_modules.py`, `cloudflare/ginkgo-api.js`, `web/ginkgo.html`, and localized SEO/description text in `scripts/build_worker.py`. Python and Node tests were updated.
+A mismatch with the previously requested six field pots was also corrected: earlier source had four ordinary plus one healing pot (five total); current source now maintains five ordinary plus one healing pot (six total) while preserving the refill/recycle cap.\n\nThe 2026-10-31 commit `1b74c755c9` explicitly changed Ginkgo timing from 1.0/0.7/0.5 s to 3/2/1 s, and subsequent automated tests tracked that update. The 2026-11-03 PR #12 mistakenly reverted to the older values. This later correction restores 3/2/1 s consistently in `web/ginkgo_modules.py`, `cloudflare/ginkgo-api.js`, `web/ginkgo.html`, `scripts/build_worker.py`, and Python/Node regression tests. A button handler wiring check is present in `tests/test_ginkgo_static.py`, but real device button QA remains unverified.
 
 ### Automated verification
 
@@ -39,7 +39,7 @@ Regression test sources: `tests/test_charge_burst.py`, `tests/test_game_engine.p
 
 Cloudflare `potbreaker` active production deployment since **2026-11-03 16:13 KST** is Worker **v185**, version ID `92618ece-0320-44f2-a5e3-ad7b7faef76f`, API deploy receiving 100% traffic. Previous **v184**, version ID `ec53a477-dcef-4b75-8142-8066aabf1fe6`, was Wrangler-deployed **2026-11-02 22:53 KST** and is recorded as a backup.
 
-The source changes in PR #12 occurred AFTER v185 was deployed, so restored Ginkgo intervals and compatibility tests are **not yet shipped in the active Worker**. Neither old v184 Worker source nor a full source-level comparison of v184 versus v185 has been obtained from the accessible Cloudflare APIs. Therefore **it is not established** whether other changes introduced solely in v184 were overwritten.
+The source changes in PR #12 occurred AFTER v185 was deployed, so subsequent source corrections and compatibility tests are **not yet confirmed shipped in the active Worker**. Neither old v184 Worker source nor a full source-level comparison of v184 versus v185 has been obtained from the accessible Cloudflare APIs. Therefore **it is not established** whether other changes introduced solely in v184 were overwritten.
 
 **Hold further production re-deployment.** Retrieve or reconstruct v184's exact deployed source, compare its engine, frontend, modes, D1/ranking, localization, and SEO/AdSense routes with this combined branch, reconcile any changes, repeat automated and real-browser/mobile QA, then deploy a single verified artifact. Do not overwrite the old `main` or replace production using a stale branch. Preserve the v184 and v185 version IDs for rollback.
 

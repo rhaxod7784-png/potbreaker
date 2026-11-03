@@ -9,7 +9,7 @@ class GinkgoModeTests(unittest.TestCase):
         return GameEngine("ginkgo", seed=41, difficulty=difficulty)
 
     def test_original_difficulty_intervals_are_preserved(self):
-        for difficulty, seconds in (("normal", 1.0), ("hard", 0.7), ("very_hard", 0.5)):
+        for difficulty, seconds in (("normal", 3.0), ("hard", 2.0), ("very_hard", 1.0)):
             with self.subTest(difficulty=difficulty):
                 game = self.make_game(difficulty)
                 self.assertEqual(game.mode.interval, seconds)

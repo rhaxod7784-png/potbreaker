@@ -71,7 +71,7 @@ class PreviousUpdateCompatibilityTests(unittest.TestCase):
     def test_ginkgo_and_original_engine_share_facade_without_mode_replacement(self):
         ginkgo = GameEngine("ginkgo", seed=41, difficulty="hard")
         self.assertEqual(json.loads(ginkgo.state())["difficulty"], "hard")
-        self.assertEqual(ginkgo.mode.interval, 0.7)
+        self.assertEqual(ginkgo.mode.interval, 2.0)
         pot = GameEngine("potbreaker", seed=41, difficulty="hard")
         self.assertEqual(json.loads(pot.state())["charge_cap"], 4)
         self.assertNotIn("cells", json.loads(pot.state()))
