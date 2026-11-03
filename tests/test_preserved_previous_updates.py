@@ -5,6 +5,7 @@ November 2 production Worker source against the November 3 release.
 """
 import json
 import unittest
+from pathlib import Path
 
 from web.game import (
     PotBreaker, PLAYER_HP, PLAYER_DASH_COOLDOWN, BOSS_DASH_COOLDOWN,
@@ -76,6 +77,22 @@ class PreviousUpdateCompatibilityTests(unittest.TestCase):
         pot = GameEngine("potbreaker", seed=41, difficulty="hard")
         self.assertEqual(json.loads(pot.state())["charge_cap"], 3)
         self.assertNotIn("cells", json.loads(pot.state()))
+
+
+    def test_touch_controls_are_desktop_hidden_mobile_preserved(self):
+        # Source-level regression for the generated single-Worker HTML shell.
+        root = Path(__file__).resolve().parents[1]
+        builder = (root / "scripts" / "build_worker.py").read_text(encoding="utf-8")
+        template = (root / "web" / "index.html").read_text(encoding="utf-8")
+        self.assertIn("#gamePanel .touch-layer{display:none!important}", builder)
+        self.assertIn(
+            "@media (pointer:coarse) and (hover:none){#gamePanel .touch-layer{display:block!important}}",
+            builder,
+        )
+        self.assertIn('html = html.replace("</style>", dpad_css + "\\n</style>", 1)', builder)
+        self.assertIn('<div class="touch-layer">', template)
+        # Pause remains accessible on desktop: it is outside the touch overlay.
+        self.assertIn('class="hud-pause" id="pause"', template)
 
 
 if __name__ == "__main__":
