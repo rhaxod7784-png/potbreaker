@@ -1,0 +1,19 @@
+name: POT BREAKER v1.1.1 runtime smoke
+on:
+  push:
+    branches:
+      - fix/v1.1.1-startup
+  workflow_dispatch:
+jobs:
+  python-boot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile exact deployed Python
+        run: python -m py_compile snapshots/v188/game.py
+      - name: Check engine startup, all difficulty pot caps, charge and wall penetration
+        run: python tests/test_v111_runtime.py
