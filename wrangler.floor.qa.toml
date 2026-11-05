@@ -1,0 +1,4 @@
+name = "potbreaker-floor-qa-20261105"
+main = "cloudflare/worker.js"
+compatibility_date = "2026-11-05"
+workers_dev = true
