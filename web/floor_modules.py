@@ -244,7 +244,7 @@ class FloorRulesModule(GameComponent):
         if not remaining[0] or not remaining[1]:
             winner = 0 if remaining[0] else 1 if remaining[1] else None
             clock.finish(winner, "elimination" if winner is not None else "draw")
-        elif clock.turn > clock.max_turns:
+        elif clock.turn >= clock.max_turns:
             clock.finish(None, "turn_limit")
 
     def _end_action(self, board, clock, acted=True):
