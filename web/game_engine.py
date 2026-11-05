@@ -3,9 +3,10 @@ try:
     from .game import PotBreaker
     from .game_components import ComponentAssemblyMode
     from .ginkgo_modules import GinkgoMode
+    from .floor_modules import FloorMode
 except ImportError:
     # The Worker builder concatenates these sources into the browser namespace.
-    if "PotBreaker" not in globals() or "ComponentAssemblyMode" not in globals() or "GinkgoMode" not in globals():
+    if "PotBreaker" not in globals() or "ComponentAssemblyMode" not in globals() or "GinkgoMode" not in globals() or "FloorMode" not in globals():
         raise
 
 
@@ -15,12 +16,13 @@ class GameEngine:
     Examples:
         GameEngine("potbreaker", seed=7)
         GameEngine("ginkgo", difficulty="hard")
+        GameEngine("floor", characters=("gimyo", "keuda"))
         GameEngine("composed", components=[timer, board, scoring, rules])
     """
 
-    MODES = {"potbreaker", "ginkgo", "composed"}
+    MODES = {"potbreaker", "ginkgo", "floor", "composed"}
 
-    def __init__(self, mode="potbreaker", seed=None, difficulty="normal", components=None):
+    def __init__(self, mode="potbreaker", seed=None, difficulty="normal", components=None, characters=("gimyo", "keuda")):
         if mode not in self.MODES:
             raise ValueError("unknown game mode")
         if mode == "composed":
@@ -28,9 +30,10 @@ class GameEngine:
                 raise ValueError("composed mode requires component instances")
             self.mode = ComponentAssemblyMode(components)
         else:
-            if mode == "ginkgo" and components is not None:
+            if mode in ("ginkgo", "floor") and components is not None:
                 raise ValueError("Ginkgo features are assembled with composed mode")
             self.mode = (GinkgoMode(seed=seed, difficulty=difficulty) if mode == "ginkgo"
+                         else FloorMode(seed=seed, characters=characters) if mode == "floor"
                          else PotBreaker(seed=seed, difficulty=difficulty, components=components))
         self.mode_name = mode
 
