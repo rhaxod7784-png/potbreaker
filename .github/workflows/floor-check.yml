@@ -17,10 +17,33 @@ jobs:
         run: python -m py_compile web/floor_modules.py web/game_engine.py scripts/build_worker.py
       - name: Run Floor Breaker rules tests
         run: python -m unittest discover -s tests -p 'test_floor_breaker.py' -v
+      - name: Regression-check previous two themes
+        run: |
+          python -m unittest discover -s tests -p 'test_game_engine.py' -v
+          python -m unittest discover -s tests -p 'test_potbreaker_engine_modules.py' -v
+          python -m unittest discover -s tests -p 'test_ginkgo_static.py' -v
+          python -m unittest discover -s tests -p 'test_charge_burst.py' -v
+          python -m unittest discover -s tests -p 'test_preserved_previous_updates.py' -v
+          node tests/test_ginkgo_rules.cjs
       - name: Assemble Cloudflare Worker
         run: python scripts/build_worker.py
       - name: Verify JavaScript syntax
         run: node --check cloudflare/worker.js
+      - name: Validate theme-three inline JavaScript
+        run: |
+          python - <<'PY'
+          import re, subprocess, tempfile
+          from pathlib import Path
+          html = Path('web/floor.html').read_text(encoding='utf-8')
+          blocks = re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>', html, re.S|re.I)
+          assert any(x.strip() for x in blocks), 'no inline gameplay JavaScript'
+          for source in blocks:
+              if source.strip():
+                  with tempfile.NamedTemporaryFile(mode='w', suffix='.cjs', encoding='utf-8') as fp:
+                      fp.write(source); fp.flush()
+                      subprocess.run(['node', '--check', fp.name], check=True)
+          print('Floor client JavaScript parsed successfully')
+          PY
       - name: Verify route, SEO and no ad adjacent to gameplay
         run: |
           python - <<'PY'
