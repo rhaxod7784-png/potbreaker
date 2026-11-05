@@ -39,8 +39,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: da88e3ea20008b97a8ee3a994a69e006
           command: deploy --config wrangler.floor.qa.toml
-      - name: Verify QA preview endpoints
-        if: steps.token.outputs.available == 'true'
+      - name: Verify QA preview endpoints (including direct Cloudflare deployments)
         run: |
           python - <<'PY'
           import urllib.request
