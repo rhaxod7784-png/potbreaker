@@ -1,0 +1,53 @@
+name: Deploy isolated Floor Breaker QA preview
+on:
+  push:
+    branches: [feat/floor-breaker-theme3-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  floor-preview:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check floor rules before preview
+        run: python -m unittest discover -s tests -p 'test_floor_breaker.py'
+      - name: Regenerate QA Worker
+        run: python scripts/build_worker.py
+      - name: Validate Worker syntax
+        run: node --check cloudflare/worker.js
+      - name: Verify Cloudflare token presence
+        id: token
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: bash
+        run: |
+          if [[ -n "$CF_API_TOKEN" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "Cloudflare token missing; skipping preview."
+          fi
+      - name: Deploy to isolated Floor QA Worker
+        if: steps.token.outputs.available == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: da88e3ea20008b97a8ee3a994a69e006
+          command: deploy --config wrangler.floor.qa.toml
+      - name: Verify QA preview endpoints
+        if: steps.token.outputs.available == 'true'
+        run: |
+          python - <<'PY'
+          import urllib.request
+          base='https://potbreaker-floor-qa-20261105.rhaxod7784.workers.dev'
+          for path,needle in [('/floor','FLOOR BREAKER'),('/game.py','class FloorMode'),('/sitemap.xml','https://potbreaker.com/floor')]:
+              with urllib.request.urlopen(base+path,timeout=25) as r:
+                  page=r.read().decode('utf-8')
+                  assert r.status==200 and needle in page,(path,r.status)
+          print('Floor preview page, Python engine and sitemap are responding.')
+          PY

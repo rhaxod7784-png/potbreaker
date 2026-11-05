@@ -24,6 +24,7 @@ python_source = "\n\n".join([
     (root / "web" / "charge_module.py").read_text(encoding="utf-8"),
     (root / "web" / "game_components.py").read_text(encoding="utf-8"),
     (root / "web" / "ginkgo_modules.py").read_text(encoding="utf-8"),
+    (root / "web" / "floor_modules.py").read_text(encoding="utf-8"),
     (root / "web" / "game_engine.py").read_text(encoding="utf-8"),
     demo,
 ])
@@ -478,6 +479,7 @@ html = html.replace("</body>", language_script + "\n</body>", 1)
 
 # Theme 2: independent Ginkgo Tree Breaker documents with crawlable localized headings.
 ginkgo_source=(root / "web" / "ginkgo.html").read_text(encoding="utf-8")
+floor_page=(root / "web" / "floor.html").read_text(encoding="utf-8")
 ginkgo_locales={
  "ko":("ko","깅코트리 브레이커 | 폿 브레이커 테마 2","은행나무의 노란 은행을 썩기 전에 터치하세요. 60초 게임, 세 가지 난이도, 연속 성공 점수와 랭킹을 지원합니다.","깅코트리 브레이커 게임 방법","60초 동안 노란 은행 열매를 터치해 점수를 얻습니다. 연속 성공할 때마다 점수가 1점씩 증가합니다. 초록잎, 노란잎 또는 썩은 은행을 터치하면 연속 점수가 초기화되고, 썩은 은행은 0.5초 동안 터치할 수 없습니다. 노멀은 3초, 하드는 2초, 베리하드는 1초마다 나무 상태가 변합니다.","ko_KR","/ginkgo"),
  "en":("en","Ginkgo Tree Breaker | Pot Breaker Theme 2","Tap the ripe ginkgo fruit before it rots in this free 60-second game. Three difficulty levels, combo scoring and rankings.","How to play Ginkgo Tree Breaker","Tap yellow ginkgo fruit in 60 seconds to earn points. Each consecutive success increases the next score by one. Tapping leaves or rotten fruit resets your combo, and rotten fruit locks taps for 0.5 seconds. Tree phases advance every 3, 2 or 1 seconds based on difficulty.","en_US","/ginkgo/en"),
@@ -521,7 +523,7 @@ game_modes_css="""
 #pb-game-mode nav a:hover,#pb-game-mode nav a:focus-visible{background:#f8e5a4}
 """
 html=html.replace("</style>",game_modes_css+"\n</style>",1)
-html=html.replace("<body>",'<body><details id="pb-game-mode"><summary aria-label="게임 선택">☰ <span>게임 선택 / Choose game</span></summary><nav aria-label="Game selection"><a href="/" aria-current="page">🪴 POT BREAKER RE</a><a href="/ginkgo">🍂 GINKGO TREE BREAKER</a></nav></details>',1)
+html=html.replace("<body>",'<body><details id="pb-game-mode"><summary aria-label="게임 선택">☰ <span>게임 선택 / Choose game</span></summary><nav aria-label="Game selection"><a href="/" aria-current="page">🪴 POT BREAKER RE</a><a href="/ginkgo">🍂 GINKGO TREE BREAKER</a><a href="/floor">♟ FLOOR BREAKER</a></nav></details>',1)
 
 # Public release version for the generated HTML shell.
 html = html.replace('v1.0.91', 'v1.1.0').replace('v1.0.89', 'v1.1.0')
@@ -642,6 +644,7 @@ return new Response(request.method==="HEAD"?null:body,{status:200,headers:respon
 )
 
 # Add Ginkgo pages and server-verified gameplay to the existing generated Worker.
+worker=worker.replace("const PAGE=", "const FLOOR_PAGE="+json.dumps(floor_page,ensure_ascii=False)+";\nconst PAGE=",1)
 worker=worker.replace("const PAGE=", "const GINKGO_COVER_IMAGE="+json.dumps(ginkgo_cover_image)+";\nconst GINKGO_COMIC_IMAGES="+json.dumps(ginkgo_comic_images)+";\nconst GINKGO_PAGES="+json.dumps(ginkgo_pages,ensure_ascii=False)+";\nconst PAGE=",1)
 worker=worker.replace("const SCHEMA=`",ginkgo_api+"\nconst SCHEMA=`",1)
 worker=worker.replace('if(path.startsWith("/api/")){','if(path.startsWith("/api/ginkgo/"))return ginkgoAPI(request,env);\nif(path.startsWith("/api/")){',1)
@@ -655,13 +658,21 @@ if(ginkgoLocale){
 }
 """
 worker=worker.replace("const localeMatch=path.match(",ginkgo_route+"const localeMatch=path.match(",1)
+floor_route=r"""if(path==="/floor"||path==="/floor/"){
+ let page=FLOOR_PAGE;
+ if(publisherId)page=page.replace("</head>",'<meta name="google-adsense-account" content="'+publisherId+'"></head>');
+ return text(page,"text/html; charset=utf-8",200,{"cache-control":"no-store"});
+}
+"""
+worker=worker.replace("const localeMatch=path.match(",floor_route+"const localeMatch=path.match(",1)
 ginkgo_sitemap="""const ginkgoVariants=[["ko","/ginkgo"],["en","/ginkgo/en"],["ja","/ginkgo/ja"],["zh-CN","/ginkgo/zh"]];
  const ginkgoLinks=ginkgoVariants.map(([lang,url])=>'<xhtml:link rel="alternate" hreflang="'+lang+'" href="https://potbreaker.com'+url+'"/>').join("");
  const ginkgoSitemap=ginkgoVariants.map(([lang,url])=>'<url><loc>https://potbreaker.com'+url+'</loc>'+ginkgoLinks+'</url>').join("");
  """
 worker=worker.replace('const variants=[["ko","/"]',ginkgo_sitemap+'const variants=[["ko","/"]',1)
-worker=worker.replace("'+urls+\n", "'+urls+ginkgoSitemap+\n",1)
-assert "ginkgoSitemap" in worker and "ginkgoLocale" in worker
+worker=worker.replace('const variants=[["ko","/"]', "const floorSitemap='<url><loc>https://potbreaker.com/floor</loc></url>';\n const variants=[[\"ko\",\"/\"]",1)
+worker=worker.replace("'+urls+\n", "'+urls+ginkgoSitemap+floorSitemap+\n",1)
+assert "ginkgoSitemap" in worker and "ginkgoLocale" in worker and "FLOOR_PAGE" in worker and "floorSitemap" in worker
 # Cron: at 15:00 UTC on the final day of each month it is 00:00 next month in Korea.
 if not worker.endswith("}};"):
  raise SystemExit("Worker fetch export ending changed; do not risk partial patch")

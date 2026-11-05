@@ -1,0 +1,60 @@
+name: Floor Breaker module and Worker QA
+on:
+  push:
+    branches: [feat/floor-breaker-theme3-20261105]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-floor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify Python syntax
+        run: python -m py_compile web/floor_modules.py web/game_engine.py scripts/build_worker.py
+      - name: Run Floor Breaker rules tests
+        run: python -m unittest discover -s tests -p 'test_floor_breaker.py' -v
+      - name: Regression-check previous two themes
+        run: |
+          python -m unittest discover -s tests -p 'test_game_engine.py' -v
+          python -m unittest discover -s tests -p 'test_potbreaker_engine_modules.py' -v
+          python -m unittest discover -s tests -p 'test_ginkgo_static.py' -v
+          python -m unittest discover -s tests -p 'test_charge_burst.py' -v
+          python -m unittest discover -s tests -p 'test_preserved_previous_updates.py' -v
+          node tests/test_ginkgo_rules.cjs
+      - name: Assemble Cloudflare Worker
+        run: python scripts/build_worker.py
+      - name: Verify JavaScript syntax
+        run: node --check cloudflare/worker.js
+      - name: Validate theme-three inline JavaScript
+        run: |
+          python - <<'PY'
+          import re, subprocess, tempfile
+          from pathlib import Path
+          html = Path('web/floor.html').read_text(encoding='utf-8')
+          blocks = re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>', html, re.S|re.I)
+          assert any(x.strip() for x in blocks), 'no inline gameplay JavaScript'
+          for source in blocks:
+              if source.strip():
+                  with tempfile.NamedTemporaryFile(mode='w', suffix='.cjs', encoding='utf-8') as fp:
+                      fp.write(source); fp.flush()
+                      subprocess.run(['node', '--check', fp.name], check=True)
+          print('Floor client JavaScript parsed successfully')
+          PY
+      - name: Verify route, SEO and no ad adjacent to gameplay
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          page = Path('web/floor.html').read_text()
+          worker = Path('cloudflare/worker.js').read_text()
+          assert 'https://potbreaker.com/floor' in page
+          assert 'rel="canonical"' in page and '<meta name="description"' in page
+          assert 'FLOOR_PAGE' in worker and 'floorSitemap' in worker
+          assert 'if(path==="/floor"||path==="/floor/")' in worker
+          assert 'floor_modules.py' in Path('scripts/build_worker.py').read_text()
+          assert 'adsbygoogle.js' not in page  # No ads on move/attack controls
+          print('Floor route, sitemap, title, canonical, and safe ad placement verified')
+          PY

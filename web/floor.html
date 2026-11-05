@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d6e5ff">
+<title>플로어 브레이커 | 폿 브레이커 테마 3</title>
+<meta name="description" content="체스 중인 크다와 감 과장, 우다다 중인 기묘! 엎어진 체스판에서 시작된 2인 턴제 함정 체스 게임 플로어 브레이커.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://potbreaker.com/floor">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:url" content="https://potbreaker.com/floor">
+<meta property="og:title" content="플로어 브레이커 | FLOOR BREAKER">
+<meta property="og:description" content="CBZP 난투 체스! 10×20 보드, 두 명의 플레이어, 세 캐릭터, 숨겨진 함정.">
+<style>
+:root{font-family:system-ui,'Noto Sans KR','Malgun Gothic',sans-serif;--ink:#303b68;--line:#536389;--shadow:#405175;--paper:#fffcf3}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);min-height:100dvh;background:radial-gradient(circle at 25% 0,#fff 0,transparent 25%),linear-gradient(145deg,#b5d9ff,#f8eeff 56%,#fff6de)}
+a{color:#334d86}button,select{font:inherit}button{cursor:pointer;touch-action:manipulation}button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #ad64e7;outline-offset:3px}
+[hidden]{display:none!important}.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:0;padding:12px clamp(12px,3vw,30px);z-index:20;background:#fffffff0;border-bottom:2px solid #bed1ed;backdrop-filter:blur(9px)}
+.brand{font-weight:1000;letter-spacing:.08em}.menu{display:flex;gap:12px;font-weight:850;font-size:clamp(11px,2vw,15px);flex-wrap:wrap}
+main{max-width:1100px;margin:auto;padding:clamp(10px,3vw,27px)}
+.panel{border:3px solid #6e7097;border-radius:24px;background:#ffffffed;box-shadow:0 8px 0 #7383ab;padding:clamp(13px,3vw,28px);margin:14px 0 25px}
+.cover{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:center;min-height:min(68dvh,600px);background:linear-gradient(120deg,#e0eaff 0%,#fff5e8 100%)}
+.episode{font-weight:900;color:#6a67a8;letter-spacing:.16em;font-size:12px}.cover h1{font-size:clamp(40px,6vw,77px);margin:.16em 0;line-height:1.1;letter-spacing:-.05em;text-shadow:2px 3px #d2cfff}
+.subtitle{font-size:clamp(14px,2vw,20px);font-weight:800;line-height:1.65}.caption{font-size:13px;color:#606b86;line-height:1.55}
+.piece-group{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;align-items:end}
+.piece-card{background:#f7effd;border:3px solid #71658b;border-radius:18px;display:grid;place-items:center;padding:10px 5px;min-height:200px;text-align:center}
+.piece-icon{font-size:clamp(53px,6vw,94px);line-height:1.1}.piece-card strong{display:block;font-size:clamp(10px,1.5vw,17px)}
+.action{background:#ffe17e;border:3px solid #79623f;box-shadow:0 4px 0 #79623f;border-radius:13px;padding:12px 23px;color:#473b3b;font-weight:900;margin:6px}
+.action.secondary{background:#d3e5ff;border-color:#53648c;box-shadow:0 4px 0 #53648c}
+.action:disabled{opacity:.55;cursor:not-allowed}.action:active{transform:translateY(3px);box-shadow:0 1px 0 #79623f}
+.story-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}
+.story-grid article{background:#f6f0ff;border:2px solid #8479a2;border-radius:16px;min-height:145px;display:grid;place-items:center;text-align:center;padding:15px;font-weight:800;line-height:1.6}
+.story-grid .scene{font-size:clamp(39px,7vw,76px);display:block}.story-grid p{margin:6px}.intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:16px auto;max-width:700px}
+.char-select{display:grid;gap:6px;background:#f7f8ff;padding:15px;border:2px solid #a0abd0;border-radius:15px;font-weight:800;text-align:left}
+.char-select select{padding:10px 8px;background:white;border:2px solid #919dc1;border-radius:10px;color:#29345f}
+.game-layout{display:grid;grid-template-columns:minmax(250px,1fr) minmax(220px,310px);gap:18px;align-items:start}
+.board-shell{display:flex;justify-content:center;background:#ecf2ff;border:3px solid #677fae;border-radius:18px;padding:9px;min-width:0}
+#board{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:1px;width:min(100%,calc(68dvh * .5),380px);aspect-ratio:10/20;background:#6879a0;border:3px solid #455781;border-radius:7px;overflow:hidden;touch-action:manipulation}
+.cell{position:relative;min-width:0;min-height:0;border:0;padding:0;display:grid;place-items:center;font-size:clamp(12px,2.6vw,23px);font-weight:1000;color:#31395a}
+.cell.light{background:#f3e7cf}.cell.dark{background:#b4c1d8}.cell.eroded{background:#29374f;color:#798394}
+.cell.selected{box-shadow:inset 0 0 0 3px #faab35}.cell.move:after{content:'';position:absolute;border-radius:99px;background:#217e65a3;width:35%;height:35%}.cell.attack{box-shadow:inset 0 0 0 3px #d95353}
+.cell.revealed{background-image:repeating-linear-gradient(45deg,transparent,transparent 5px,#ce98e655 5px,#ce98e655 10px)}
+.cell.used:before{content:'✕';font-size:19px;color:#aa4b53}.piece{z-index:2;display:grid;place-items:center;width:88%;height:88%;border-radius:44% 44% 36% 36%;border:2px solid #635b70;background:linear-gradient(#fff9ec,#ecdaca);box-shadow:0 2px 0 #8e7d90;font-size:clamp(15px,2.5vw,28px)}
+.piece.enemy{background:linear-gradient(#7b8797,#45516d);color:#fff;border-color:#3e4661}
+.hud{display:grid;gap:12px}.hud-box{border:2px solid #a7b3d0;border-radius:15px;background:#fff;padding:12px;font-size:14px}
+.hud-box strong{display:block;margin-bottom:6px}.hud #time{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums;color:#314a91}.notice{font-weight:800;line-height:1.6;min-height:3em}
+.help{font-size:13px;line-height:1.65;text-align:left}footer{padding:25px 0;display:flex;justify-content:center;gap:20px;font-size:12px;flex-wrap:wrap}
+@media(max-width:720px){.cover{grid-template-columns:1fr;min-height:0}.piece-card{min-height:130px}.game-layout{grid-template-columns:1fr}.hud{grid-template-columns:1fr 1fr}.hud-box:first-child{grid-column:span 2}#board{width:min(100%,calc(65dvh * .5),340px)}.intro-grid{grid-template-columns:1fr}.story-grid article{min-height:105px}.piece-icon{font-size:48px}}
+@media(max-width:380px){.story-grid{gap:7px}.story-grid article{padding:7px}.piece-card{padding:7px 2px;min-height:110px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="brand">☁ CBZP · POT BREAKER</div><nav class="menu" aria-label="게임 메뉴"><a href="/">테마 1</a><a href="/ginkgo">테마 2</a><a href="/floor" aria-current="page">테마 3</a></nav></header>
+<main>
+<section id="cover" class="cover panel">
+ <div><div class="episode">CLOUD BEAR ZOO PARK · THEME 03</div><h1>FLOOR<br>BREAKER</h1><p class="subtitle">분노한 크다와 감 과장, 그리고 기묘!<br>엎어진 체스판 위에서 시작된 난투 체스.</p><button class="action" id="seeStory">이야기 보기</button><p class="caption">2인 턴제 게임 · 10×20 필드 · 숨겨진 함정 30개</p></div>
+ <div class="piece-group" aria-label="세 캐릭터의 체스말"><div class="piece-card"><div class="piece-icon">♘</div><strong>🐈 기묘 대리</strong></div><div class="piece-card"><div class="piece-icon">♜</div><strong>🐊 크다부장</strong></div><div class="piece-card"><div class="piece-icon">♝</div><strong>🐦‍⬛ 감 과장</strong></div></div>
+</section>
+<section id="intro" class="panel" hidden>
+ <p class="episode">감사원 기록 · 게임 오프닝</p><h2>엎어진 체스판</h2>
+ <div class="story-grid" role="group" aria-label="플로어 브레이커 스토리 네 컷">
+ <article><div><span class="scene">🐊 ♟️ 🐦‍⬛</span><p>크다부장과 감 과장이 체스를 두고 있다.</p></div></article>
+ <article><div><span class="scene">💨 🐈 💨</span><p>그때 우다다 중인 기묘!</p></div></article>
+ <article><div><span class="scene">💥 ♟️ 💥</span><p>기묘로 인해 체스판이 엎어진다.</p></div></article>
+ <article><div><span class="scene">♘ ⚔️ ♜ ⚔️ ♝</span><p>분노한 셋! 플로어 브레이커!</p></div></article>
+ </div>
+ <h3>2인 캐릭터 선택</h3><div class="intro-grid">
+ <label class="char-select">플레이어 1<select id="p0"><option value="gimyo">기묘 · 이동거리 2배</option><option value="keuda">크다 · 공격거리 2배</option><option value="gam">감 과장 · 함정 위치 확인</option></select></label>
+ <label class="char-select">플레이어 2<select id="p1"><option value="keuda">크다 · 공격거리 2배</option><option value="gimyo">기묘 · 이동거리 2배</option><option value="gam">감 과장 · 함정 위치 확인</option></select></label>
+ </div>
+ <p class="caption">현재 구현은 같은 기기에서 번갈아 진행하는 개발용 2인 대전입니다. 실시간 온라인 매칭은 연결되지 않았습니다.</p>
+ <button id="start" class="action">게임 시작</button><button class="action secondary" id="backCover">대문으로</button>
+ <p id="loadStatus" aria-live="polite" class="caption"></p>
+</section>
+<section id="play" class="panel" hidden>
+ <h2>FLOOR BREAKER <small>· 개발용 로컬 대전</small></h2>
+ <div class="game-layout">
+ <div class="board-shell"><div id="board" role="group" aria-label="10열 20행 플로어 브레이커 게임판"></div></div>
+ <aside class="hud">
+ <div class="hud-box"><strong id="turn">턴 1 · 플레이어 1</strong><div id="time" role="timer" aria-label="남은 시간">10.0s</div><div id="remaining"></div></div>
+ <div class="hud-box"><strong>선택한 말</strong><div id="selectedInfo">말을 선택하세요.</div><button class="action secondary" id="ability" disabled>특수 기능</button></div>
+ <div class="hud-box"><strong>플레이 상황</strong><p class="notice" id="notice" aria-live="polite"></p><p id="result"></p><button class="action" id="again">새 게임</button></div>
+ <div class="hud-box help"><strong>게임 규칙</strong>한 턴에 말 1개 이동 또는 공격. 기본 이동 최대 2칸, 공격은 전방·좌우 1칸. 11턴부터 행동한 플레이어의 후방 바닥이 한 줄씩 소멸. 30턴 종료 또는 상대 말 전멸·상대 진영 끝 도달 시 종료. 특수 기능은 개별 말에 5턴 주기로 적용.</div>
+ </aside>
+ </div>
+</section>
+<section class="panel" id="guide"><h2>플로어 브레이커 게임 방법</h2><p>각 플레이어는 기묘·크다부장·감 과장 중 하나를 선택하고 말 5개로 경기를 시작합니다. 상대 진영 맨 끝에 도달하거나 상대 말을 모두 제거하면 승리합니다. 중앙 14행에 숨겨진 함정 30개가 있으며, 행동 종료 시 턴이 넘어갑니다.</p><p>이 게임은 체스 규칙을 그대로 적용하는 일반 체스가 아니라, CBZP의 독자적인 턴제 전략 게임입니다.</p></section>
+<footer><a href="/">POT BREAKER</a><a href="/about">게임 안내</a><a href="/privacy">개인정보·광고 안내</a></footer>
+</main>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js" defer></script>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id), PANES=['cover','intro','play'];
+const CHAR={gimyo:'기묘',keuda:'크다부장',gam:'감 과장'};
+const GLYPH={gimyo:'♘',keuda:'♜',gam:'♝'};
+let py=null,game=null,state=null,loopId=null,prior=0,busy=false;
+function show(id){for(const pane of PANES)$(pane).hidden=pane!==id;window.scrollTo(0,0)}
+$('seeStory').onclick=()=>show('intro');$('backCover').onclick=()=>show('cover');
+async function init(){
+ if(py)return;
+ $('loadStatus').textContent='Python 게임 엔진을 불러오는 중…';
+ if(!window.loadPyodide)throw Error('Python 런타임을 불러오지 못했습니다. 네트워크를 확인하세요.');
+ py=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/'});
+ const res=await fetch('/game.py',{cache:'no-store'});
+ if(!res.ok)throw Error('게임 엔진을 찾지 못했습니다.');
+ await py.runPythonAsync(await res.text());
+ $('loadStatus').textContent='';
+}
+function updateState(){state=JSON.parse(py.runPython('floor_game.state()'));render()}
+function render(){
+ if(!state)return;
+ const b=$('board'),targets=new Map(state.targets.map(t=>[t.index,t.kind]));
+ const spent=new Set(state.spent_traps),eroded=new Set(state.eroded_rows),reveals=new Map(state.revealed_traps.map(t=>[t.index,t.type]));
+ const pieces=new Map(state.pieces.map(p=>[p.y*10+p.x,p]));
+ b.replaceChildren();
+ for(let i=0;i<200;i++){
+  const y=Math.floor(i/10),p=pieces.get(i),kind=targets.get(i),btn=document.createElement('button');
+  btn.type='button';btn.className='cell '+(((i%10+y)%2)?'dark':'light');
+  if(eroded.has(y))btn.classList.add('eroded');
+  if(spent.has(i))btn.classList.add('used');
+  if(kind)btn.classList.add(kind);
+  if(reveals.has(i))btn.classList.add('revealed');
+  if(p){
+   const piece=document.createElement('span');piece.className='piece'+(p.team!==state.current_team?' enemy':'');
+   piece.textContent=GLYPH[state.characters[p.team]];btn.appendChild(piece);
+   if(p.id===state.selected_piece)btn.classList.add('selected');
+  }
+  if(reveals.has(i)&&!p)btn.textContent=({pit:'⚠',retreat:'↩',jump:'↗'})[reveals.get(i)];
+  btn.setAttribute('aria-label',(y+1)+'행 '+(i%10+1)+'열'+(p?' '+CHAR[state.characters[p.team]]:'')+(kind?' '+(kind==='attack'?'공격':'이동'):''));
+  btn.disabled=state.phase!=='playing'||eroded.has(y)||spent.has(i);
+  btn.onclick=()=>{if(!py)return;py.runPython('floor_game.tap('+i+')');updateState()};
+  b.appendChild(btn);
+ }
+ $('turn').textContent='턴 '+state.turn+' · 플레이어 '+(state.current_team+1)+' ('+CHAR[state.characters[state.current_team]]+')';
+ $('time').textContent=(state.remaining_ms/1000).toFixed(1)+'s';
+ $('remaining').textContent='남은 말: '+state.pieces.filter(p=>p.team===0).length+' / '+state.pieces.filter(p=>p.team===1).length;
+ $('selectedInfo').textContent=state.selected_piece==null?'말을 선택하세요.':'말 #'+(state.selected_piece+1)+' · '+(state.skill_ready?'특수 기능 가능':'기본 행동');
+ $('ability').disabled=state.selected_piece==null||!state.skill_ready||state.phase!=='playing';
+ $('ability').textContent=state.skill_armed?'특수 기능 취소':'특수 기능 사용';
+ $('notice').textContent=state.notice;
+ $('result').textContent=state.phase==='finished'?(state.winner==null?'무승부':'플레이어 '+(state.winner+1)+' 승리')+' · '+state.result_reason:'';
+}
+function beginClock(){
+ if(loopId)clearInterval(loopId);prior=performance.now();
+ loopId=setInterval(()=>{
+  if(!py||!state||state.phase!=='playing'){if(state?.phase==='finished'){clearInterval(loopId);loopId=null;}return;}
+  const now=performance.now(),dt=Math.min(10,(now-prior)/1000);prior=now;
+  py.runPython('floor_game.step('+dt.toFixed(3)+')');updateState();
+ },100);
+}
+async function start(){
+ if(busy)return;busy=true;$('start').disabled=true;
+ try{
+  await init();
+  const first=$('p0').value,second=$('p1').value;
+  if(!CHAR[first]||!CHAR[second])throw Error('유효하지 않은 캐릭터입니다.');
+  // Values are restricted to fixed select options, not arbitrary Python input.
+  py.runPython('floor_game=GameEngine("floor",characters=('+JSON.stringify(first)+','+JSON.stringify(second)+'))');
+  updateState();show('play');beginClock();
+ }catch(err){$('loadStatus').textContent='시작 실패: '+String(err.message||err)}
+ finally{busy=false;$('start').disabled=false}
+}
+$('start').onclick=start;$('ability').onclick=()=>{if(!py)return;py.runPython('floor_game.sync({"ability": True})');updateState()};
+$('again').onclick=()=>{if(loopId)clearInterval(loopId);loopId=null;show('intro')};
+})();
+</script>
+</body></html>
