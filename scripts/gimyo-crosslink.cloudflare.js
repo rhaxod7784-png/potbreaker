@@ -2,7 +2,7 @@
 // currently deployed Worker bundle, since repository main predates production.
 async () => {
   const WRITE = false;
-  const expectedVersion = 'cae24aec-c030-4167-939e-4f9cad7bdeae'; // production v206
+  const expectedVersion = 'd9ae9d96-4818-49b1-8666-8ea4815dd9f7'; // production v207
   const path = `/accounts/${accountId}/workers/scripts/potbreaker`;
   const deployments = await cloudflare.request({ method: 'GET', path: `${path}/deployments` });
   const current = deployments.result?.deployments?.[0]?.versions;
