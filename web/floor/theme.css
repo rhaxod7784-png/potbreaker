@@ -23,6 +23,7 @@ h1,h2{color:#2d3d70;text-shadow:2px 2px #fff,3px 3px #ffd78a}
 #intro .panel p{margin:0;padding:9px 12px;min-height:54px;background:#fffaf0;color:#2d3d6e;border-top:2px solid #7994b9;font-weight:850}
 #choose .choice.selected{border-color:#c95464;box-shadow:0 0 0 3px #ffe197,0 5px 0 #bd8d93}
 .battle-bar,.hud,.board-legend{background:#f4faff;border-color:#8ba6ca}
+.battle-bar{color:#263d67}.battle-status.enemy{color:#9b5925}.battle-status.alert{color:#a93244}.time-track{background:#a9bdd4}
 .arena{background:linear-gradient(145deg,#dbedfa,#fff4da)}
 .foot{color:#365681}
 @media(max-width:700px){.top{flex-wrap:wrap;gap:7px;padding:8px 12px}.locale-picker{margin-left:0}.comic{grid-template-columns:1fr}.comic-art{height:auto;aspect-ratio:1.12;object-fit:cover}#intro .panel p{min-height:0}.screen{margin:8px 0}}
