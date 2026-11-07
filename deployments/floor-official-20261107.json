@@ -1,0 +1,25 @@
+{
+  "project": "POT BREAKER / FLOOR BREAKER",
+  "domain": "https://potbreaker.com/floor",
+  "worker": "potbreaker",
+  "production_version_number": 214,
+  "production_version_id": "044645ef-f555-44ac-9750-2e5353760587",
+  "production_deployment_id": "6d698d3b-d628-4c80-839f-97f9398443b7",
+  "qa_worker": "potbreaker-floor-qa-20261105",
+  "qa_version_id": "11c4bfff-0e9a-4468-beca-3c54bac7a771",
+  "source_branch": "feat/floor-official-comic-20261107",
+  "source_commit": "dfc1138",
+  "build": "python scripts/build_floor.py",
+  "rules_check": "node tests/test_floor_rules.cjs",
+  "binding_preserved": "POTBREAKER_DB",
+  "main_menu_link": "/floor",
+  "verification": [
+    "Production /floor and /health return HTTP 200",
+    "All four comic images load over HTTPS",
+    "Korean, English, Japanese and Chinese story and game screens render",
+    "Game starts with 121 board cells and no browser console errors",
+    "Main menu Floor Breaker link opens /floor"
+  ],
+  "rollback_version_id": "1d9daebc-4144-4166-a79b-68dbf5cd9f15",
+  "source_parity": "Floor Breaker HTML is built from web/floor modules; the legacy main Worker bundle remains a separate production baseline"
+}
