@@ -1,0 +1,22 @@
+{
+  "project": "POT BREAKER / FLOOR BREAKER",
+  "domain": "https://potbreaker.com/floor",
+  "worker": "potbreaker",
+  "production_version_number": 215,
+  "production_version_id": "92625db2-4ab6-4898-b0c0-856658b490ef",
+  "production_deployment_id": "5abb697c-3e57-425c-97b8-01bc76b3289f",
+  "qa_worker": "potbreaker-floor-qa-20261105",
+  "qa_version_number": 29,
+  "qa_version_id": "ec36d8e4-7066-4785-9159-58cd349858a4",
+  "source_branch": "feat/floor-official-comic-20261107",
+  "source_commit": "f7a3212",
+  "build": "python scripts/build_floor.py",
+  "rules_check": "node tests/test_floor_rules.cjs",
+  "change": "Illustrated full-bleed title screen aligned with Themes 1 and 2; battle header contrast repaired",
+  "verification": [
+    "QA HTTPS cover, story, character selection, and game start inspected",
+    "Production HTTPS cover and main menu Floor Breaker link inspected",
+    "Production /, /floor, and /health return HTTP 200"
+  ],
+  "rollback_version_id": "044645ef-f555-44ac-9750-2e5353760587"
+}
