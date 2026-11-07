@@ -18,6 +18,9 @@ def data_url(path):
     mime = mimetypes.guess_type(file.name)[0] or 'application/octet-stream'
     return f'data:{mime};base64,{base64.b64encode(file.read_bytes()).decode("ascii")}'
 
+css = re.sub(r'url\(["\']?(\./assets/[^)"\']+)["\']?\)',
+             lambda m: f'url("{data_url(m.group(1))}")', css)
+
 art_paths = json.loads(re.search(r'export const ART=(\{.*?\});', art_source).group(1))
 art = {name: data_url(path) for name, path in art_paths.items()}
 cleric_path = re.search(r'export const CLERIC_ART="([^"]+)";', art_source).group(1)
