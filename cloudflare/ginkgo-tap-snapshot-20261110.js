@@ -22,7 +22,7 @@
       " const tapTick=localEngine.clock.tick,tapPhase=localEngine.board.cells[index]?.phase;\n" + tapNeedle
     ).replaceAll(
       payloadNeedle, "JSON.stringify({run_id:tappedRun,index,tap_tick:tapTick,tap_phase:tapPhase})"
-    );
+    ).replace('from "./local-engine.js";', 'from "./local-engine.js?gfix=220";');
   } else {
     console.error("[ginkgo-tap-fix] unexpected bundled browser module shape; refusing partial patch");
   }
@@ -88,7 +88,15 @@
   worker_default.fetch = async function(request, env, ctx) {
     const response = await previousFetch.call(worker_default, request, env, ctx);
     const path = new URL(request.url).pathname;
-    if ((path !== localPath && path !== mainPath) || response.status !== 200) return response;
+    if (response.status !== 200) return response;
+    if (/^\/ginkgo(?:\/(?:en|ja|zh))?$/.test(path) && response.headers.get("content-type")?.includes("text/html")) {
+      const html = await response.text();
+      const changed = html.replaceAll("/modules/ginkgo/main.js", "/modules/ginkgo/main.js?gfix=220");
+      const headers = new Headers(response.headers);
+      headers.delete("content-length"); headers.set("cache-control","no-store, max-age=0");
+      return new Response(changed,{status:response.status,statusText:response.statusText,headers});
+    }
+    if (path !== localPath && path !== mainPath) return response;
     const headers = new Headers(response.headers);
     headers.set("cache-control","no-store, max-age=0");
     return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
