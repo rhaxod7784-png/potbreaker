@@ -1,0 +1,16 @@
+{
+  "domain": "https://potbreaker.com",
+  "worker": "potbreaker",
+  "version": "v219",
+  "workerVersionId": "f56b3d7f-1d73-4756-b36c-950c259cb50a",
+  "deploymentId": "0c3fdb38-243b-41a5-81a4-ba49ba6f7d8a",
+  "baseSnapshot": "cloudflare/snapshots/v218",
+  "delta": "cloudflare/about-seo-20261110.js",
+  "restoreScript": "scripts/restore_potbreaker_worker_v219.py",
+  "sha256": "9aa34224d875ce155243650ec023e855d9aac2abbee76d6f0d1932931ff6b3c2",
+  "baseSha256": "860217cf734b7f3ba1cceb00407cf74552f05d2a2da7bb4927b99bcac9c4fb7c",
+  "sourceCodeUnits": 5566026,
+  "sourceBytes": 5583838,
+  "change": "Expand multilingual game guides (/about family), hreflang, localized descriptions, normalize trailing slash for about/privacy",
+  "productionParity": "reconstructable via verified v218 base + archived delta; legacy worker.js is not current"
+}
