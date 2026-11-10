@@ -1,0 +1,31 @@
+name: Ginkgo tap regression
+
+on:
+  push:
+    paths:
+      - cloudflare/ginkgo-tap-snapshot-20261110.js
+      - cloudflare/about-seo-20261110.js
+      - cloudflare/snapshots/v218/**
+      - scripts/restore_potbreaker_worker_v219.py
+      - scripts/restore_potbreaker_worker_v220.py
+      - tests/test_ginkgo_tap_snapshot.py
+      - .github/workflows/ginkgo-tap-regression.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-ginkgo-tap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Regression tests
+        run: python -m unittest discover -s tests -p test_ginkgo_tap_snapshot.py -v
+      - name: Reproduce deployed worker source
+        run: python scripts/restore_potbreaker_worker_v220.py
