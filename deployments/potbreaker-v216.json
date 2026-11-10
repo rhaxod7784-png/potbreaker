@@ -1,0 +1,16 @@
+{
+  "worker": "potbreaker",
+  "custom_domain": "https://potbreaker.com",
+  "deployed_version": "v216",
+  "version_id": "8f00703a-13bd-4ad4-be4f-5c3ec614280d",
+  "deployment_id": "f99bb478-2ca0-4312-a916-932780d6ab08",
+  "seo_guard": "cloudflare/seo-guard-20261110.js",
+  "original_production_version": "92625db2-4ab6-4898-b0c0-856658b490ef",
+  "baseline_repo_commit": "56d2ce4c276d8f99460d9ab65347237e16038a24",
+  "source_parity": "NOT_SYNCED",
+  "warning": "cloudflare/worker.js in GitHub is an old v184 output, NOT the complete production Worker. Do not redeploy it. Cloudflare deployment v216 retains current games.",
+  "changes": [
+    "noindex on /api/* and game source files; floor QA not indexed",
+    "redirect /index.html and supported trailing-slash duplicate URLs to canonical paths"
+  ]
+}
