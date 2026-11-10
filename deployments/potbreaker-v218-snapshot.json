@@ -1,0 +1,74 @@
+{
+  "domain": "https://potbreaker.com",
+  "worker": "potbreaker",
+  "version": "v218",
+  "cloudflare_version_id": "9a789f8f-4ad9-49b3-8625-2f66789d0f02",
+  "snapshot_dir": "cloudflare/snapshots/v218",
+  "rebuild_command": "python scripts/restore_potbreaker_worker.py",
+  "chunk_count": 12,
+  "code_units": 5559735,
+  "chunk_size": 500000,
+  "parts": [
+    {
+      "path": "cloudflare/snapshots/v218/worker.part-001",
+      "git_blob_sha": "23e5cf754c114b81bc38a451206f0ac8364a3434",
+      "utf16_code_units": 500000
+    },
+    {
+      "path": "cloudflare/snapshots/v218/worker.part-002",
+      "git_blob_sha": "89c881e011712e03372c56cf9707bd01818f2aa7",
+      "utf16_code_units": 500000
+    },
+    {
+      "path": "cloudflare/snapshots/v218/worker.part-003",
+      "git_blob_sha": "b3f3d37e653d0fea404ae12f285f8e5bfabc3d19",
+      "utf16_code_units": 500000
+    },
+    {
+      "path": "cloudflare/snapshots/v218/worker.part-004",
+      "git_blob_sha": "d8c265a2f2fb59abbc849c0520f3398b639e9934",
+      "utf16_code_units": 500000
+    },
+    {
+      "path": "cloudflare/snapshots/v218/worker.part-005",
+      "git_blob_sha": "0b189862679b860ff5ce834919d9b3ca7e0c35fd",
+      "utf16_code_units": 500000
+    },
+    {
+      "path": "cloudflare/snapshots/v218/worker.part-006",
+      "git_blob_sha": "cc7bedc3686257e82215bacc61f98bbd17b41178",
+      "utf16_code_units": 500000
+    },
+    {
+      "path": "cloudflare/snapshots/v218/worker.part-007",
+      "git_blob_sha": "9371c7f598735d8b4b8975c9ae4555aae9bdac00",
+      "utf16_code_units": 500000
+    },
+    {
+      "path": "cloudflare/snapshots/v218/worker.part-008",
+      "git_blob_sha": "ecc836b73ac78d0eab7d7696dcfeebb004779e7a",
+      "utf16_code_units": 500000
+    },
+    {
+      "path": "cloudflare/snapshots/v218/worker.part-009",
+      "git_blob_sha": "be370cfd1005d98673bce195bdf69a8aaaae49ca",
+      "utf16_code_units": 500000
+    },
+    {
+      "path": "cloudflare/snapshots/v218/worker.part-010",
+      "git_blob_sha": "153d98f38ba2e70f815083e3446093a71b2cd007",
+      "utf16_code_units": 500000
+    },
+    {
+      "path": "cloudflare/snapshots/v218/worker.part-011",
+      "git_blob_sha": "b7a3fbf8dd346fe5016f8ea9603f90676c41dc5b",
+      "utf16_code_units": 500000
+    },
+    {
+      "path": "cloudflare/snapshots/v218/worker.part-012",
+      "git_blob_sha": "c90150e00bb31316dc5cf6c6bbb1ddc9da95b982",
+      "utf16_code_units": 59735
+    }
+  ],
+  "note": "Reconstructed source is the exact v218 Worker fetched from Cloudflare. Legacy cloudflare/worker.js and build scripts remain older. No automated deployment was configured."
+}
