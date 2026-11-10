@@ -4,4 +4,4 @@
 
 Run `python scripts/build_floor.py` from the repository root to create `web/floor-standalone.html`, the self-contained page served by the Cloudflare Worker at `/floor`. Do not edit the generated file directly. Run `node tests/test_floor_rules.cjs` to check the core move and ability rules.
 
-Deployment replaces only the Worker's `FLOOR_PAGE` constant with the generated page. This preserves the main POT BREAKER game and its D1 binding. After the page passes production verification, `scripts/enable_floor_entry.py` changes the disabled main menu entry to a four-language `/floor` link in the current Worker source.
+Deployment uses `scripts/replace_floor_page.py` to replace only the Worker's `FLOOR_PAGE` constant with the generated page. This preserves later Worker code, the main POT BREAKER game, and its D1 binding. `scripts/enable_floor_entry.py` enables the four-language game selector link on an older Worker, and `scripts/add_floor_home_link.py` adds the small four-language `/floor` link beside the Daejeon travel link on the home screen.

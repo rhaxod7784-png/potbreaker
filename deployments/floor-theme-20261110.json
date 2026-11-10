@@ -1,0 +1,21 @@
+{
+  "project": "POT BREAKER / FLOOR BREAKER",
+  "production_url": "https://potbreaker.com/floor",
+  "production_worker": "potbreaker",
+  "production_version_number": 222,
+  "production_version_id": "84e625cd-9ada-470d-9d60-ac1220b69feb",
+  "production_deployment_id": "8f5305fa-654a-4696-953e-911362a6e902",
+  "qa_worker": "potbreaker-floor-qa-20261105",
+  "qa_version_number": 30,
+  "qa_version_id": "aafda93c-221b-401b-86ad-4ba4d6f4367b",
+  "source_branch": "feat/floor-official-comic-20261107",
+  "source_commit": "a471251",
+  "change": "Comic title logo and small four-language Floor link beside the Daejeon travel link",
+  "verification": [
+    "QA HTTPS story, character selection, and game start render 121 cells with no console errors",
+    "Production home Floor link opens /floor and the illustrated logo is visible",
+    "Production story, character selection, and game start render 121 cells with no console errors",
+    "Production /, /floor, and /health return HTTP 200"
+  ],
+  "rollback_version_id": "90214a45-f699-4ed7-a229-ae654b37a155"
+}
