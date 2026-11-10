@@ -1,0 +1,17 @@
+{
+  "domain": "https://potbreaker.com",
+  "worker": "potbreaker",
+  "version": "v220",
+  "workerVersionId": "98d1974b-3570-46f3-979e-ded7953d27fd",
+  "deploymentId": "6c094401-ee1d-4d97-9733-f0db728da3a4",
+  "previousVersionId": "f56b3d7f-1d73-4756-b36c-950c259cb50a",
+  "baseSnapshot": "cloudflare/snapshots/v218",
+  "previousDelta": "cloudflare/about-seo-20261110.js",
+  "delta": "cloudflare/ginkgo-tap-snapshot-20261110.js",
+  "restoreScript": "scripts/restore_potbreaker_worker_v220.py",
+  "sha256": "b682fa1561723a7d22911cefa4a5e83cc491d8636ead2835d918f168ee26bce8",
+  "change": "Fix Ginkgo click-phase race: lock client judgement to rendered phase and reconcile one tick of verified server latency (850ms grace). Maintain existing scores and 500ms rotten lock.",
+  "deploymentTrafficPercentage": 100,
+  "regressionRun": "https://github.com/rhaxod7784-png/potbreaker/actions/runs/42763967283",
+  "productionParity": "Confirmed active Worker version and content/v2 SHA-256 via Cloudflare API; browser interaction was not directly tested."
+}
