@@ -8,7 +8,9 @@ import re
 root = Path(__file__).resolve().parents[1]
 floor = root / 'web' / 'floor'
 page = (floor / 'index.html').read_text(encoding='utf-8')
-css = (floor / 'floor.css').read_text(encoding='utf-8') + '\n' + (floor / 'theme.css').read_text(encoding='utf-8')
+css = ((floor / 'floor.css').read_text(encoding='utf-8') + '\n'
+       + (root / 'web' / 'theme-tabs.css').read_text(encoding='utf-8') + '\n'
+       + (floor / 'theme.css').read_text(encoding='utf-8'))
 i18n = (floor / 'i18n.js').read_text(encoding='utf-8')
 game = (floor / 'game.js').read_text(encoding='utf-8')
 art_source = (floor / 'art.js').read_text(encoding='utf-8')
@@ -32,7 +34,10 @@ bundle = ('"use strict";\nconst ART=' + json.dumps(art, ensure_ascii=False) + ';
           + 'const CLERIC_ART=' + json.dumps(data_url(cleric_path)) + ';\n'
           + i18n + '\n' + game)
 
-page = page.replace('<link rel="stylesheet" href="./floor.css"><link rel="stylesheet" href="./theme.css">', '<style>' + css + '</style>', 1)
+tabs = (root / 'web' / 'theme-tabs.html').read_text(encoding='utf-8')
+tabs = tabs.replace('{{ACTIVE_POT}}', '').replace('{{ACTIVE_GINKGO}}', '').replace('{{ACTIVE_FLOOR}}', 'aria-current="page"')
+page = page.replace('{{THEME_TABS}}', tabs, 1)
+page = page.replace('<link rel="stylesheet" href="./floor.css"><link rel="stylesheet" href="../theme-tabs.css"><link rel="stylesheet" href="./theme.css">', '<style>' + css + '</style>', 1)
 page = page.replace('<script type="module" src="./game.js"></script>', '<script>' + bundle + '</script>', 1)
 page = re.sub(r'(?<=src=")\./assets/[^\"]+', lambda m: data_url(m.group(0)), page)
 assert '<script type="module"' not in page and './assets/' not in page
