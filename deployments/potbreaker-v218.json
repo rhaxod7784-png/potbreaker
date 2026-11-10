@@ -1,0 +1,15 @@
+{
+  "domain": "https://potbreaker.com",
+  "worker": "potbreaker",
+  "version": "v218",
+  "version_id": "9a789f8f-4ad9-49b3-8625-2f66789d0f02",
+  "deployment_id": "9dc753d3-0aa8-4e94-b5c1-f5badea16319",
+  "previous_version_id": "b6fa4594-aec7-47e3-aad8-564324195b2e",
+  "patch": "cloudflare/ginkgo-seo-20261110.js",
+  "source_parity": "NOT_SYNCED",
+  "warning": "GitHub cloudflare/worker.js is a legacy bundle. Do NOT redeploy it to production.",
+  "changes": [
+    "Ginkgo pages now have one h1 and preserve title styling with h2",
+    "Visible links among /ginkgo, /ginkgo/en, /ginkgo/ja, /ginkgo/zh for discovery"
+  ]
+}
