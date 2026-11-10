@@ -1,0 +1,12 @@
+{
+  "site": "https://potbreaker.com",
+  "worker": "potbreaker",
+  "production_version": "v217",
+  "version_id": "b6fa4594-aec7-47e3-aad8-564324195b2e",
+  "deployment_id": "a1b2724c-eebc-4fd2-beac-38cbc9eeecd8",
+  "prior_version_id": "8f00703a-13bd-4ad4-be4f-5c3ec614280d",
+  "patch": "cloudflare/seo-assets-20261110.js",
+  "source_parity": "NOT_SYNCED",
+  "warning": "GitHub cloudflare/worker.js is still a legacy bundle, not the live game code. Do NOT redeploy it over Cloudflare v217.",
+  "change": "Move 17 inline image occurrences (9 unique WebP files) out of 3.14 MB main HTML. Main page HTML ~82.6 KB and H1 now within Googlebot 2 MB limit."
+}
