@@ -1,0 +1,12 @@
+/* The visible controls are smaller and 70% transparent; the hit targets stay large. */
+@media (pointer:coarse),(max-height:520px){
+  #gamePanel .dpad{left:1%;bottom:1%;width:clamp(150px,19cqw,186px)!important;height:clamp(150px,19cqw,186px)!important;gap:1px}
+  #gamePanel .dpad-button{position:relative;isolation:isolate;border:0;background:transparent;box-shadow:none;color:rgba(59,87,141,.3);font-size:clamp(18px,2.2cqw,25px)}
+  #gamePanel .dpad-button::before{content:"";position:absolute;z-index:-1;inset:13%;border:2px solid rgba(248,254,255,.3);border-radius:12px;background:rgba(255,255,255,.3);box-shadow:0 2px 0 rgba(75,103,128,.15)}
+  #gamePanel .dpad-button.pressed::before{background:rgba(255,222,156,.55)}
+  #gamePanel .actions{right:1%;bottom:1%;gap:2px}
+  #gamePanel .action,#gamePanel .action.fire{position:relative;isolation:isolate;width:clamp(86px,9cqw,106px);min-width:0;min-height:0;aspect-ratio:1;border:0;background:transparent;box-shadow:none;opacity:1;color:#25385f;font-size:clamp(14px,1.35cqw,17px)}
+  #gamePanel .action.fire{width:clamp(104px,11cqw,126px)}
+  #gamePanel .action::before{content:"";position:absolute;z-index:-1;inset:13%;border:2px solid rgba(255,252,245,.3);border-radius:50%;background:rgba(255,225,156,.3);box-shadow:0 3px 0 rgba(75,103,128,.15)}
+  #gamePanel .action .symbol{opacity:.3;font-size:clamp(22px,2.7cqw,32px)}
+}

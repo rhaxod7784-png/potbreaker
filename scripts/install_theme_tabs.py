@@ -14,9 +14,11 @@ MARKER = '// PB_THEME_TABS_20261110'
 
 def wrapper() -> str:
     css = (ROOT / 'web/theme-tabs.css').read_text(encoding='utf-8')
+    controls_css = (ROOT / 'web/pot-touch-controls.css').read_text(encoding='utf-8')
     html = (ROOT / 'web/theme-tabs.html').read_text(encoding='utf-8')
     return (MARKER + '\n'
             + 'const PB_THEME_CSS=' + json.dumps(css, ensure_ascii=False) + ';\n'
+            + 'const PB_TOUCH_CSS=' + json.dumps(controls_css, ensure_ascii=False) + ';\n'
             + 'const PB_THEME_HTML=' + json.dumps(html, ensure_ascii=False) + ';\n'
             + r'''const __pbThemeFetch=worker_default.fetch;
 worker_default.fetch=async function(request,env,ctx){
@@ -30,7 +32,7 @@ worker_default.fetch=async function(request,env,ctx){
   const tabs=PB_THEME_HTML.replace("{{ACTIVE_POT}}",current==="pot"?'aria-current="page"':"").replace("{{ACTIVE_GINKGO}}",current==="ginkgo"?'aria-current="page"':"").replace("{{ACTIVE_FLOOR}}","");
   page=page.replace(/<details id="pb-game-mode">[\s\S]*?<\/details>/,"");
   page=page.replace("<body>","<body>"+tabs);
-  page=page.replace("</head>","<style>"+PB_THEME_CSS+"</style></head>");
+  page=page.replace("</head>","<style>"+PB_THEME_CSS+(isPot?PB_TOUCH_CSS:"")+"</style></head>");
   const headers=new Headers(response.headers);headers.delete("content-length");headers.delete("etag");
   return new Response(page,{status:response.status,statusText:response.statusText,headers});
 };

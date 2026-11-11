@@ -48,3 +48,30 @@ body:has(#cover:not(.hidden)) .wrap{max-width:none;padding:0}
 #cover .cast{display:none}
 body:has(#cover:not(.hidden)) .foot{background:#bce1fa;text-align:left;padding:11px 22px;color:#193e6c;font-weight:750}
 @media(max-width:700px){#cover{min-height:calc(100svh - 104px);background-position:center bottom;padding-top:72px}#cover .cover-logo{width:min(88vw,440px)}#cover .muted{max-width:90vw;line-height:1.3}body:has(#cover:not(.hidden)) .top{top:58px;flex-wrap:nowrap}body:has(#cover:not(.hidden)) .brand-link{font-size:11px;white-space:nowrap}body:has(#cover:not(.hidden)) .locale-picker{font-size:0;padding:4px}body:has(#cover:not(.hidden)) .locale-picker span{display:none}body:has(#cover:not(.hidden)) .locale-picker select{font-size:12px;border:0;background:transparent;padding:3px}}
+
+/* Compact stage, larger copy, and one clear objective per area. */
+.wrap{max-width:950px}
+#cover .cover-logo{width:min(62vw,400px)}
+#cover #storyBtn{min-width:280px}
+.game{grid-template-columns:minmax(0,1fr) 246px;gap:12px}
+.board{width:min(100%,600px)}
+.screen{font-size:16px;line-height:1.5}
+.muted,.turn-sub,.skill-title span,.skill-hint,.last-move,.end-stats{font-size:14px;line-height:1.45}
+.choice small,.board-legend,.goal-rank,.event-toast,.notice,.rules{font-size:14px;line-height:1.45}
+.hud strong,.spot-name,.battle-bar{font-size:15px}
+.hud{padding:12px}
+.choice small{min-height:2.9em}
+.board-legend{gap:6px 12px}
+.goal-rank{padding:7px 8px}
+.event-toast{min-height:0;padding:9px 11px}
+.notice{min-height:0;margin:5px 0}
+.btn{font-size:16px;line-height:1.2}
+.side .btn,.end-controls .btn{padding:8px 11px;min-height:40px;font-size:16px}
+.skill-action{width:100%}
+#selectedLabel{display:none}
+.rules{margin-top:12px;background:#fffdf5;border:1px solid #9db3d1;border-radius:12px;padding:10px 14px}
+.rules summary{font-weight:900;cursor:pointer}
+.rules-content{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;margin-top:10px}
+.rules-content p{margin:0}
+@media(max-width:760px){.game{grid-template-columns:1fr}.board{width:min(100%,390px)}.side{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px){.side{grid-template-columns:1fr}.rules-content{grid-template-columns:1fr}.battle-bar{flex-wrap:wrap}.time-track{flex-basis:25%}.choice small{min-height:0}#abilityBtn:not(:disabled){width:min(70vw,250px);min-height:48px;padding:8px 10px;font-size:16px}}
