@@ -1,0 +1,19 @@
+{
+  "source_branch": "feat/floor-official-comic-20261107",
+  "source_commit": "af547483b97ae41a72592ab301e7de3a4b7334d2",
+  "production_url": "https://potbreaker.com/floor",
+  "production_worker": "potbreaker",
+  "production_version_id": "38a9bf93-6306-4473-9a59-af3fdc4c3a14",
+  "production_deployment_id": "947d5cb8-61ee-456d-8232-083fe6e338ad",
+  "qa_url": "https://potbreaker-floor-qa-20261105.rhaxod7784.workers.dev/floor",
+  "qa_version_id": "1834d5b4-edf4-48f7-958a-2c823e88eb1d",
+  "qa_deployment_id": "114e99c0-22f9-4c83-95db-8e87b8c3bf37",
+  "checks": [
+    "Floor rules test passed",
+    "QA story to game start rendered 121 cells with no browser errors",
+    "Production story to game start rendered 121 cells with no browser errors",
+    "Korean, English, Japanese and Chinese objective copy checked",
+    "Production mobile control hit areas and 30% visual opacity checked",
+    "Production D1 binding preserved; all four HTTPS routes returned 200"
+  ]
+}
