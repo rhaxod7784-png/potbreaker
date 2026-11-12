@@ -7,8 +7,9 @@
 #pb-theme-tabs [class^="tab-"]{display:none}
 html[lang="ko"] #pb-theme-tabs .tab-ko,html[lang="en"] #pb-theme-tabs .tab-en,html[lang="ja"] #pb-theme-tabs .tab-ja,html[lang="zh"] #pb-theme-tabs .tab-zh{display:inline}
 #openGinkgo,#potbreaker-link,#openFloor{display:none!important}
-/* Both canvas games size their stage against the space below this shared bar. */
-body:has(#title) .viewport{height:calc(100dvh - var(--pb-tabs-height))}
-body:has(#home) .viewport{top:var(--pb-tabs-height);height:calc(100dvh - var(--pb-tabs-height))}
-body:has(#title) .stage,body:has(#home) .stage{width:min(100vw,var(--pb-stage-max-width));height:min(calc(100dvh - var(--pb-tabs-height)),56.25vw);aspect-ratio:16/9}
+/* Keep each desktop title stage aligned below the bar; gameplay keeps its own layout. */
+@media(min-width:701px){
+body:has(#title:not(.hidden)) .viewport,body:has(#home:not(.hidden)) .viewport{height:calc(100dvh - var(--pb-tabs-height))!important}
+body:has(#title:not(.hidden)) .stage,body:has(#home:not(.hidden)) .stage{width:min(100vw,var(--pb-stage-max-width))!important;height:min(calc(100dvh - var(--pb-tabs-height)),56.25vw)!important;aspect-ratio:16/9!important}
+}
 @media(max-width:700px){:root{--pb-tabs-height:60px;--pb-stage-max-width:calc(177.778dvh - 106.67px)}#pb-theme-tabs{gap:4px;padding:7px 5px;font-size:clamp(8px,2.4vw,11px)}#pb-theme-tabs a{min-height:42px;padding:5px 2px;border-radius:8px;white-space:normal;line-height:1.15}}
