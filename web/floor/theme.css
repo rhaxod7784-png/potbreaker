@@ -75,3 +75,15 @@ body:has(#cover:not(.hidden)) .foot{background:#bce1fa;text-align:left;padding:1
 .rules-content p{margin:0}
 @media(max-width:760px){.game{grid-template-columns:1fr}.board{width:min(100%,390px)}.side{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:500px){.side{grid-template-columns:1fr}.rules-content{grid-template-columns:1fr}.battle-bar{flex-wrap:wrap}.time-track{flex-basis:25%}.choice small{min-height:0}#abilityBtn:not(:disabled){width:min(70vw,250px);min-height:48px;padding:8px 10px;font-size:16px}}
+
+/* Match the 16:9 title stage used by the two canvas games on desktop. */
+@media(min-width:701px){
+body:has(#cover:not(.hidden)){--pb-stage-w:min(100vw,var(--pb-stage-max-width));--pb-stage-h:min(calc(100dvh - var(--pb-tabs-height)),56.25vw);overflow:hidden}
+body:has(#cover:not(.hidden)) .wrap{width:100%;height:calc(100dvh - var(--pb-tabs-height));display:grid;place-items:center}
+body:has(#cover:not(.hidden)) .top{left:calc((100vw - var(--pb-stage-w))/2);right:auto;top:calc(var(--pb-tabs-height) + (100dvh - var(--pb-tabs-height) - var(--pb-stage-h))/2 + 10px);width:var(--pb-stage-w);padding:5px 16px}
+#cover:not(.hidden){width:var(--pb-stage-w);height:var(--pb-stage-h);min-height:0;margin:0;padding:16px 18px;background-position:center bottom;box-shadow:0 2vh 7vh #2b467669}
+#cover .cover-logo{width:min(42vw,390px)}
+#cover #storyBtn{padding:10px 22px;min-width:280px}
+#cover .muted{margin-top:11px}
+body:has(#cover:not(.hidden)) .foot{position:absolute;z-index:5;left:calc((100vw - var(--pb-stage-w))/2);bottom:calc((100dvh - var(--pb-tabs-height) - var(--pb-stage-h))/2);width:var(--pb-stage-w);padding:5px 14px;background:#bce1fae8;font-size:12px}
+}
