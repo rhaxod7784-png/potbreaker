@@ -45,9 +45,21 @@ for lang, copy in CONTENT.items():
     pages[lang] = html
     print(f'{out.relative_to(ROOT)}: {len(html):,} characters')
 
+privacy_addendum = {
+    'ko': ('플로어 브레이커의 저장 방식', '플로어 브레이커의 대국 상태는 현재 브라우저 화면에서만 유지됩니다. 선택한 언어는 이 브라우저의 로컬 저장소에 저장될 수 있습니다. 플로어 브레이커는 계정 로그인이나 랭킹 등록을 제공하지 않습니다.'),
+    'en': ('How Floor Breaker stores data', 'Floor Breaker keeps the current match in this browser page. Your language choice may be saved in this browser’s local storage. Floor Breaker does not offer account login or leaderboard submission.'),
+    'ja': ('フロアブレイカーのデータ保存', 'フロアブレイカーの対局状態は現在のブラウザーページ内で保持されます。選択した言語はこのブラウザーのローカルストレージに保存される場合があります。アカウントへのログインやランキングへの登録はありません。'),
+    'zh': ('地板破坏者的数据保存', '地板破坏者的当前对局状态仅保存在本浏览器页面中。所选语言可能保存在本浏览器的本地存储中。游戏不提供账号登录或排行榜提交。'),
+}
+
 patch = '''// PB_AD_QUALITY_20261112
 const PB_GUIDES=''' + json.dumps(pages, ensure_ascii=False) + ''';
 for(const [lang,html] of Object.entries(PB_GUIDES)) INFO_PAGES[lang].about=html;
+const PB_FLOOR_PRIVACY=''' + json.dumps(privacy_addendum, ensure_ascii=False) + ''';
+for(const [lang,[heading,detail]] of Object.entries(PB_FLOOR_PRIVACY)){
+  const page=INFO_PAGES[lang].privacy;
+  if(!page.includes('id="floor-data"')) INFO_PAGES[lang].privacy=page.replace('</article>','<section id="floor-data"><h2>'+heading+'</h2><p>'+detail+'</p></section></article>');
+}
 const __pbGuideFetch=worker_default.fetch;
 worker_default.fetch=async function(request,env,ctx){
   const response=await __pbGuideFetch(request,env,ctx);
