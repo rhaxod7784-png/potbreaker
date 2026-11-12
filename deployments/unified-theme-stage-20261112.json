@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-12",
+  "commit": "8296600c30281bce7b462af15d348d6bd189dc39",
+  "production": {
+    "worker": "potbreaker",
+    "version": "8bf75e82-f999-48a7-975e-ad66bd74db1c",
+    "deployment": "6474558a-f0e2-43cb-aef4-73b405253cc2"
+  },
+  "qa": {
+    "worker": "potbreaker-floor-qa-20261105",
+    "version": "c9330ec5-68eb-4bb5-887b-bbee7471e89d",
+    "deployment": "644c394f-7ca0-41c7-a7ac-a9f68936ef38"
+  },
+  "verification": {
+    "production_title_screens": ["/", "/ginkgo", "/floor"],
+    "shared_tab_bar_px": 68,
+    "three_title_stages_px_at_1280x720": "1159x652 at y=68",
+    "mobile_floor_at_390x844": "no horizontal overflow",
+    "qa_floor_flow": "story, character selection, game start, 121 cells",
+    "console_errors": 0
+  }
+}
