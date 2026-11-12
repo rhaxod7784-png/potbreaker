@@ -156,6 +156,8 @@ Object.assign(catalog, {
  ,'빛나는 칸을 누르세요.':['Tap a glowing square.','光るマスを押してください。','点击高亮格。']
  ,'능력 버튼 → 빛나는 칸':['Ability button → Glowing square','能力ボタン → 光るマス','技能按钮 → 高亮格']
  ,'말을 선택하세요.':['Select a piece.','駒を選択してください。','请选择棋子。']
+ ,'게임 가이드':['Game guide','ゲームガイド','游戏指南']
+ ,'개인정보·광고':['Privacy & ads','プライバシー・広告','隐私与广告']
 });
 
 const rules = {
