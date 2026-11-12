@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-12",
+  "production_worker": "potbreaker",
+  "production_deployments": [
+    {
+      "version": "8028490b-349d-49ee-b4c9-5cfe8964046d",
+      "deployment": "453ca64b-584d-4d24-ae6a-173d4583c450",
+      "change": "Four-language original game guides and Floor Breaker sitemap entry"
+    },
+    {
+      "version": "845c9082-a28b-438a-95f0-fff587c2724e",
+      "deployment": "b98e2588-7a4e-4805-951e-2c779313f732",
+      "change": "Four-language Floor Breaker privacy clarification"
+    }
+  ],
+  "qa_worker": "potbreaker-floor-qa-20261105",
+  "qa_version": "4054b26b-1799-4114-9306-9b4e307b542f",
+  "verification": {
+    "production_pages_http_200": ["/", "/about", "/en/about", "/ja/about", "/zh/about", "/floor", "/privacy", "/en/privacy", "/ja/privacy", "/zh/privacy", "/sitemap.xml"],
+    "privacy_floor_data_section": "present in all four languages",
+    "sitemap_floor_url": "present",
+    "browser_game_flow": "story, character selection, 121-cell board; no console errors",
+    "screenshot": "docs/adsense-guide-live-20261112.png"
+  }
+}
