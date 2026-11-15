@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-16",
+  "target": "https://potbreaker.com",
+  "worker": "potbreaker",
+  "baseProductionVersion": "8bf75e82-f999-48a7-975e-ad66bd74db1c",
+  "uploadedVersion": "5893d6b9-8b6f-421e-af54-54829c983c71",
+  "deploymentId": "7fc84913-6f78-4e16-83b4-fb7a9309d0fe",
+  "deploymentTrafficPercentage": 100,
+  "patch": "cloudflare/mobile-ui-20261116.js",
+  "changes": [
+    "Hide top #pb-theme-tabs game navigation on mobile (Pot / Ginkgo / Floor), preserving desktop navigation",
+    "Restore #gamePanel .dpad and .actions for mobile; preserve desktop hidden state",
+    "Preserve existing production game logic and D1 binding"
+  ],
+  "verified": [
+    "Cloudflare accepted Worker version upload with original POTBREAKER_DB D1 binding",
+    "Cloudflare deployment lists new Worker version serving 100% traffic",
+    "Active Cloudflare content/v2 includes exactly one mobile UI patch marker"
+  ],
+  "unverified": [
+    "Hands-on mobile portrait/landscape touch and desktop browser interaction QA",
+    "Live browser screenshot/rendering"
+  ],
+  "note": "Production is ahead of legacy GitHub main build inputs; never redeploy cloudflare/worker.js or scripts/build_worker.py over this version. This overlay was applied to the complete active 2026-11-12 Worker source."
+}
