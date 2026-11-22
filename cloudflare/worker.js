@@ -1,4 +1,4 @@
---f3d3f7a1587c4f20acee909b26a21e6628acbbf222ec756075f42cb8d04b
+--8c4acb38ce3d5603d1aecb30989011c92b105331c0e5eb0c4d6587947b67
 Content-Disposition: form-data; name="worker.js"; filename="worker.js"
 Content-Type: application/javascript+module
 
@@ -4066,6 +4066,20 @@ worker_default.fetch=async function(request,env,ctx){
 /* ADSENSE_REVIEW_FIX_20261121: keep all gameplay intact; correct Floor indexing. */
 FLOOR_PAGE = FLOOR_PAGE.replace("</head>", '<meta name="robots" content="index,follow"><link rel="canonical" href="https://potbreaker.com/floor"><meta name="google-adsense-account" content="ca-pub-7687564326575687"></head>');
 
+/* PB_GAME_START_HEADER_HIDE_20261122: remove navigation chrome as soon as a game run begins, on every viewport. */
+const PB_GAME_START_HEADER_HIDE='<style id="pb-game-start-header-hide">body.pb-game-started #pb-theme-tabs,body.pb-game-started #pb-game-mode,body.pb-game-started .topbar{display:none!important}</style><script id="pb-game-start-header-controller">(()=>{const start=()=>{const b=document.body,home=document.querySelector("#title,#home");document.addEventListener("click",e=>{if(e.target.closest("#openIntro,#open-intro,#begin"))b.classList.add("pb-game-started")},true);if(home)new MutationObserver(()=>{if(!home.hidden&&!home.classList.contains("hidden"))b.classList.remove("pb-game-started")}).observe(home,{attributes:true,attributeFilter:["hidden","class"]})};document.readyState==="loading"?document.addEventListener("DOMContentLoaded",start,{once:true}):start()})();</script>';
+const __pbGameStartHeaderHideFetch=worker_default.fetch;
+worker_default.fetch=async function(request,env,ctx){
+  const response=await __pbGameStartHeaderHideFetch.call(worker_default,request,env,ctx);
+  const pathname=new URL(request.url).pathname;
+  if(request.method!=="GET"||!/^\/(?:(?:en|ja|zh)\/?|ginkgo(?:\/(?:en|ja|zh))?\/?)?$/.test(pathname)||response.status!==200||!response.headers.get("content-type")?.includes("text/html"))return response;
+  let html=await response.text();
+  if(html.includes('id="pb-game-start-header-hide"')||!html.includes("</head>"))return new Response(html,{status:response.status,statusText:response.statusText,headers:response.headers});
+  html=html.replace("</head>",PB_GAME_START_HEADER_HIDE+"</head>");
+  const headers=new Headers(response.headers);headers.delete("content-length");headers.delete("etag");headers.set("cache-control","no-store, max-age=0");
+  return new Response(html,{status:response.status,statusText:response.statusText,headers});
+};
+
 /* PB_PRIVACY_CONTACT_20261122: match the operator contact path used by Daejeon's Gimyo Trip. */
 const PB_PRIVACY_CONTACT={
   ko:'<section id="pb-operator-contact-20261122"><h2>운영 및 문의</h2><p>서비스명: 폿브레이커 (POT BREAKER)</p><p>개인정보 관련 문의: <a href="mailto:rhaxod7784@gmail.com">rhaxod7784@gmail.com</a></p><p>개인정보 열람·정정·삭제 및 관련 문의는 위 이메일로 요청할 수 있습니다. 이메일로 문의하면 보내주신 이메일 주소와 문의 내용은 답변 및 요청 처리 목적으로만 사용합니다.</p></section>',
@@ -4089,4 +4103,4 @@ export {
 };
 //# sourceMappingURL=worker.js.map
 
---f3d3f7a1587c4f20acee909b26a21e6628acbbf222ec756075f42cb8d04b--
+--8c4acb38ce3d5603d1aecb30989011c92b105331c0e5eb0c4d6587947b67--
