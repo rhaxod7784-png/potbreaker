@@ -2,15 +2,14 @@
   "date": "2026-11-22",
   "site": "https://potbreaker.com",
   "worker": "potbreaker",
-  "productionVersionId": "8e69221c-95db-414d-a268-297d27faa2f1",
-  "deploymentId": "c36ecde1-3f27-4893-875f-cb98a3a23823",
+  "productionVersionId": "ce4955c8-773a-4378-be37-7eb6ceed7a9c",
+  "deploymentId": "48452e93-9033-4412-a2d7-462805a28141",
   "trafficPercentage": 100,
   "sourcePath": "cloudflare/worker.js",
   "source": "Cloudflare Workers content/v2",
   "notes": [
     "GitHub worker.js was replaced with the active production Worker source.",
     "The production Worker retains the POTBREAKER_DB D1 binding.",
-    "The version includes the 2026-11-21 AdSense technical patch."
+    "The version includes the 2026-11-21 AdSense technical patch and published operator/privacy contact details."
   ]
 }
-

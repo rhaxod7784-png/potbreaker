@@ -1,4 +1,4 @@
---5e521a6991946722903b2cf6a83e60a8b4de3aba7946c5cf2cdde3b6eed0
+--f3d3f7a1587c4f20acee909b26a21e6628acbbf222ec756075f42cb8d04b
 Content-Disposition: form-data; name="worker.js"; filename="worker.js"
 Content-Type: application/javascript+module
 
@@ -4066,9 +4066,27 @@ worker_default.fetch=async function(request,env,ctx){
 /* ADSENSE_REVIEW_FIX_20261121: keep all gameplay intact; correct Floor indexing. */
 FLOOR_PAGE = FLOOR_PAGE.replace("</head>", '<meta name="robots" content="index,follow"><link rel="canonical" href="https://potbreaker.com/floor"><meta name="google-adsense-account" content="ca-pub-7687564326575687"></head>');
 
+/* PB_PRIVACY_CONTACT_20261122: match the operator contact path used by Daejeon's Gimyo Trip. */
+const PB_PRIVACY_CONTACT={
+  ko:'<section id="pb-operator-contact-20261122"><h2>운영 및 문의</h2><p>서비스명: 폿브레이커 (POT BREAKER)</p><p>개인정보 관련 문의: <a href="mailto:rhaxod7784@gmail.com">rhaxod7784@gmail.com</a></p><p>개인정보 열람·정정·삭제 및 관련 문의는 위 이메일로 요청할 수 있습니다. 이메일로 문의하면 보내주신 이메일 주소와 문의 내용은 답변 및 요청 처리 목적으로만 사용합니다.</p></section>',
+  en:'<section id="pb-operator-contact-20261122"><h2>Operator and contact</h2><p>Service: Pot Breaker</p><p>Privacy contact: <a href="mailto:rhaxod7784@gmail.com">rhaxod7784@gmail.com</a></p><p>You may request access, correction or deletion of personal data through this email. An email address and message sent in an inquiry are used only to respond to and process that request.</p></section>',
+  ja:'<section id="pb-operator-contact-20261122"><h2>運営とお問い合わせ</h2><p>サービス名：ポットブレイカー（POT BREAKER）</p><p>個人情報に関するお問い合わせ：<a href="mailto:rhaxod7784@gmail.com">rhaxod7784@gmail.com</a></p><p>個人情報の開示・訂正・削除および関連するお問い合わせは、上記のメールアドレスで受け付けます。お問い合わせで送信されたメールアドレスと内容は、回答および依頼の処理のためにのみ使用します。</p></section>',
+  zh:'<section id="pb-operator-contact-20261122"><h2>运营与联系</h2><p>服务名称：POT BREAKER</p><p>隐私相关联系：<a href="mailto:rhaxod7784@gmail.com">rhaxod7784@gmail.com</a></p><p>您可通过上述邮箱请求查阅、更正或删除个人信息。咨询邮件中的邮箱地址和内容仅用于回复及处理该请求。</p></section>'
+};
+const __pbPrivacyContactFetch=worker_default.fetch;
+worker_default.fetch=async function(request,env,ctx){
+  const response=await __pbPrivacyContactFetch.call(worker_default,request,env,ctx);
+  const match=/^\/(?:((?:en|ja|zh))\/)?privacy$/.exec(new URL(request.url).pathname);
+  if(request.method!=="GET"||!match||response.status!==200||!response.headers.get("content-type")?.includes("text/html"))return response;
+  let html=await response.text();
+  if(html.includes('id="pb-operator-contact-20261122"')||!html.includes("<article>"))return new Response(html,{status:response.status,statusText:response.statusText,headers:response.headers});
+  html=html.replace("<article>","<article>"+PB_PRIVACY_CONTACT[match[1]||"ko"]);
+  const headers=new Headers(response.headers);headers.delete("content-length");headers.delete("etag");headers.set("cache-control","no-store, max-age=0");
+  return new Response(html,{status:response.status,statusText:response.statusText,headers});
+};
 export {
   worker_default as default
 };
 //# sourceMappingURL=worker.js.map
 
---5e521a6991946722903b2cf6a83e60a8b4de3aba7946c5cf2cdde3b6eed0--
+--f3d3f7a1587c4f20acee909b26a21e6628acbbf222ec756075f42cb8d04b--
