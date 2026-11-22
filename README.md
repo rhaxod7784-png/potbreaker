@@ -1,5 +1,7 @@
 # POT BREAKER RE : CBZP — v1.0.0
 
+> **운영 기준본:** `cloudflare/worker.js`는 2026-11-22에 Cloudflare에서 내려받은 실제 운영 Worker와 일치합니다. 이전 `scripts/build_worker.py`는 보관된 초기 버전을 생성하므로 운영 배포에 사용하지 마세요. 운영 동기화·검증 방법은 [`docs/production-source-of-truth.md`](docs/production-source-of-truth.md)를 따릅니다.
+
 **CBZP 세계관의 사무실 미로 추격 게임.** 플레이어인 기묘가 NPC 크다 부장의 시야를 피하고 화분을 던져 먼저 명중시키면 승리합니다.
 
 - **배포:** https://potbreaker.com (Cloudflare Workers `potbreaker`)
@@ -119,3 +121,4 @@ Android 앱에서 생성된 승리 기록은 WebView의 `localStorage`에 저장
 
 - 브라우저 게임 기준선: `v0.15.0`
 - Android 설치 패키징 추가: `v0.16.0`
+
