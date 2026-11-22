@@ -1,4 +1,4 @@
---8c4acb38ce3d5603d1aecb30989011c92b105331c0e5eb0c4d6587947b67
+--486d01a05b6468aeb038ef9568d44b617fe051df9df9072550f389dfecbf
 Content-Disposition: form-data; name="worker.js"; filename="worker.js"
 Content-Type: application/javascript+module
 
@@ -4080,6 +4080,20 @@ worker_default.fetch=async function(request,env,ctx){
   return new Response(html,{status:response.status,statusText:response.statusText,headers});
 };
 
+/* PB_GINKGO_VISUAL_SYNC_20261122: keep an optimistic successful tap visible until its next real board tick. */
+(()=>{
+  const mainPath="/modules/ginkgo/main.js",mainOriginal=BROWSER_MODULES[mainPath];
+  const localNeedle="let localEngine=null,localTimer=null;";
+  const updateNeedle="if(localEngine){localEngine.sync(snapshot);snapshot={...snapshot,...localEngine.state()};}";
+  const tapNeedle=" if(!localEngine.tap(index)){renderLocalState();return;}";
+  const updateReplacement="if(localEngine){const held=[];const stateTick=Number.isInteger(snapshot.state?.tick)?snapshot.state.tick:null;for(const [heldIndex,heldCell] of visualTapHold){if(stateTick===null||stateTick<=heldCell.untilTick)held.push([heldIndex,heldCell]);else visualTapHold.delete(heldIndex)}localEngine.sync(snapshot);for(const [heldIndex,heldCell] of held)localEngine.board.cells[heldIndex]={...heldCell.cell};snapshot={...snapshot,...localEngine.state()};}";
+  const tapReplacement=" if(!localEngine.tap(index)){renderLocalState();return;}  visualTapHold.set(index,{untilTick:tapTick,cell:{...localEngine.board.cells[index]}});  renderLocalState();";
+  const matches=(source,needle)=>typeof source==="string"?source.split(needle).length-1:0;
+  if(matches(mainOriginal,localNeedle)===1&&matches(mainOriginal,updateNeedle)===1&&matches(mainOriginal,tapNeedle)===1&&mainOriginal.includes("const tapTick=localEngine.clock.tick")){
+    BROWSER_MODULES[mainPath]=mainOriginal.replace(localNeedle,localNeedle+"const visualTapHold=new Map();").replace(updateNeedle,updateReplacement).replace(tapNeedle,tapReplacement);
+  }else console.error("[ginkgo-visual-sync] unexpected bundled browser module shape; refusing partial patch");
+})();
+
 /* PB_PRIVACY_CONTACT_20261122: match the operator contact path used by Daejeon's Gimyo Trip. */
 const PB_PRIVACY_CONTACT={
   ko:'<section id="pb-operator-contact-20261122"><h2>운영 및 문의</h2><p>서비스명: 폿브레이커 (POT BREAKER)</p><p>개인정보 관련 문의: <a href="mailto:rhaxod7784@gmail.com">rhaxod7784@gmail.com</a></p><p>개인정보 열람·정정·삭제 및 관련 문의는 위 이메일로 요청할 수 있습니다. 이메일로 문의하면 보내주신 이메일 주소와 문의 내용은 답변 및 요청 처리 목적으로만 사용합니다.</p></section>',
@@ -4103,4 +4117,4 @@ export {
 };
 //# sourceMappingURL=worker.js.map
 
---8c4acb38ce3d5603d1aecb30989011c92b105331c0e5eb0c4d6587947b67--
+--486d01a05b6468aeb038ef9568d44b617fe051df9df9072550f389dfecbf--

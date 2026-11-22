@@ -2,14 +2,14 @@
   "date": "2026-11-22",
   "site": "https://potbreaker.com",
   "worker": "potbreaker",
-  "productionVersionId": "a1f9e3cc-5af5-40a9-b383-1ef4486108de",
-  "deploymentId": "8c564085-8d86-402d-9faa-e3aa6e3d9706",
+  "productionVersionId": "08757b49-72a4-4f45-8907-09ba4dc63001",
+  "deploymentId": "d50957bb-f854-4be5-a396-3ce017625a74",
   "trafficPercentage": 100,
   "sourcePath": "cloudflare/worker.js",
   "source": "Cloudflare Workers content/v2",
   "notes": [
     "GitHub worker.js was replaced with the active production Worker source.",
     "The production Worker retains the POTBREAKER_DB D1 binding.",
-    "The version includes the 2026-11-21 AdSense technical patch, published operator/privacy contact details, and the game-start header hide behavior."
+    "The version includes the AdSense technical patch, published operator/privacy contact details, game-start header hide behavior, and stable Ginkgo tap visuals."
   ]
 }
